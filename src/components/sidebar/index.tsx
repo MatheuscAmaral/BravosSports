@@ -12,13 +12,10 @@ import {
   Input,
 } from "@material-tailwind/react";
 
-import { PiChalkboardTeacherBold, PiUserCircleGearFill} from "react-icons/pi";
+import { PiChalkboardTeacherBold, PiUserCircleGearFill, PiUserFocusBold} from "react-icons/pi";
 import { FaSchoolLock, FaUsers } from "react-icons/fa6";
+import { TbLogout } from "react-icons/tb";
 
-import {
-  Cog6ToothIcon,
-  PowerIcon,
-} from "@heroicons/react/24/solid";
 import {
   ChevronRightIcon,
   ChevronDownIcon,
@@ -33,12 +30,12 @@ import {
   };
  
   return (
-    <Card className="h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none">
+    <Card className="h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
         <img src={logo} alt="brand" className="h-16" />
       </div>
       <div className="p-2">
-        <Input icon={<MagnifyingGlassIcon className="h-5 w-5" />} label="Search" />
+        <Input icon={<MagnifyingGlassIcon className="h-5 w-5" />} label="Pesquisar..." />
       </div>
       <List>
         <ListItem>
@@ -62,7 +59,7 @@ import {
               <ListItemPrefix>
                 <PiChalkboardTeacherBold fontSize={25} />
               </ListItemPrefix>
-              <Typography color="blue-gray" className="mr-auto font-normal">
+              <Typography color="blue-gray" className="mr-auto">
                 Professores
               </Typography>
             </AccordionHeader>
@@ -100,7 +97,7 @@ import {
               <ListItemPrefix>
                 <FaSchoolLock fontSize={24} />
               </ListItemPrefix>
-              <Typography color="blue-gray" className="mr-auto font-normal">
+              <Typography color="blue-gray" className="mr-auto">
                 Controle de acesso
               </Typography>
             </AccordionHeader>
@@ -134,6 +131,16 @@ import {
         </ListItem>
 
       </List>
+
+      <section className="flex justify-between items-center pl-3 pr-10 fixed bottom-5 w-80">
+        <div className="flex justify-center gap-2 items-center">
+            <PiUserFocusBold fontSize={24}/>
+            
+            <p className="text-sm font-semibold">Matheus Amaral</p>
+        </div>
+
+        <TbLogout fontSize={22}/>
+      </section>
     </Card>
   );
 }

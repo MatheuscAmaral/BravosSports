@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 const Layout = () => {
     return (
-        <div className="flex">
+        <div className="flex bg-gray-50 font-sans">
             <Sidebar/>
             <Outlet/>
         </div>
