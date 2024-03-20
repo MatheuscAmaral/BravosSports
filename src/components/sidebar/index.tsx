@@ -21,9 +21,11 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
  
  const Sidebar = () => {
   const [open, setOpen] = useState(0);
+  const navigate = useNavigate();
  
   const handleOpen = (value: SetStateAction<number>) => {
     setOpen(open === value ? 0 : value);
@@ -32,13 +34,13 @@ import {
   return (
     <Card className="h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
-        <img src={logo} alt="brand" className="h-16" />
+        <img src={logo} alt="brand" className="h-16 cursor-pointer" onClick={() => navigate("/")}/>
       </div>
       <div className="p-2">
         <Input icon={<MagnifyingGlassIcon className="h-5 w-5" />} label="Pesquisar..." />
       </div>
       <List>
-        <ListItem>
+        <ListItem onClick={() => navigate("/alunos")}>
           <ListItemPrefix>
             <FaUsers fontSize={24} />
           </ListItemPrefix>
