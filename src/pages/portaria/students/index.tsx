@@ -2,7 +2,7 @@ import { DataTable } from "@/components/table/dataTable";
 import { columns } from "@/components/table/columns";
 import { PaymentProps } from "@/components/table/columns";
 
-const Call = () => {
+const ControllStudents = () => {
     const data: PaymentProps[] = ([
         {
           id: "728ed52f",
@@ -15,7 +15,7 @@ const Call = () => {
     return (
         <main className="w-full">
             <section className="mt-10 ml-10">
-                <h1 className="text-2xl font-bold text-gray-700">Chamada</h1>
+                <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">Alunos <span className="text-sm">(200)</span></h1>
             </section>
 
             <div className="w-full mx-auto px-10 mt-10">
@@ -25,4 +25,4 @@ const Call = () => {
     )
 }
 
-export default Call;
+export default ControllStudents;

@@ -2,7 +2,7 @@ import { DataTable } from "@/components/table/dataTable";
 import { columns } from "@/components/table/columns";
 import { PaymentProps } from "@/components/table/columns";
 
-const Call = () => {
+const ControllCall = () => {
     const data: PaymentProps[] = ([
         {
           id: "728ed52f",
@@ -25,4 +25,4 @@ const Call = () => {
     )
 }
 
-export default Call;
+export default ControllCall;

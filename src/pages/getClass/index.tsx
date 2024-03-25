@@ -15,10 +15,10 @@ const GetClass = () => {
     return (
         <main className="w-full">
             <section className="mt-10 ml-10">
-                <h1 className="text-2xl font-bold text-gray-600">Buscar em sala</h1>
+                <h1 className="text-2xl font-bold text-gray-700">Buscar em sala</h1>
             </section>
 
-            <div className="container mx-auto py-10">
+            <div className="w-full mx-auto px-10 mt-10">
                 <DataTable columns={columns} data={data} />
             </div>
         </main>

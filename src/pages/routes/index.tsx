@@ -4,6 +4,9 @@ import Home from "../home";
 import Students from "../students";
 import GetClass from "../getClass";
 import Call from "../call";
+import ControllCall from "../portaria/call";
+import ControllStudents from "../portaria/students";
+import Settings from "../settings";
 
 const router = createBrowserRouter([
     {
@@ -24,6 +27,18 @@ const router = createBrowserRouter([
             {
                 path: "/chamada",
                 element: <Call/>
+            }, 
+            {
+                path: "/controle/alunos",
+                element: <ControllStudents/>
+            },
+            {
+                path: "/controle/chamada",
+                element: <ControllCall/>
+            },
+            {
+                path: "/configuracoes",
+                element: <Settings/>
             }
         ]
     }

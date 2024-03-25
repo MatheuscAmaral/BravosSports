@@ -15,10 +15,10 @@ const Students = () => {
     return (
         <main className="w-full">
             <section className="mt-10 ml-10">
-                <h1 className="text-2xl font-bold text-gray-600">Alunos</h1>
+                <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">Alunos <span className="text-sm">(200)</span></h1>
             </section>
 
-            <div className="container mx-auto py-10">
+            <div className="w-full mx-auto px-10 mt-10">
                 <DataTable columns={columns} data={data} />
             </div>
         </main>

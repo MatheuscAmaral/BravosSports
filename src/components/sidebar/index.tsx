@@ -32,7 +32,7 @@ import { useNavigate } from "react-router-dom";
   };
  
   return (
-    <Card className="h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
+    <Card className="hidden lg:block h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
         <img src={logo} alt="brand" className="h-16 cursor-pointer" onClick={() => navigate("/")}/>
       </div>
@@ -107,13 +107,13 @@ import { useNavigate } from "react-router-dom";
 
           <AccordionBody className="py-1">
             <List className="p-0">
-              <ListItem>
+              <ListItem  onClick={() => navigate("/controle/alunos")}>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
                 Alunos
               </ListItem>
-              <ListItem>
+              <ListItem onClick={() => navigate("/controle/chamada")}>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
@@ -125,7 +125,7 @@ import { useNavigate } from "react-router-dom";
 
         <hr className="my-2 border-blue-gray-50" />
 
-        <ListItem>
+        <ListItem onClick={() => navigate("/configuracoes")}>
           <ListItemPrefix>
             <PiUserCircleGearFill fontSize={24}/>
           </ListItemPrefix>
