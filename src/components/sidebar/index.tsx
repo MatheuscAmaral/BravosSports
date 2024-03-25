@@ -69,13 +69,13 @@ import { useNavigate } from "react-router-dom";
 
           <AccordionBody className="py-1">
             <List className="p-0">
-              <ListItem>
+              <ListItem onClick={() => navigate("/buscar")}>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
                 Buscar em sala
               </ListItem>
-              <ListItem>
+              <ListItem onClick={() => navigate("/chamada")}>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
@@ -90,7 +90,7 @@ import { useNavigate } from "react-router-dom";
           icon={
             <ChevronDownIcon
               strokeWidth={2.5}
-              className={`mx-auto h-4 w-4 transition-transform ${open === 2 ? "rotate-180" : ""}`}
+              className={`mx-auto h-4 w-4 transition-transform ${open === 3 ? "rotate-180" : ""}`}
             />
           }
         >
