@@ -12,7 +12,11 @@ import {
   Input,
 } from "@material-tailwind/react";
 
-import { PiChalkboardTeacherBold, PiUserCircleGearFill, PiUserFocusBold} from "react-icons/pi";
+import {
+  PiChalkboardTeacherBold,
+  PiUserCircleGearFill,
+  PiUserFocusBold,
+} from "react-icons/pi";
 import { FaSchoolLock, FaUsers } from "react-icons/fa6";
 import { TbLogout } from "react-icons/tb";
 
@@ -22,45 +26,68 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
- 
- const Sidebar = () => {
+
+const Sidebar = () => {
   const [open, setOpen] = useState(0);
   const navigate = useNavigate();
- 
+
   const handleOpen = (value: SetStateAction<number>) => {
     setOpen(open === value ? 0 : value);
   };
- 
+
   return (
-    <Card className="hidden lg:block h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
+    // @ts-ignore
+    <Card className="hidden xl:block h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
-        <img src={logo} alt="brand" className="h-16 cursor-pointer" onClick={() => navigate("/")}/>
+        <img
+          src={logo}
+          alt="brand"
+          className="h-16 cursor-pointer"
+          onClick={() => navigate("/")}
+        />
       </div>
       <div className="p-2">
-        <Input icon={<MagnifyingGlassIcon className="h-5 w-5" />} label="Pesquisar..." />
+        {/* @ts-ignore */}
+        <Input
+          icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+          label="Pesquisar..."
+        />
       </div>
+      {/* @ts-ignore */}
       <List>
+        {/* @ts-ignore */}
         <ListItem onClick={() => navigate("/alunos")}>
+          {/* @ts-ignore */}
           <ListItemPrefix>
             <FaUsers fontSize={24} />
           </ListItemPrefix>
           Alunos
         </ListItem>
 
+        {/* @ts-ignore */}
         <Accordion
           open={open === 2}
           icon={
             <ChevronDownIcon
               strokeWidth={2.5}
-              className={`mx-auto h-4 w-4 transition-transform ${open === 2 ? "rotate-180" : ""}`}
+              className={`mx-auto h-4 w-4 transition-transform ${
+                open === 2 ? "rotate-180" : ""
+              }`}
             />
           }
         >
+          {/* @ts-ignore */}
           <ListItem className="p-0" selected={open === 2}>
-            <AccordionHeader onClick={() => handleOpen(2)} className="border-b-0 p-3">
+            {/* @ts-ignore */}
+            <AccordionHeader
+              onClick={() => handleOpen(2)}
+              className="border-b-0 p-3"
+            >
+              {/* @ts-ignore */}
               <ListItemPrefix>
                 <PiChalkboardTeacherBold fontSize={25} />
               </ListItemPrefix>
+              {/* @ts-ignore */}
               <Typography color="blue-gray" className="mr-auto">
                 Professores
               </Typography>
@@ -68,14 +95,19 @@ import { useNavigate } from "react-router-dom";
           </ListItem>
 
           <AccordionBody className="py-1">
+            {/* @ts-ignore */}
             <List className="p-0">
+              {/* @ts-ignore */}
               <ListItem onClick={() => navigate("/buscar")}>
+                {/* @ts-ignore */}
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
                 Buscar em sala
               </ListItem>
+              {/* @ts-ignore */}
               <ListItem onClick={() => navigate("/chamada")}>
+                {/* @ts-ignore */}
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
@@ -85,20 +117,30 @@ import { useNavigate } from "react-router-dom";
           </AccordionBody>
         </Accordion>
 
+        {/* @ts-ignore */}
         <Accordion
           open={open === 3}
           icon={
             <ChevronDownIcon
               strokeWidth={2.5}
-              className={`mx-auto h-4 w-4 transition-transform ${open === 3 ? "rotate-180" : ""}`}
+              className={`mx-auto h-4 w-4 transition-transform ${
+                open === 3 ? "rotate-180" : ""
+              }`}
             />
           }
         >
+          {/* @ts-ignore */}
           <ListItem className="p-0" selected={open === 3}>
-            <AccordionHeader onClick={() => handleOpen(3)} className="border-b-0 p-3">
+            {/* @ts-ignore */}
+            <AccordionHeader
+              onClick={() => handleOpen(3)}
+              className="border-b-0 p-3"
+            >
+              {/* @ts-ignore */}
               <ListItemPrefix>
                 <FaSchoolLock fontSize={24} />
               </ListItemPrefix>
+              {/* @ts-ignore */}
               <Typography color="blue-gray" className="mr-auto">
                 Controle de acesso
               </Typography>
@@ -106,14 +148,19 @@ import { useNavigate } from "react-router-dom";
           </ListItem>
 
           <AccordionBody className="py-1">
+            {/* @ts-ignore */}
             <List className="p-0">
-              <ListItem  onClick={() => navigate("/controle/alunos")}>
+              {/* @ts-ignore */}
+              <ListItem onClick={() => navigate("/controle/alunos")}>
+                {/* @ts-ignore */}
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
                 Alunos
               </ListItem>
+              {/* @ts-ignore */}
               <ListItem onClick={() => navigate("/controle/chamada")}>
+                {/* @ts-ignore */}
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
@@ -125,26 +172,27 @@ import { useNavigate } from "react-router-dom";
 
         <hr className="my-2 border-blue-gray-50" />
 
+        {/* @ts-ignore */}
         <ListItem onClick={() => navigate("/configuracoes")}>
+          {/* @ts-ignore */}
           <ListItemPrefix>
-            <PiUserCircleGearFill fontSize={24}/>
+            <PiUserCircleGearFill fontSize={24} />
           </ListItemPrefix>
           Configurações
         </ListItem>
-
       </List>
 
       <section className="flex justify-between items-center pl-3 pr-10 fixed bottom-5 w-80">
         <div className="flex justify-center gap-2 items-center">
-            <PiUserFocusBold fontSize={24}/>
-            
-            <p className="text-sm font-semibold">Matheus Amaral</p>
+          <PiUserFocusBold fontSize={24} />
+
+          <p className="text-sm font-semibold">Matheus Amaral</p>
         </div>
 
-        <TbLogout fontSize={22}/>
+        <TbLogout fontSize={22} />
       </section>
     </Card>
   );
-}
+};
 
 export default Sidebar;
