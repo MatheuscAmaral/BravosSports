@@ -9,6 +9,7 @@ module.exports = withMT({
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+    "node_modules/flowbite-react/lib/esm/**/*.js",
   ],
   prefix: "",
   theme: {
@@ -95,5 +96,8 @@ module.exports = withMT({
         "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [
+      require("tailwindcss-animate"),
+
+    ],
   });

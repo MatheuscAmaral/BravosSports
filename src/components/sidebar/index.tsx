@@ -182,7 +182,7 @@ const Sidebar = () => {
         </ListItem>
       </List>
 
-      <section className="flex justify-between items-center pl-3 pr-10 fixed bottom-5 w-80">
+      <section className="flex justify-between items-center pl-3 pr-16 fixed bottom-5 w-80">
         <div className="flex justify-center gap-2 items-center">
           <PiUserFocusBold fontSize={24} />
 

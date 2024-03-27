@@ -5,8 +5,10 @@ import { Outlet } from "react-router-dom";
 
 const Layout = () => {
     return (
-        <div className="flex bg-gray-50 font-sans">
-            <Sidebar/>
+        <div className="flex bg-gray-50 h-svh font-sans">
+            <div className="hidden xl:flex">
+                <Sidebar/>
+            </div>
 
             <div className="flex flex-col w-full relative">
                 <Header/>
