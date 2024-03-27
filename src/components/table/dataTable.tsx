@@ -49,12 +49,15 @@ const uploader = Uploader({
 
 const options = { multi: true };
 
-import { data } from "@/pages/students";
-import { columns } from "@/pages/students";
-
 import { classes } from "@/pages/students";
 
-export function DataTable() {
+interface DataTableProps {
+  data: [],
+  columns: []
+  route: string
+}
+
+export function DataTable({ data, columns, route }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -94,11 +97,12 @@ export function DataTable() {
             : "bg-white p-5 xl:p-0 xl:bg-gray-50"
         } pt-5 mb-10 border xl:border-0 rounded-lg transition-all`}
       >
-        <div className={`flex xl:hidden justify-between items-center`}>
+        <div
+          className={`flex xl:hidden justify-between items-center cursor-pointer`}
+          onClick={() => setOpenFilter(!openFilter)}
+        >
           <h3 className="text-lg text-gray-700 font-bold">Filtros</h3>
-          <button onClick={() => setOpenFilter(!openFilter)}>
-            <IoIosArrowDown fontSize={22} />
-          </button>
+          <IoIosArrowDown fontSize={22} />
         </div>
 
         <article
@@ -108,7 +112,7 @@ export function DataTable() {
               : "hidden xl:grid xl:grid-cols-2"
           } mt-5 transition-all`}
         >
-          <div className="flex justify-center w-full gap-4">
+          <div className={`${route != "students" ? "hidden" : "flex"} justify-center w-full gap-4`}>
             <Input
               placeholder="Pesquise pelo nome do aluno..."
               value={
@@ -129,20 +133,42 @@ export function DataTable() {
               }
             />
 
-            <Select>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Turma" />
-              </SelectTrigger>
-              <SelectContent>
-                {classes.map((c) => {
-                  return (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.turma}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+              <Select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map((c) => {
+                    return (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.turma}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+          </div>
+
+          <div className={`${route != "turmas" ? "hidden" : "flex"} justify-center w-full gap-4`}>
+            <Input
+              placeholder="Pesquise pelo código da turma..."
+              value={
+                (table.getColumn("Código")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("Código")?.setFilterValue(event.target.value)
+              }
+            />
+
+            <Input
+              placeholder="Pesquise pelo descrição da turma..."
+              value={
+                (table.getColumn("Turma")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("Turma")?.setFilterValue(event.target.value)
+              }
+            />
           </div>
 
           <div className="flex gap-5">
@@ -175,9 +201,16 @@ export function DataTable() {
 
             <Button
               onClick={() => setOpenModal(true)}
-              className="w-full xl:max-w-32"
+              className={`${route != "students" ? "hidden" : "block"} w-full xl:max-w-32`}
             >
               Cadastrar aluno
+            </Button>
+
+            <Button
+              onClick={() => setOpenModal(true)}
+              className={`${route != "turmas" ? "hidden" : "block"} w-full xl:max-w-32`}
+            >
+              Cadastrar turma
             </Button>
           </div>
         </article>

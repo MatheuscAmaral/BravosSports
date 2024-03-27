@@ -12,22 +12,14 @@ import {
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export interface StudentsProps {
-  id: number;
-  Matrícula: string;
-  Nome: string;
-  Responsável: string;
+export interface ClassesProps {
+  Código: number;
   Turma: string;
-  status: number;
-  Telefone: number;
+  Alunos: number;
+  Status: number;
 }
 
-interface ClassesProps {
-  id: string;
-  turma: string;
-}
-
-export const columns: ColumnDef<StudentsProps>[] = [
+const columns: ColumnDef<ClassesProps>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -51,49 +43,19 @@ export const columns: ColumnDef<StudentsProps>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "Matrícula",
+    accessorKey: "Código",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Matrícula
+          Código
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("Matrícula")}</div>,
-  },
-  {
-    accessorKey: "Nome",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("Nome")}</div>,
-  },
-  {
-    accessorKey: "Responsável",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Responsável
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("Responsável")}</div>,
+    cell: ({ row }) => <div>{row.getValue("Código")}</div>,
   },
   {
     accessorKey: "Turma",
@@ -111,32 +73,30 @@ export const columns: ColumnDef<StudentsProps>[] = [
     cell: ({ row }) => <div>{row.getValue("Turma")}</div>,
   },
   {
-    accessorKey: "Telefone",
+    accessorKey: "Alunos",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Telefone
+          Alunos
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => (
-      <div className="lowercase">{row.getValue("Telefone")}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("Alunos")}</div>,
   },
   {
-    accessorKey: "status",
+    accessorKey: "Status",
     header: "Status",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("status") == 0 && "Inativo"}
+        {row.getValue("Status") == 0 && "Inativo"}
 
-        {row.getValue("status") == 1 && "Pendente"}
+        {row.getValue("Status") == 1 && "Pendente"}
 
-        {row.getValue("status") == 2 && "Ativo"}
+        {row.getValue("Status") == 2 && "Ativo"}
       </div>
     ),
   },
@@ -155,6 +115,7 @@ export const columns: ColumnDef<StudentsProps>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem>Ver dados</DropdownMenuItem>
+            <DropdownMenuItem>Ver alunos</DropdownMenuItem>
             <DropdownMenuItem>Editar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -163,54 +124,40 @@ export const columns: ColumnDef<StudentsProps>[] = [
   },
 ];
 
-export const classes: ClassesProps[] = [
+const data: ClassesProps[] = [
   {
-    id: "1",
-    turma: "3°A",
-  },
-  {
-    id: "2",
-    turma: "1°A",
-  },
-];
-
-export const data: StudentsProps[] = [
-  {
-    id: 1,
-    Matrícula: "3105",
-    Nome: "Matheus Amaral",
-    Responsável: "Ricardo Amaral",
+    Código: 1,
     Turma: "3°A",
-    Telefone: 31992661386,
-    status: 1,
+    Alunos: 25,
+    Status: 0,
   },
   {
-    id: 2,
-    Matrícula: "1503",
-    Nome: " Amaral",
-    Responsável: "Fernanda Amaral",
+    Código: 2,
     Turma: "1°A",
-    Telefone: 31992121386,
-    status: 1,
+    Alunos: 30,
+    Status: 1,
+  },
+  {
+    Código: 3,
+    Turma: "2°B",
+    Alunos: 20,
+    Status: 2,
   },
 ];
 
-const Students = () => {
+const Classes = () => {
   return (
     <main className="w-full">
       <section className="mt-10">
-        <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
-          Alunos <span className="text-sm mt-1">(200)</span>
-        </h1>
-
+        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Turmas<span className="text-sm mt-1">(3)</span></h1>
       </section>
 
-      <section className="w-full mx-auto mt-10">
-        {/* @ts-ignore */}
-        <DataTable columns={columns} data={data} route={"students"} />
-      </section>
+      <div className="w-full mx-auto mt-10">
+        {/*@ts-ignore */}
+        <DataTable columns={columns} data={data} route={"turmas"} />
+      </div>
     </main>
-  );  
+  );
 };
 
-export default Students;
+export default Classes;

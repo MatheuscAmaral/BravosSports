@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^4.30.7",
+    "@clerk/localizations": "^1.26.16",
+    "@clerk/themes": "^1.7.10",
     "@heroicons/react": "^2.1.1",
     "@material-tailwind/react": "^2.1.9",
     "@radix-ui/react-accordion": "^1.1.2",

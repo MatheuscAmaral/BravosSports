@@ -1,5 +1,6 @@
 import { SetStateAction, useState } from "react";
 import logo from "../../assets/bravosLogoBlack.png";
+import { BiSolidBusSchool } from "react-icons/bi";
 import {
   Card,
   Typography,
@@ -12,13 +13,8 @@ import {
   Input,
 } from "@material-tailwind/react";
 
-import {
-  PiChalkboardTeacherBold,
-  PiUserCircleGearFill,
-  PiUserFocusBold,
-} from "react-icons/pi";
+import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { FaSchoolLock, FaUsers } from "react-icons/fa6";
-import { TbLogout } from "react-icons/tb";
 
 import {
   ChevronRightIcon,
@@ -62,6 +58,15 @@ const Sidebar = () => {
             <FaUsers fontSize={24} />
           </ListItemPrefix>
           Alunos
+        </ListItem>
+
+        {/* @ts-ignore */}
+        <ListItem onClick={() => navigate("/turmas")}>
+          {/* @ts-ignore */}
+          <ListItemPrefix>
+            <BiSolidBusSchool fontSize={24} />
+          </ListItemPrefix>
+          Turmas
         </ListItem>
 
         {/* @ts-ignore */}
@@ -171,26 +176,7 @@ const Sidebar = () => {
         </Accordion>
 
         <hr className="my-2 border-blue-gray-50" />
-
-        {/* @ts-ignore */}
-        <ListItem onClick={() => navigate("/configuracoes")}>
-          {/* @ts-ignore */}
-          <ListItemPrefix>
-            <PiUserCircleGearFill fontSize={24} />
-          </ListItemPrefix>
-          Configurações
-        </ListItem>
       </List>
-
-      <section className="flex justify-between items-center pl-3 pr-16 fixed bottom-5 w-80">
-        <div className="flex justify-center gap-2 items-center">
-          <PiUserFocusBold fontSize={24} />
-
-          <p className="text-sm font-semibold">Matheus Amaral</p>
-        </div>
-
-        <TbLogout fontSize={22} />
-      </section>
     </Card>
   );
 };

@@ -7,6 +7,7 @@ import Call from "../call";
 import ControllCall from "../portaria/call";
 import ControllStudents from "../portaria/students";
 import Settings from "../settings";
+import Classes from "../classes";
 
 const router = createBrowserRouter([
     {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
             {
                 path: "/configuracoes",
                 element: <Settings/>
+            }, 
+            {
+                path: "/turmas",
+                element: <Classes/>
             }
         ]
     }
