@@ -112,64 +112,73 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               : "hidden xl:grid xl:grid-cols-2"
           } mt-5 transition-all`}
         >
-          <div className={`${route != "students" ? "hidden" : "flex"} justify-center w-full gap-4`}>
-            <Input
-              placeholder="Pesquise pelo nome do aluno..."
-              value={
-                (table.getColumn("Nome")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("Nome")?.setFilterValue(event.target.value)
-              }
-            />
+          {
+            route == "students" && (
+              <div className={`flex justify-center w-full gap-4`}>
+                <Input
+                  placeholder="Nome do aluno..."
+                  value={
+                    (table.getColumn("Nome")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("Nome")?.setFilterValue(event.target.value)
+                  }
+                />
 
-            <Input
-              placeholder="Pesquise pelo número de matrícula do aluno..."
-              value={
-                (table.getColumn("Matrícula")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("Matrícula")?.setFilterValue(event.target.value)
-              }
-            />
+                <Input
+                  placeholder="Matrícula do aluno..."
+                  value={
+                    (table.getColumn("Matrícula")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("Matrícula")?.setFilterValue(event.target.value)
+                  }
+                />
 
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Turma" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes.map((c) => {
-                    return (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.turma}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-          </div>
+                  <Select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Turma" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((c) => {
+                        return (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.turma}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+              </div>
+            )
+          }
 
-          <div className={`${route != "turmas" ? "hidden" : "flex"} justify-center w-full gap-4`}>
-            <Input
-              placeholder="Pesquise pelo código da turma..."
-              value={
-                (table.getColumn("Código")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("Código")?.setFilterValue(event.target.value)
-              }
-            />
+          {
+            route == "turmas" && (
+              <div className={`flex justify-center w-full gap-4`}>
+                <Input
+                  placeholder="Pesquise pelo código da turma..."
+                  value={
+                    (table.getColumn("Código")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("Código")?.setFilterValue(event.target.value)
+                  }
+                />
 
-            <Input
-              placeholder="Pesquise pelo descrição da turma..."
-              value={
-                (table.getColumn("Turma")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("Turma")?.setFilterValue(event.target.value)
-              }
-            />
-          </div>
+                <Input
+                  placeholder="Pesquise pelo descrição da turma..."
+                  value={
+                    (table.getColumn("Turma")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("Turma")?.setFilterValue(event.target.value)
+                  }
+                />
+              </div>
+            )
+          }
+
 
           <div className="flex gap-5">
             <DropdownMenu>

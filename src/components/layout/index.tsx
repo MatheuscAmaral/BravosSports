@@ -15,7 +15,7 @@ import { AuthContext } from "@/contexts/AuthContext";
 const Layout = () => {
   const { isSignedIn, user, isLoaded } = useUser();
   const { authUser } = useContext(AuthContext);
-
+  
   if (!isLoaded) {
     return null;
   }

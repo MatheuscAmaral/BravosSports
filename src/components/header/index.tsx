@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/bravosLogoBlack.png";
 
 import { PiChalkboardTeacherBold } from "react-icons/pi";
+import { BiSolidBusSchool } from "react-icons/bi";
 import { FaSchoolLock, FaUsers } from "react-icons/fa6";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
@@ -18,6 +19,11 @@ const Header = () => {
   const [mobile, setMobile] = useState(false);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const navigateToRoute = (route: string) => {
+    navigate(route);
+    setMobile(false);
+  }
 
   return (
     <div className="relative transition-all">
@@ -54,7 +60,7 @@ const Header = () => {
 
         <ul className="flex flex-col gap-2 w-full mt-5 select-none">
           <li
-            onClick={() => navigate("/alunos")}
+            onClick={() => navigateToRoute("/alunos")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
           >
             <FaUsers fontSize={24} />
@@ -62,7 +68,15 @@ const Header = () => {
           </li>
 
           <li
-            onClick={() => navigate("/alunos")}
+            onClick={() => navigateToRoute("/turmas")}
+            className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+          >
+            <BiSolidBusSchool fontSize={24} />
+            <p className="text-lg">Turmas</p>
+          </li>
+
+          <li
+            onClick={() => navigateToRoute("/alunos")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
           >
             <PiChalkboardTeacherBold fontSize={27} />
@@ -70,7 +84,7 @@ const Header = () => {
           </li>
 
           <li
-            onClick={() => navigate("/controle/alunos")}
+            onClick={() => navigateToRoute("/controle/alunos")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
           >
             <FaSchoolLock fontSize={25} />

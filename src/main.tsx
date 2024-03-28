@@ -2,7 +2,6 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider } from "react-router-dom";
 import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
-//@ts-ignore
 import { ptBR } from "@clerk/localizations";
 import router from './pages/routes';
 import AuthProvider from './contexts/AuthContext';
