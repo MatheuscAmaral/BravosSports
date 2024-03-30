@@ -11,13 +11,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import api from "@/api";
 
 export interface ClassesProps {
-  Código: number;
-  Turma: string;
-  Alunos: number;
-  Status: number;
+  id: number;
+  description: string;
+  quantity_students: number;
+  status: number;
 }
+
 
 const columns: ColumnDef<ClassesProps>[] = [
   {
@@ -43,60 +46,58 @@ const columns: ColumnDef<ClassesProps>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "Código",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Código
+          Id
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("Código")}</div>,
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
   },
-  {
-    accessorKey: "Turma",
+   {
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Turma
+          Description
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("Turma")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
-    accessorKey: "Alunos",
+    accessorKey: "quantity_students",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Alunos
+          Quantity_students
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("Alunos")}</div>,
+    cell: ({ row }) => <div>{row.getValue("quantity_students")}</div>,
   },
   {
-    accessorKey: "Status",
+    accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("Status") == 0 && "Inativo"}
+        {row.getValue("status") == 0 && "Inativo"}
 
-        {row.getValue("Status") == 1 && "Pendente"}
-
-        {row.getValue("Status") == 2 && "Ativo"}
+        {row.getValue("status") == 1 && "Ativo"}
       </div>
     ),
   },
@@ -124,28 +125,20 @@ const columns: ColumnDef<ClassesProps>[] = [
   },
 ];
 
-const data: ClassesProps[] = [
-  {
-    Código: 1,
-    Turma: "3°A",
-    Alunos: 25,
-    Status: 0,
-  },
-  {
-    Código: 2,
-    Turma: "1°A",
-    Alunos: 30,
-    Status: 1,
-  },
-  {
-    Código: 3,
-    Turma: "2°B",
-    Alunos: 20,
-    Status: 2,
-  },
-];
 
 const Classes = () => {
+  useEffect(() => {
+    const getClasses = async () => {
+      const response = await api.get("/classes");
+  
+      setData(response.data);
+    }
+  
+    getClasses();
+  }, []);
+
+  const [data, setData] = useState<ClassesProps[]>([]);
+
   return (
     <main className="w-full">
       <section className="mt-10">

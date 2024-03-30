@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { ptBR } from "@clerk/localizations";
 import router from './pages/routes';
 import AuthProvider from './contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
  
@@ -17,5 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <RouterProvider router={router}/>
         </AuthProvider>
+        <Toaster
+          position="bottom-right"
+          reverseOrder={false}
+        />
     </ClerkProvider>
 )

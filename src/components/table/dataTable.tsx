@@ -1,4 +1,6 @@
 import * as React from "react";
+import { toast } from 'react-hot-toast';
+import { TbLoader3 } from "react-icons/tb";
 import {
   ColumnFiltersState,
   SortingState,
@@ -50,6 +52,7 @@ const uploader = Uploader({
 const options = { multi: true };
 
 import { classes } from "@/pages/students";
+import api from "@/api";
 
 interface DataTableProps {
   data: [];
@@ -69,6 +72,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  const [loading, setLoading] = React.useState(false);
+  const [description, setDescription] = React.useState("");
+  const [newData, setNewData] = React.useState([])
+  const [quantity_students, setQuantityStudents] = React.useState(1);
+  const [status, setStatus] = React.useState(1);
+  
+  React.useEffect(() => {
+      setNewData(data);
+  }, [])
+
   const table = useReactTable({
     data,
     columns,
@@ -87,6 +100,37 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       rowSelection,
     },
   });
+
+
+
+  const createClasses = async (e: Event) => {
+    e.preventDefault();
+
+    const data = {
+      description: description,
+      quantity_students: quantity_students,
+      status: status
+    }
+
+   try {
+      setLoading(true);
+      await api.post('/classes', data);
+      toast.success("Turma cadastrada com sucesso!");
+      setNewData((allData) => ({...allData, data}))
+      console.log(newData)
+      setOpenModal(false);
+   }
+
+   catch {
+      toast.error("Ocorreu um erro ao cadastrar a turma!");
+   }
+
+   finally {
+      setLoading(false);
+   }
+  }
+
+  
 
   return (
     <main className="w-full">
@@ -272,64 +316,87 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           {route == "turmas" && (
-
             <>
               <div className={`flex justify-center w-full gap-4`}>
                 <Input
-                  placeholder="Pesquise pelo código da turma..."
+                  placeholder="Pesquise pelo id da turma..."
                   value={
-                    (table.getColumn("Código")?.getFilterValue() as string) ?? ""
+                    (table.getColumn("id")?.getFilterValue() as number) ?? ""
                   }
                   onChange={(event) =>
-                    table.getColumn("Código")?.setFilterValue(event.target.value)
+                    table.getColumn("id")?.setFilterValue(event.target.value)
                   }
                 />
 
                 <Input
                   placeholder="Pesquise pelo descrição da turma..."
                   value={
-                    (table.getColumn("Turma")?.getFilterValue() as string) ?? ""
+                    (table
+                      .getColumn("description")
+                      ?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
-                    table.getColumn("Turma")?.setFilterValue(event.target.value)
+                    table
+                      .getColumn("description")
+                      ?.setFilterValue(event.target.value)
                   }
                 />
               </div>
-            
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de aluno</Modal.Header>
-                <Modal.Body className="relative">
-                  <div className="space-y-6">
+                <Modal.Header>Cadastro de turma</Modal.Header>
+                <form onSubmit={(e) => createClasses(e)}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="description">Descrição:</label>
+                        <Input
+                          id="description"
+                          name="description"
+                          placeholder="Digite o descrição da turma..."
+                          onChange={(e) => setDescription(e.target.value)}
+                          required
+                        />
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Nome:</label>
-                      <Input
-                        id="nome"
-                        placeholder="Digite o nome do aluno..."
-                      />
-                    </div>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="students">Alunos:</label>
+                        <Select required>
+                          <SelectTrigger className="w-full" id="quantity_students" name="quantity_students">
+                            <SelectValue placeholder="Selecione os alunos" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Ricardo Amaral</SelectItem>
+                            <SelectItem value="2">Fernanda Amaral</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Responsável:</label>
-                      <Select>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o responsável" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Ricardo Amaral</SelectItem>
-                          <SelectItem value="2">Fernanda Amaral</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">Status:</label>
+                        <Select required>
+                          <SelectTrigger onChange={(e) => setStatus(e.target.value)} className="w-full" id="status" name="status">
+                            <SelectValue placeholder="Selecione o status da turma" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">Inativo</SelectItem>
+                            <SelectItem value="1">Ativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button onClick={() => setOpenModal(false)}>Salvar</Button>
-                  <Button color="gray" onClick={() => setOpenModal(false)}>
-                    Fechar
-                  </Button>
-                </Modal.Footer>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button className="text-center " type="submit">
+                      {
+                        loading ? <TbLoader3 /> : "Salvar"
+                      }
+                    </Button>
+                    <Button color="gray" onClick={() => setOpenModal(false)}>
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
               </Modal>
             </>
           )}
