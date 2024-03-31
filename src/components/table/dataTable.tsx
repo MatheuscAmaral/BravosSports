@@ -1,5 +1,5 @@
 import * as React from "react";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
 import {
   ColumnFiltersState,
@@ -53,6 +53,7 @@ const options = { multi: true };
 
 import { classes } from "@/pages/students";
 import api from "@/api";
+import { ClassesProps } from "@/pages/classes";
 
 interface DataTableProps {
   data: [];
@@ -68,19 +69,24 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const [loading, setLoading] = React.useState(false);
   const [description, setDescription] = React.useState("");
-  const [newData, setNewData] = React.useState([])
+  const [newData, setNewData] = React.useState([]);
   const [quantity_students, setQuantityStudents] = React.useState(1);
+  const [name, setName] = React.useState("");
+  const [registration, setRegistration] = React.useState();
+  const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
+  const [responsible, setResponsible] = React.useState();
+  const [classes, setClasses] = React.useState("");
+  const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState(1);
-  
+
   React.useEffect(() => {
-      setNewData(data);
-  }, [])
+    setNewData(data);
+  }, []);
 
   const table = useReactTable({
     data,
@@ -101,36 +107,51 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     },
   });
 
-
-
-  const createClasses = async (e: Event) => {
+  const createClasses = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const data = {
       description: description,
       quantity_students: quantity_students,
+      status: status,
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/classes", data);
+      toast.success("Turma cadastrada com sucesso!");
+      setNewData((allData) => ({ ...allData, data }));
+      setOpenModal(false);
+    } catch {
+      toast.error("Ocorreu um erro ao cadastrar a turma!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = {
+      name: name,
+      registration: registration,
+      responsible: responsible, 
+      class: classes,
+      phone: phone,
       status: status
     }
 
-   try {
+    try {
       setLoading(true);
-      await api.post('/classes', data);
-      toast.success("Turma cadastrada com sucesso!");
-      setNewData((allData) => ({...allData, data}))
-      console.log(newData)
-      setOpenModal(false);
-   }
+      await api.post('/students', data);
 
-   catch {
-      toast.error("Ocorreu um erro ao cadastrar a turma!");
-   }
+      toast.success("Aluno cadastrado com sucesso!");
+    }
 
-   finally {
-      setLoading(false);
-   }
+    catch {
+      toast.error("Ocorreu um erro ao cadastrar o aluno!");
+    }      
   }
-
-  
 
   return (
     <main className="w-full">
@@ -146,7 +167,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           onClick={() => setOpenFilter(!openFilter)}
         >
           <h3 className="text-lg text-gray-700 font-bold">Filtros</h3>
-          <IoIosArrowDown fontSize={22} />
+          <IoIosArrowDown
+            fontSize={22}
+            className={`${
+              openFilter ? "rotate-180" : "rotate-0"
+            } transition-all`}
+          />
         </div>
 
         <article
@@ -188,10 +214,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classes.map((c) => {
+                    { classesDisp.map((c) => {
                       return (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.turma}
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {c.description}
                         </SelectItem>
                       );
                     })}
@@ -201,116 +227,119 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>Cadastro de aluno</Modal.Header>
-                <Modal.Body className="relative">
-                  <div className="space-y-6">
-                    <UploadButton
-                      uploader={uploader}
-                      options={options}
-                      onComplete={(files) =>
-                        files.length > 0 &&
-                        setLink(files.map((x) => x.fileUrl).join("\n"))
-                      }
-                    >
-                      {({ onClick }) => (
-                        <button
-                          onClick={onClick}
-                          className="h-48 w-full border-dashed border-2 rounded-lg relative text-md font-medium text-gray-700"
-                        >
-                          {link ? (
-                            <div className="flex justify-center">
-                              <img
-                                src={link}
-                                className="w-32"
-                                alt="foto_aluno"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2 items-center justify-center ">
-                              <IoIosImages fontSize={40} />
-                              <p className="w-full">
-                                Selecione ou arraste e solte uma imagem aqui.
-                              </p>
-                            </div>
-                          )}
-                        </button>
-                      )}
-                    </UploadButton>
-                    <FaTrash
-                      fontSize={22}
-                      onClick={() => setLink("")}
-                      className={`${
-                        link ? "block" : "hidden"
-                      } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
-                    />
-
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Nome:</label>
-                      <Input
-                        id="nome"
-                        placeholder="Digite o nome do aluno..."
+                <form onSubmit={createStudent}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <UploadButton
+                        uploader={uploader}
+                        options={options}
+                        onComplete={(files) =>
+                          files.length > 0 &&
+                          setLink(files.map((x) => x.fileUrl).join("\n"))
+                        }
+                      >
+                        {({ onClick }) => (
+                          <button
+                            onClick={onClick}
+                            className="h-48 w-full border-dashed border-2 rounded-lg relative text-md font-medium text-gray-700"
+                          >
+                            {link ? (
+                              <div className="flex justify-center">
+                                <img
+                                  src={link}
+                                  className="w-32"
+                                  alt="foto_aluno"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2 items-center justify-center ">
+                                <IoIosImages fontSize={40} />
+                                <p className="w-full">
+                                  Selecione ou arraste e solte uma imagem aqui.
+                                </p>
+                              </div>
+                            )}
+                          </button>
+                        )}
+                      </UploadButton>
+                      <FaTrash
+                        fontSize={22}
+                        onClick={() => setLink("")}
+                        className={`${
+                          link ? "block" : "hidden"
+                        } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
                       />
-                    </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Responsável:</label>
-                      <Select>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o responsável" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Ricardo Amaral</SelectItem>
-                          <SelectItem value="2">Fernanda Amaral</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">Nome:</label>
+                        <Input
+                          id="nome"
+                          placeholder="Digite o nome do aluno..."
+                          onChange={(e) => setName(e.target.value)}
+                        />
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Turma:</label>
-                      <Select>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione a turma" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {classes.map((c) => {
-                            return (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.turma}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">Responsável:</label>
+                        <Select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione o responsável" />
+                          </SelectTrigger>
+                          <SelectContent onChange={(e) => setResponsible(e.target.value)}>
+                            <SelectItem value="1">Ricardo Amaral</SelectItem>
+                            <SelectItem value="2">Fernanda Amaral</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Telefone:</label>
-                      <Input
-                        id="nome"
-                        placeholder="Digite o telefone do responsável..."
-                      />
-                    </div>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">Turma:</label>
+                        <Select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione a turma" />
+                          </SelectTrigger>
+                          <SelectContent onChange={(e) => setClasses(e.target.value)}>
+                            {classesDisp.map((c) => {
+                              return (
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="nome">Status:</label>
-                      <Select>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">Inativo</SelectItem>
-                          <SelectItem value="1">Pendente</SelectItem>
-                          <SelectItem value="2">Ativo</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">Telefone:</label>
+                        <Input
+                          id="nome"
+                          placeholder="Digite o telefone do responsável..."
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">Status:</label>
+                        <Select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione o status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">Inativo</SelectItem>
+                            <SelectItem value="1">Pendente</SelectItem>
+                            <SelectItem value="2">Ativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button onClick={() => setOpenModal(false)}>Salvar</Button>
-                  <Button color="gray" onClick={() => setOpenModal(false)}>
-                    Fechar
-                  </Button>
-                </Modal.Footer>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button type="submit">Salvar</Button>
+                    <Button color="gray" onClick={() => setOpenModal(false)}>
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
               </Modal>
             </>
           )}
@@ -319,7 +348,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             <>
               <div className={`flex justify-center w-full gap-4`}>
                 <Input
-                  placeholder="Pesquise pelo id da turma..."
+                  placeholder="Pesquise pelo código da turma..."
                   value={
                     (table.getColumn("id")?.getFilterValue() as number) ?? ""
                   }
@@ -362,7 +391,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="students">Alunos:</label>
                         <Select required>
-                          <SelectTrigger className="w-full" id="quantity_students" name="quantity_students">
+                          <SelectTrigger
+                            className="w-full"
+                            id="quantity_students"
+                            name="quantity_students"
+                          >
                             <SelectValue placeholder="Selecione os alunos" />
                           </SelectTrigger>
                           <SelectContent>
@@ -375,7 +408,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">Status:</label>
                         <Select required>
-                          <SelectTrigger onChange={(e) => setStatus(e.target.value)} className="w-full" id="status" name="status">
+                          <SelectTrigger
+                            onChange={(e) => setStatus(e.target.value)}
+                            className="w-full"
+                            id="status"
+                            name="status"
+                          >
                             <SelectValue placeholder="Selecione o status da turma" />
                           </SelectTrigger>
                           <SelectContent>
@@ -388,9 +426,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Body>
                   <Modal.Footer>
                     <Button className="text-center " type="submit">
-                      {
-                        loading ? <TbLoader3 /> : "Salvar"
-                      }
+                      {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
                     <Button color="gray" onClick={() => setOpenModal(false)}>
                       Fechar
@@ -422,7 +458,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {column.id}
+                        {column.id == "registration" && "Matrícula"}
+
+                        {column.id == "name" && "Nome"}
+
+                        {column.id == "responsible" && "Responsável"}
+
+                        {column.id == "class" && "Turma"}
+
+                        {column.id == "phone" && "Telefone"}
+
+                        {column.id == "status" && "Status"}
+
+                        {column.id == "id" && "Código"}
+                        {column.id == "description" && "Descrição"}
+                        {column.id == "quantity_students" && "Alunos"}
                       </DropdownMenuCheckboxItem>
                     );
                   })}

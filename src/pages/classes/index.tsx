@@ -53,7 +53,7 @@ const columns: ColumnDef<ClassesProps>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Id
+          Código
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -68,7 +68,7 @@ const columns: ColumnDef<ClassesProps>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Description
+          Descrição
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -83,7 +83,7 @@ const columns: ColumnDef<ClassesProps>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Quantity_students
+          Alunos
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -142,7 +142,7 @@ const Classes = () => {
   return (
     <main className="w-full">
       <section className="mt-10">
-        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Turmas<span className="text-sm mt-1">(3)</span></h1>
+        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Turmas<span className="text-sm mt-1">({data.length})</span></h1>
       </section>
 
       <div className="w-full mx-auto mt-10">
