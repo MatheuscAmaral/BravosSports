@@ -69,19 +69,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  
+
   const [loading, setLoading] = React.useState(false);
   const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [newData, setNewData] = React.useState([]);
   const [quantity_students, setQuantityStudents] = React.useState(1);
   const [name, setName] = React.useState("");
-  const [registration, setRegistration] = React.useState();
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
-  const [responsible, setResponsible] = React.useState();
-  const [classes, setClasses] = React.useState("");
+  const [responsible, setResponsible] = React.useState("1");
+  const [classes, setClasses] = React.useState("1");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState(1);
 
@@ -135,27 +135,26 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     e.preventDefault();
 
     const data = {
+      image: link,
       name: name,
-      registration: registration,
-      responsible: responsible, 
+      responsible: responsible,
       class: classes,
       phone: phone,
-      status: status
-    }
+      status: status,
+    };
 
     try {
       setLoading(true);
-      await api.post('/students', data);
+      await api.post("/students", data);
 
       toast.success("Aluno cadastrado com sucesso!");
       setOpenModal(false);
       reloadPage();
-    }
-
-    catch {
+      setLink("");
+    } catch {
       toast.error("Ocorreu um erro ao cadastrar o aluno!");
-    }      
-  }
+    }
+  };
 
   return (
     <main className="w-full">
@@ -192,24 +191,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <Input
                   placeholder="Nome do aluno..."
                   value={
-                    (table.getColumn("Nome")?.getFilterValue() as string) ?? ""
+                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
-                    table.getColumn("Nome")?.setFilterValue(event.target.value)
+                    table.getColumn("name")?.setFilterValue(event.target.value)
                   }
                 />
 
                 <Input
                   placeholder="Matrícula do aluno..."
                   value={
-                    (table
-                      .getColumn("Matrícula")
-                      ?.getFilterValue() as string) ?? ""
+                    (table.getColumn("id")?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
-                    table
-                      .getColumn("Matrícula")
-                      ?.setFilterValue(event.target.value)
+                    table.getColumn("id")?.setFilterValue(event.target.value)
                   }
                 />
 
@@ -218,7 +213,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
                   <SelectContent>
-                    { classesDisp.map((c) => {
+                    {classesDisp.map((c) => {
                       return (
                         <SelectItem key={c.id} value={String(c.id)}>
                           {c.description}
@@ -232,7 +227,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>Cadastro de aluno</Modal.Header>
                 <form onSubmit={createStudent}>
-                  <Modal.Body className="relative">
+                  <Modal.Body
+                    className="relative"
+                    style={{ maxHeight: "500px" }}
+                  >
                     <div className="space-y-6">
                       <UploadButton
                         uploader={uploader}
@@ -259,7 +257,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               <div className="flex flex-col gap-2 items-center justify-center ">
                                 <IoIosImages fontSize={40} />
                                 <p className="w-full">
-                                  Selecione ou arraste e solte uma imagem aqui.
+                                  Clique aqui para selecionar uma imagem.
                                 </p>
                               </div>
                             )}
@@ -278,6 +276,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         <label htmlFor="nome">Nome:</label>
                         <Input
                           id="nome"
+                          required
                           placeholder="Digite o nome do aluno..."
                           onChange={(e) => setName(e.target.value)}
                         />
@@ -285,11 +284,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Responsável:</label>
-                        <Select>
+                        <Select required>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione o responsável" />
                           </SelectTrigger>
-                          <SelectContent onChange={(e) => setResponsible(e.target.value)}>
+
+                          <SelectContent>
                             <SelectItem value="1">Ricardo Amaral</SelectItem>
                             <SelectItem value="2">Fernanda Amaral</SelectItem>
                           </SelectContent>
@@ -302,7 +302,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione a turma" />
                           </SelectTrigger>
-                          <SelectContent onChange={(e) => setClasses(e.target.value)}>
+                          <SelectContent
+                            onChange={(e) =>
+                              setClasses((e.target as HTMLSelectElement).value)
+                            }
+                          >
                             {classesDisp.map((c) => {
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
@@ -318,17 +322,25 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         <label htmlFor="nome">Telefone:</label>
                         <Input
                           id="nome"
+                          required
                           placeholder="Digite o telefone do responsável..."
+                          onChange={(e) => setPhone(e.target.value)}
                         />
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Status:</label>
-                        <Select>
+                        <Select required>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione o status" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent
+                            onChange={(e) =>
+                              setStatus(
+                                Number((e.target as HTMLSelectElement).value)
+                              )
+                            }
+                          >
                             <SelectItem value="0">Inativo</SelectItem>
                             <SelectItem value="1">Pendente</SelectItem>
                             <SelectItem value="2">Ativo</SelectItem>
@@ -354,10 +366,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <Input
                   placeholder="Pesquise pelo código da turma..."
                   value={
-                    (table.getColumn("id")?.getFilterValue() as number) ?? ""
+                    (table.getColumn("id")?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
-                    table.getColumn("id")?.setFilterValue(event.target.value)
+                    table
+                      .getColumn("id")
+                      ?.setFilterValue(String(event.target.value))
                   }
                 />
 
@@ -462,7 +476,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {column.id == "registration" && "Matrícula"}
+                        {column.id == "image" && "Foto"}
 
                         {column.id == "name" && "Nome"}
 
@@ -474,8 +488,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                         {column.id == "status" && "Status"}
 
-                        {column.id == "id" && "Código"}
+                        {route == "students"
+                          ? column.id == "id" && "Matrícula"
+                          : column.id == "id" && "Código"}
+
                         {column.id == "description" && "Descrição"}
+
                         {column.id == "quantity_students" && "Alunos"}
                       </DropdownMenuCheckboxItem>
                     );
@@ -505,7 +523,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       </section>
       <div className="border-2 rounded-lg bg-white">
         <Table>
-          <TableHeader>
+          <TableHeader style={{ position: "sticky", top: 0, zIndex: 1 }}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -523,7 +541,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody
+            style={{ maxHeight: "200px" }}
+            className=" overflow-y-auto"
+          >
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

@@ -18,7 +18,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 
 export interface StudentsProps {
   id: number;
-  registration: number;
+  image: string,
   name: string;
   responsible: number;
   class: number;
@@ -26,10 +26,10 @@ export interface StudentsProps {
   status: number;
 }
 
-interface ClassesProps {
-  id: string;
-  turma: string;
-}
+// interface ClassesProps {
+//   id: string;
+//   turma: string;
+// }
 
 export const columns: ColumnDef<StudentsProps>[] = [
   {
@@ -55,7 +55,20 @@ export const columns: ColumnDef<StudentsProps>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "registration",
+    accessorKey: "image",
+    header: () => {
+      return (
+        <Button
+          variant="ghost"
+        >
+          Foto
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div><img src={row.getValue("image")} className="w-12" style={{borderRadius: "100%"}} /></div>,
+  },
+  {
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button
@@ -67,7 +80,7 @@ export const columns: ColumnDef<StudentsProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("registration")}</div>,
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
   },
   {
     accessorKey: "name",
@@ -173,27 +186,30 @@ const Students = () => {
 
   useEffect(() => {
     const getStudents = async () => {
+     try {
       const response = await api.get('/students');
   
       setData(response.data)
+     }
+
+     catch {
+       toast.error('Ocorreu um erro ao buscar os alunos disponíveis!');
+     }
     }
 
-    const getClasses = async () => {
-      try {
-        const response = await api.get('/classes');
+    // const getClasses = async () => {
+    //   try {
+    //     const response = await api.get('/classes');
+    //   } catch {
+    //     toast.error('Ocorreu um erro ao buscar as turmas disponíveis!');
+    //   }
+    // }
   
-        setClasses(response.data);
-      } catch {
-        toast.error('Ocorreu um erro ao buscar as turmas disponíveis!');
-      }
-    }
-  
-    getClasses();
+    // getClasses();
     getStudents();
   }, [reloadPage]);
 
   const [data, setData] = useState<StudentsProps[]>([]);
-  const [classes, setClasses] = useState<ClassesProps[]>([]);
 
   
   return (
@@ -207,7 +223,7 @@ const Students = () => {
 
       <section className="w-full mx-auto mt-10">
         {/* @ts-ignore */}
-        <DataTable columns={columns} data={data} route={"students"} class />
+        <DataTable columns={columns} data={data} route={"students"}  />
       </section>
     </main>
   );  
