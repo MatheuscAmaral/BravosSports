@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "@/api";
 import toast from "react-hot-toast";
+import { ReloadContext } from "@/contexts/ReloadContext";
 
 export interface StudentsProps {
   id: number;
@@ -168,6 +169,8 @@ export const columns: ColumnDef<StudentsProps>[] = [
 ];
 
 const Students = () => {
+  const { reloadPage } = useContext(ReloadContext);
+
   useEffect(() => {
     const getStudents = async () => {
       const response = await api.get('/students');
@@ -187,7 +190,7 @@ const Students = () => {
   
     getClasses();
     getStudents();
-  }, []);
+  }, [reloadPage]);
 
   const [data, setData] = useState<StudentsProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);

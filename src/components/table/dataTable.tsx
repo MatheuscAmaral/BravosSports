@@ -51,9 +51,9 @@ const uploader = Uploader({
 
 const options = { multi: true };
 
-import { classes } from "@/pages/students";
 import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
+import { ReloadContext } from "@/contexts/ReloadContext";
 
 interface DataTableProps {
   data: [];
@@ -71,8 +71,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [link, setLink] = React.useState("");
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-
+  
   const [loading, setLoading] = React.useState(false);
+  const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [newData, setNewData] = React.useState([]);
   const [quantity_students, setQuantityStudents] = React.useState(1);
@@ -122,6 +123,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.success("Turma cadastrada com sucesso!");
       setNewData((allData) => ({ ...allData, data }));
       setOpenModal(false);
+      reloadPage();
     } catch {
       toast.error("Ocorreu um erro ao cadastrar a turma!");
     } finally {
@@ -146,6 +148,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       await api.post('/students', data);
 
       toast.success("Aluno cadastrado com sucesso!");
+      setOpenModal(false);
+      reloadPage();
     }
 
     catch {

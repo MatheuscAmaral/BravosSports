@@ -11,8 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "@/api";
+import { ReloadContext } from "@/contexts/ReloadContext";
+import { TbLoader3 } from "react-icons/tb";
+import toast from "react-hot-toast";
 
 export interface ClassesProps {
   id: number;
@@ -127,15 +130,29 @@ const columns: ColumnDef<ClassesProps>[] = [
 
 
 const Classes = () => {
+  const { reloadPage } = useContext(ReloadContext);
+  const [load, setLoad] = useState(false);
+
   useEffect(() => {
     const getClasses = async () => {
-      const response = await api.get("/classes");
+      try {
+        setLoad(true);
+        const response = await api.get("/classes");
   
-      setData(response.data);
+        setData(response.data);
+      }
+
+      catch {
+        toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+      }
+
+      finally {
+        setLoad(false);
+      }
     }
   
     getClasses();
-  }, []);
+  }, [reloadPage]);
 
   const [data, setData] = useState<ClassesProps[]>([]);
 
@@ -146,8 +163,16 @@ const Classes = () => {
       </section>
 
       <div className="w-full mx-auto mt-10">
-        {/*@ts-ignore */}
-        <DataTable columns={columns} data={data} route={"turmas"} />
+        {
+          load ? (
+              <div>
+                <TbLoader3 fontSize={23} className="animate-spin"/>
+              </div>
+          ) : (
+            //@ts-ignore       
+            <DataTable columns={columns} data={data} route={"turmas"} />
+          )
+        }
       </div>
     </main>
   );
