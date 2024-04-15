@@ -61,6 +61,13 @@ interface DataTableProps {
   route: string;
 }
 
+interface ResponsibleProps {
+  id: number,
+  name: string,
+  phone: string,
+  status: number
+}
+
 export function DataTable({ data, columns, route }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -77,16 +84,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [newData, setNewData] = React.useState([]);
-  const [quantity_students, setQuantityStudents] = React.useState(1);
+  const quantity_students = 0;
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
-  const [responsible, setResponsible] = React.useState("1");
+  const [responsible, setResponsible] = React.useState<ResponsibleProps[]>([]);
   const [classes, setClasses] = React.useState("1");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState(1);
 
   React.useEffect(() => {
     setNewData(data);
+    if (route == "students") {
+      getClasses();
+    }
   }, []);
 
   const table = useReactTable({
@@ -130,6 +140,38 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(false);
     }
   };
+
+  const getResponsibles = async () => {
+    try {
+      const response = await api.get("/responsibles");
+
+      setResponsible(response.data);
+    }
+
+    catch {
+      toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+    }
+  }
+
+  const getClasses = async () => {
+    try {
+      const response = await api.get("/classes");
+
+      setClassesDisp(response.data);
+    }
+
+    catch {
+      toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+    }
+  }
+
+  const openModals = async () => {
+    setOpenModal(true);
+
+    if (route == "students") {
+      await getResponsibles();
+    }
+  }
 
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,11 +256,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </SelectTrigger>
                   <SelectContent>
                     {classesDisp.map((c) => {
-                      return (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.description}
-                        </SelectItem>
-                      );
+                      if(c.status == 1) {
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      }
                     })}
                   </SelectContent>
                 </Select>
@@ -290,8 +334,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           </SelectTrigger>
 
                           <SelectContent>
-                            <SelectItem value="1">Ricardo Amaral</SelectItem>
-                            <SelectItem value="2">Fernanda Amaral</SelectItem>
+                            {
+                              responsible.map(r => {
+                                return (
+                                  <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
+                                )
+                              })
+                            }
                           </SelectContent>
                         </Select>
                       </div>
@@ -502,7 +551,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </DropdownMenu>
 
             <Button
-              onClick={() => setOpenModal(true)}
+              onClick={() => openModals()}
               className={`${
                 route != "students" ? "hidden" : "block"
               } w-full xl:max-w-32`}
@@ -511,7 +560,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </Button>
 
             <Button
-              onClick={() => setOpenModal(true)}
+              onClick={() => openModals()}
               className={`${
                 route != "turmas" ? "hidden" : "block"
               } w-full xl:max-w-32`}
