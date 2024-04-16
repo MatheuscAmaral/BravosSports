@@ -26,11 +26,6 @@ export interface StudentsProps {
   status: number;
 }
 
-interface ClassesProps {
-  id: string;
-  turma: string;
-}
-
 export const columns: ColumnDef<StudentsProps>[] = [
   {
     id: "select",

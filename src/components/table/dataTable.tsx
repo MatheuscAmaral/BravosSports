@@ -54,6 +54,7 @@ const options = { multi: true };
 import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import { StudentsProps } from "@/pages/students";
 
 interface DataTableProps {
   data: [];
@@ -87,10 +88,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const quantity_students = 0;
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
-  const [responsible, setResponsible] = React.useState<ResponsibleProps[]>([]);
+  const [responsible, setResponsible] = React.useState("");
+  const [category, setCategory] = React.useState("");
+  const [modality, setModality] = React.useState("");
+  const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
+  const [students, setStudents] = React.useState<StudentsProps[]>([]);
   const [classes, setClasses] = React.useState("1");
   const [phone, setPhone] = React.useState("");
-  const [status, setStatus] = React.useState(1);
+  const [status, setStatus] = React.useState("1");
 
   React.useEffect(() => {
     setNewData(data);
@@ -124,6 +129,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       description: description,
       quantity_students: quantity_students,
+      modality: modality,
+      category: category,
       status: status,
     };
 
@@ -145,7 +152,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const response = await api.get("/responsibles");
 
-      setResponsible(response.data);
+      setResponsibles(response.data);
     }
 
     catch {
@@ -164,12 +171,28 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
     }
   }
+  
+  const getStudents = async () => {
+    try {
+      const response = await api.get("/students");
+ 
+      setStudents(response.data);
+    }
+  
+    catch {
+      toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
+    }
+  }
 
   const openModals = async () => {
     setOpenModal(true);
 
     if (route == "students") {
       await getResponsibles();
+    }
+
+    if (route == "turmas") {
+      await getStudents();
     }
   }
 
@@ -250,7 +273,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select>
+                <Select onValueChange={(e) => setClasses(e)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
@@ -328,14 +351,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Responsável:</label>
-                        <Select required>
+                        <Select required onValueChange={(e) => setResponsible(e)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione o responsável" />
                           </SelectTrigger>
 
                           <SelectContent>
                             {
-                              responsible.map(r => {
+                              responsibles.map(r => {
                                 return (
                                   <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
                                 )
@@ -347,15 +370,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Turma:</label>
-                        <Select>
+                        <Select onValueChange={(e) => setClasses(e)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione a turma" />
                           </SelectTrigger>
-                          <SelectContent
-                            onChange={(e) =>
-                              setClasses((e.target as HTMLSelectElement).value)
-                            }
-                          >
+                          <SelectContent>
                             {classesDisp.map((c) => {
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
@@ -379,17 +398,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Status:</label>
-                        <Select required>
+                        <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione o status" />
                           </SelectTrigger>
-                          <SelectContent
-                            onChange={(e) =>
-                              setStatus(
-                                Number((e.target as HTMLSelectElement).value)
-                              )
-                            }
-                          >
+                          <SelectContent>
                             <SelectItem value="0">Inativo</SelectItem>
                             <SelectItem value="1">Pendente</SelectItem>
                             <SelectItem value="2">Ativo</SelectItem>
@@ -456,8 +469,44 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="students">Modalidade:</label>
+                        <Select required onValueChange={(e) => setModality(e)}>
+                          <SelectTrigger
+                            className="w-full"
+                            id="modality"
+                            name="modality"
+                          >
+                            <SelectValue placeholder="Selecione a modalidade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Futsal">Futsal</SelectItem>
+                            <SelectItem value="Handebol">Handebol</SelectItem>
+                            <SelectItem value="Vôlei">Vôlei</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="students">Categoria:</label>
+                        <Select required onValueChange={(e) => setCategory(e)}>
+                          <SelectTrigger
+                            className="w-full"
+                            id="category"
+                            name="category"
+                          >
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1° ao 3° ano</SelectItem>
+                            <SelectItem value="2">4° ao 6° ano</SelectItem>
+                            <SelectItem value="3">7° ao 9° ano</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="students">Alunos:</label>
-                        <Select required>
+                        <Select required onValueChange={(e) => (e)}>
                           <SelectTrigger
                             className="w-full"
                             id="quantity_students"
@@ -466,17 +515,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             <SelectValue placeholder="Selecione os alunos" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">Ricardo Amaral</SelectItem>
-                            <SelectItem value="2">Fernanda Amaral</SelectItem>
+                            {
+                              students.map(s => {
+                                return (
+                                  <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                                )
+                              })
+                            }
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">Status:</label>
-                        <Select required>
+                        <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger
-                            onChange={(e) => setStatus(e.target.value)}
                             className="w-full"
                             id="status"
                             name="status"
@@ -534,6 +587,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         {column.id == "class" && "Turma"}
 
                         {column.id == "phone" && "Telefone"}
+
+                        {column.id == "category" && "Categoria"}
+
+                        {column.id == "modality" && "Modalidade"}
 
                         {column.id == "status" && "Status"}
 

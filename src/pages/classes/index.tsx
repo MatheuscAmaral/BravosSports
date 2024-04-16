@@ -21,6 +21,8 @@ export interface ClassesProps {
   id: number;
   description: string;
   quantity_students: number;
+  modality: string,
+  category: string,
   status: number;
 }
 
@@ -77,6 +79,36 @@ const columns: ColumnDef<ClassesProps>[] = [
       );
     },
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
+  },
+   {
+    accessorKey: "modality",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Modalidade
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+  },
+   {
+    accessorKey: "category",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Categoria
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("category")}</div>,
   },
   {
     accessorKey: "quantity_students",
