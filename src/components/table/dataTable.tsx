@@ -62,11 +62,11 @@ interface DataTableProps {
   route: string;
 }
 
-interface ResponsibleProps {
-  id: number,
-  name: string,
-  phone: string,
-  status: number
+export interface ResponsibleProps {
+  id: number;
+  name: string;
+  phone: string;
+  status: number;
 }
 
 export function DataTable({ data, columns, route }: DataTableProps) {
@@ -81,6 +81,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
@@ -91,7 +92,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [responsible, setResponsible] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [modality, setModality] = React.useState("");
-  const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
+  const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>(
+    []
+  );
   const [students, setStudents] = React.useState<StudentsProps[]>([]);
   const [classes, setClasses] = React.useState("1");
   const [phone, setPhone] = React.useState("");
@@ -126,6 +129,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const createClasses = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (route == "studentsClass") {
+      return;
+    }
+
     const data = {
       description: description,
       quantity_students: quantity_students,
@@ -153,36 +160,30 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       const response = await api.get("/responsibles");
 
       setResponsibles(response.data);
-    }
-
-    catch {
+    } catch {
       toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
     }
-  }
+  };
 
   const getClasses = async () => {
     try {
       const response = await api.get("/classes");
 
       setClassesDisp(response.data);
-    }
-
-    catch {
+    } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
     }
-  }
-  
+  };
+
   const getStudents = async () => {
     try {
       const response = await api.get("/students");
- 
+
       setStudents(response.data);
-    }
-  
-    catch {
+    } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     }
-  }
+  };
 
   const openModals = async () => {
     setOpenModal(true);
@@ -194,10 +195,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "turmas") {
       await getStudents();
     }
-  }
+  };
+
+  const closeModal = () => {
+    setError(false);
+    setOpenModal(false);
+  };
 
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
 
     const data = {
       image: link,
@@ -207,6 +217,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       phone: phone,
       status: status,
     };
+
+    if (!link) {
+      toast("É necessário que o aluno possua uma foto cadastrada!", {
+        position: "top-right",
+        icon: "⚠️",
+      });
+
+      setError(true);
+
+      return;
+    }
 
     try {
       setLoading(true);
@@ -225,6 +246,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     <main className="w-full">
       <section
         className={`${
+          route == "studentsClass" ? "hidden" : 
           openFilter
             ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10"
             : "bg-white p-5 xl:p-0 xl:bg-gray-50"
@@ -279,7 +301,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </SelectTrigger>
                   <SelectContent>
                     {classesDisp.map((c) => {
-                      if(c.status == 1) {
+                      if (c.status == 1) {
                         return (
                           <SelectItem key={c.id} value={String(c.id)}>
                             {c.description}
@@ -291,7 +313,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Select>
               </div>
 
-              <Modal show={openModal} onClose={() => setOpenModal(false)}>
+              <Modal show={openModal} onClose={() => closeModal()}>
                 <Modal.Header>Cadastro de aluno</Modal.Header>
                 <form onSubmit={createStudent}>
                   <Modal.Body
@@ -310,7 +332,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         {({ onClick }) => (
                           <button
                             onClick={onClick}
-                            className="h-48 w-full border-dashed border-2 rounded-lg relative text-md font-medium text-gray-700"
+                            className={`h-48 w-full border-dashed ${
+                              error && !link && "border-red-500"
+                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                           >
                             {link ? (
                               <div className="flex justify-center">
@@ -351,19 +375,22 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Responsável:</label>
-                        <Select required onValueChange={(e) => setResponsible(e)}>
+                        <Select
+                          required
+                          onValueChange={(e) => setResponsible(e)}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecione o responsável" />
                           </SelectTrigger>
 
                           <SelectContent>
-                            {
-                              responsibles.map(r => {
-                                return (
-                                  <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
-                                )
-                              })
-                            }
+                            {responsibles.map((r) => {
+                              return (
+                                <SelectItem key={r.id} value={String(r.id)}>
+                                  {r.name}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -413,7 +440,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Body>
                   <Modal.Footer>
                     <Button type="submit">Salvar</Button>
-                    <Button color="gray" onClick={() => setOpenModal(false)}>
+                    <Button color="gray" onClick={() => closeModal()}>
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -469,7 +496,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="students">Modalidade:</label>
+                        <label htmlFor="modality">Modalidade:</label>
                         <Select required onValueChange={(e) => setModality(e)}>
                           <SelectTrigger
                             className="w-full"
@@ -558,54 +585,56 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           <div className="flex gap-5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild className="w-full xl:w-40">
-                <Button variant="outline" className="ml-auto">
-                  Colunas <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value: any) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {column.id == "image" && "Foto"}
+            {route != "studentsClass" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="w-full xl:w-40">
+                  <Button variant="outline" className="ml-auto">
+                    Colunas <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value: any) =>
+                            column.toggleVisibility(!!value)
+                          }
+                        >
+                          {column.id == "image" && "Foto"}
 
-                        {column.id == "name" && "Nome"}
+                          {column.id == "name" && "Nome"}
 
-                        {column.id == "responsible" && "Responsável"}
+                          {column.id == "responsible" && "Responsável"}
 
-                        {column.id == "class" && "Turma"}
+                          {column.id == "class" && "Turma"}
 
-                        {column.id == "phone" && "Telefone"}
+                          {column.id == "phone" && "Telefone"}
 
-                        {column.id == "category" && "Categoria"}
+                          {column.id == "category" && "Categoria"}
 
-                        {column.id == "modality" && "Modalidade"}
+                          {column.id == "modality" && "Modalidade"}
 
-                        {column.id == "status" && "Status"}
+                          {column.id == "status" && "Status"}
 
-                        {route == "students"
-                          ? column.id == "id" && "Matrícula"
-                          : column.id == "id" && "Código"}
+                          {route == "students"
+                            ? column.id == "id" && "Matrícula"
+                            : column.id == "id" && "Código"}
 
-                        {column.id == "description" && "Descrição"}
+                          {column.id == "description" && "Descrição"}
 
-                        {column.id == "quantity_students" && "Alunos"}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                          {column.id == "quantity_students" && "Alunos"}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             <Button
               onClick={() => openModals()}
@@ -627,9 +656,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           </div>
         </article>
       </section>
-      <div className="border-2 rounded-lg bg-white">
+      <div className={`${route != "studentsClass" ? "border-2 rounded-lg bg-white" : "border rounded-sm bg-white"}`}>
         <Table>
-          <TableHeader style={{ position: "sticky", top: 0, zIndex: 1 }}>
+          <TableHeader style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "white" }}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -656,6 +685,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  // className={`${row.original && row.original.status == 1 && "bg-yellow-400"}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

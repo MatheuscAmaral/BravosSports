@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import api from "@/api";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { TbLoader3 } from "react-icons/tb";
 import toast from "react-hot-toast";
+import { RowProps, modalContext } from "@/contexts/ModalsContext";
 
 export interface ClassesProps {
   id: number;
@@ -27,29 +28,29 @@ export interface ClassesProps {
 }
 
 
-const columns: ColumnDef<ClassesProps>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+const columns: ColumnDef<RowProps>[] = [
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() && "indeterminate")
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -108,7 +109,19 @@ const columns: ColumnDef<ClassesProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("category")}</div>,
+    cell: ({ row }) => <div>
+      {
+        row.getValue("category") == "1" && "1° ao 3° ano"
+      }
+
+      {
+        row.getValue("category") == "2" && "4° ao 6° ano"
+      }
+
+      {
+        row.getValue("category") == "3" && "7° ao 9° ano"
+      }
+    </div>,
   },
   {
     accessorKey: "quantity_students",
@@ -139,7 +152,13 @@ const columns: ColumnDef<ClassesProps>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: () => {
+    cell: ({ row }) => {
+      const { open } = useContext(modalContext);
+
+      const openModals = (data: RowProps[], title: string, type: string) => {  
+        open(data, title, type);
+      }
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -150,9 +169,8 @@ const columns: ColumnDef<ClassesProps>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem>Ver dados</DropdownMenuItem>
-            <DropdownMenuItem>Ver alunos</DropdownMenuItem>
-            <DropdownMenuItem>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModals([row.original], "Alunos da Turma", "studentsClass")}>Ver alunos</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModals([row.original], "Editar turma", "classes")}>Editar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
