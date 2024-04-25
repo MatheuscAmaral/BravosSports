@@ -32,6 +32,8 @@ import { ResponsibleProps } from "@/components/table/dataTable";
 import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
+import MaskedInput from "@/components/InputMask";
+import { TeachersProps } from "@/pages/teachers";
 
 export interface RowProps {
   id: number;
@@ -44,6 +46,7 @@ export interface RowProps {
   description: string;
   modality: string;
   category: string;
+  teacher_id: number;
 }
 
 const uploader = Uploader({
@@ -63,20 +66,20 @@ interface ChildrenProps {
 
 const columns: ColumnDef<RowProps>[] = [
   {
-   accessorKey: "image",
-   header: "Foto",
-   cell: ({ row }) => <div>
-     {
-       <img src={row.getValue("image")} className="w-12 rounded-lg"/>
-     }
-   </div>,
- },
+    accessorKey: "image",
+    header: "Foto",
+    cell: ({ row }) => (
+      <div>
+        {<img src={row.getValue("image")} className="w-12 rounded-lg" />}
+      </div>
+    ),
+  },
   {
     accessorKey: "name",
     header: "Nome",
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
-   {
+  {
     accessorKey: "id",
     header: "Matrícula",
     cell: ({ row }) => <div>{row.getValue("id")}</div>,
@@ -118,7 +121,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
   const [name, setName] = useState("");
+  const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
+  const [teachers, setTeachers] = useState<TeachersProps[]>([]);
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+  };
 
   const getData = async (row: RowProps[], type: string) => {
     setData(row);
@@ -137,6 +146,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setModality(String(row[0].modality));
       setCategory(row[0].category);
       setId(String(row[0].id));
+      setTeacher(String(row[0].teacher_id));
+    }
+
+    if (type == "teacher") {
+      setName(row[0].name);
     }
 
     if (type == "studentsClass") {
@@ -144,12 +158,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         const response = await api.get(`/students/turma/${row[0].id}`);
 
         setStudents(response.data);
-        setModalData(`Alunos ${row[0].description}`)
-      } catch (error) {
-        const errors = error;
-
-        console.log(errors);
-        // toast.error()
+        setModalData(`Alunos ${row[0].description}`);
+      } catch {
+        toast.error("Ocorreu um erro ao buscar os dados do aluno!");
       }
     }
 
@@ -176,6 +187,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
+  const getTeachers = async () => {
+    try {
+      const response = await api.get("/teachers");
+  
+      setTeachers(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
+    }  
+  }
+
   const open = async (row: RowProps[], data: string, type: string) => {
     setOpenModal(true);
     setModalData(data);
@@ -187,6 +208,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       await getClasses();
       await getResponsibles();
       setLoading(false);
+    }
+
+    if (type == "classes") {
+      await getTeachers();
     }
   };
 
@@ -202,6 +227,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setModality("");
     setCategory("");
     setId("");
+    handlePhoneChange("");
   };
 
   const editData = async (e: FormEvent) => {
@@ -231,10 +257,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
 
     if (type == "classes") {
+      console.log(id)
       data = {
         description: description,
         modality: modality,
         category: category,
+        teacher_id: teacher,
         status: status,
       };
     }
@@ -244,7 +272,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "students" && (await api.put(`/students/${id}`, data));
       type == "classes" && (await api.put(`/classes/${id}`, data));
 
-      toast.success(`${data && data.name} editado com sucesso!`);
+      toast.success(`${data && data.name || data?.description} editado com sucesso!`);
       setError(false);
       setOpenModal(false);
       reloadPage();
@@ -265,7 +293,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
             className="relative overflow-auto"
             style={{ maxHeight: "500px" }}
           >
-            <div className={`${ type != "studentsClass" && "space-y-6" }`}>
+            <div className={`${type != "studentsClass" && "space-y-6"}`}>
               {type == "students" && (
                 <UploadButton
                   uploader={uploader}
@@ -302,7 +330,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
               {type == "classes" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="description">Descrição:</label>
+                    <label htmlFor="description">
+                      Descrição: <span className="text-red-500">*</span>
+                    </label>
                     <Input
                       id="description"
                       name="description"
@@ -314,7 +344,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="modality">Modalidade:</label>
+                    <label htmlFor="modality">
+                      Modalidade: <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       required
                       onValueChange={(e) => setModality(e)}
@@ -336,7 +368,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="students">Categoria:</label>
+                    <label htmlFor="category">
+                      Categoria: <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       required
                       onValueChange={(e) => setCategory(e)}
@@ -356,6 +390,31 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="teacher">Professor:</label>
+                    <Select
+                      onValueChange={(e) => setTeacher(e)}
+                      defaultValue={teacher}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        id="teacher"
+                        name="teacher"
+                      >
+                        <SelectValue placeholder="Selecione o professor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teachers.map((t) => {
+                          return (
+                            <SelectItem value={String(t.id)}>
+                              {t.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
 
@@ -370,7 +429,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
               {type == "students" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="description">Nome:</label>
+                    <label htmlFor="description">
+                      Nome: <span className="text-red-500">*</span>
+                    </label>
                     <Input
                       id="nome"
                       name="nome"
@@ -382,13 +443,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="nome">Responsável:</label>
+                    <label htmlFor="responsible">
+                      Responsável: <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       required
                       onValueChange={(e) => setResponsible(e)}
                       defaultValue={responsible}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full" id="responsible">
                         <SelectValue placeholder="Selecione o responsável" />
                       </SelectTrigger>
 
@@ -405,12 +468,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="nome">Turma:</label>
+                    <label htmlFor="class">
+                      Turma: <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       onValueChange={(e) => setClasses(e)}
                       defaultValue={classes}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full" id="class">
                         <SelectValue placeholder="Selecione a turma" />
                       </SelectTrigger>
                       <SelectContent>
@@ -426,22 +491,23 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="nome">Telefone:</label>
-                    <Input
-                      id="nome"
-                      required
-                      placeholder="Digite o telefone do responsável..."
-                      onChange={(e) => setPhone(e.target.value)}
-                      value={phone}
-                    />
+                    <label htmlFor="nome">
+                      Telefone: <span className="text-red-500">*</span>
+                    </label>
+                    <MaskedInput value={phone} onChange={handlePhoneChange} />
                   </div>
                 </div>
               )}
 
               {type == "studentsClass" &&
                 (students.length > 0 ? (
-                  //@ts-ignore
-                  <DataTable columns={columns} data={students} route={"studentsClass"} />
+                  <DataTable
+                    //@ts-ignore
+                    columns={columns}
+                    //@ts-ignore
+                    data={students}
+                    route={"studentsClass"}
+                  />
                 ) : (
                   <div className="flex flex-col gap-3 justify-center items-center">
                     <MdContentPasteSearch fontSize={30} />
@@ -451,15 +517,39 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
                 ))}
 
-              {type != "studentsClass" && (
+              {type == "teacherClass" && (
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium"></div>
+              )}
+
+              {type == "teacher" && (
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                  <label htmlFor="nome">Status:</label>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="nome">
+                      Nome: <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="nome"
+                      name="nome"
+                      placeholder="Digite o nome do professor..."
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {type != "studentsClass" && type != "teacherClass" && (
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="status">
+                    Status: <span className="text-red-500">*</span>
+                  </label>
                   <Select
                     required
                     onValueChange={(e) => setStatus(e)}
                     defaultValue={status}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full" id="status">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -471,7 +561,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         </>
                       )}
 
-                      {type == "classes" && (
+                      {(type == "classes" || type == "teacher") && (
                         <>
                           <SelectItem value="0">Inativo</SelectItem>
                           <SelectItem value="1">Ativo</SelectItem>
@@ -484,13 +574,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            {
-              type != "studentsClass" && (
-                <Button className="text-center " type="submit">
-                  {loading ? <TbLoader3 /> : "Salvar"}
-                </Button>
-              )
-            }
+            {type != "studentsClass" && (
+              <Button className="text-center " type="submit">
+                {loading ? <TbLoader3 /> : "Salvar"}
+              </Button>
+            )}
             <Button color="gray" onClick={() => closeModal()}>
               Fechar
             </Button>

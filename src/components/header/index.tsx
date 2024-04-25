@@ -76,7 +76,7 @@ const Header = () => {
           </li>
 
           <li
-            onClick={() => navigateToRoute("/alunos")}
+            onClick={() => navigateToRoute("/professores")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
           >
             <PiChalkboardTeacherBold fontSize={27} />

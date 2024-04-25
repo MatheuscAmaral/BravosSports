@@ -55,6 +55,8 @@ import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { StudentsProps } from "@/pages/students";
+import MaskedInput from "../InputMask";
+import { TeachersProps } from "@/pages/teachers";
 
 interface DataTableProps {
   data: [];
@@ -99,13 +101,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [classes, setClasses] = React.useState("1");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
-
+  const [teacher, setTeacher] = React.useState("1");
+  const [teachers, setTeachers] = React.useState<TeachersProps[]>([]);
+  
   React.useEffect(() => {
     setNewData(data);
     if (route == "students") {
       getClasses();
     }
   }, []);
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+  };
 
   const table = useReactTable({
     data,
@@ -138,6 +146,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       quantity_students: quantity_students,
       modality: modality,
       category: category,
+      teacher_id: teacher,
       status: status,
     };
 
@@ -148,6 +157,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setNewData((allData) => ({ ...allData, data }));
       setOpenModal(false);
       reloadPage();
+      handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar a turma!");
     } finally {
@@ -174,6 +184,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
     }
   };
+  
+  const getTeachers = async () => {
+    try {
+      const response = await api.get("/teachers");
+      console.log(response.data)
+  
+      setTeachers(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
+    }  
+  }
 
   const getStudents = async () => {
     try {
@@ -194,12 +215,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     if (route == "turmas") {
       await getStudents();
+      await getTeachers();  
     }
   };
 
   const closeModal = () => {
     setError(false);
     setOpenModal(false);
+    handlePhoneChange("");
   };
 
   const createStudent = async (e: React.FormEvent) => {
@@ -364,7 +387,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       />
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Nome:</label>
+                        <label htmlFor="nome">Nome: <span className="text-red-500">*</span></label>
                         <Input
                           id="nome"
                           required
@@ -374,12 +397,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Responsável:</label>
+                        <label htmlFor="responsible">Responsável: <span className="text-red-500">*</span></label>
                         <Select
                           required
                           onValueChange={(e) => setResponsible(e)}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" id="responsible">
                             <SelectValue placeholder="Selecione o responsável" />
                           </SelectTrigger>
 
@@ -396,9 +419,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Turma:</label>
+                        <label htmlFor="class">Turma: <span className="text-red-500">*</span></label>
                         <Select onValueChange={(e) => setClasses(e)}>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" id="class">
                             <SelectValue placeholder="Selecione a turma" />
                           </SelectTrigger>
                           <SelectContent>
@@ -414,13 +437,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Telefone:</label>
-                        <Input
-                          id="nome"
-                          required
-                          placeholder="Digite o telefone do responsável..."
-                          onChange={(e) => setPhone(e.target.value)}
-                        />
+                        <label>Telefone: <span className="text-red-500">*</span></label>
+                        <MaskedInput value={phone} onChange={handlePhoneChange}/>
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -485,7 +503,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   <Modal.Body className="relative">
                     <div className="space-y-6">
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="description">Descrição:</label>
+                        <label htmlFor="description">Descrição: <span className="text-red-500">*</span></label>
                         <Input
                           id="description"
                           name="description"
@@ -496,7 +514,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="modality">Modalidade:</label>
+                        <label htmlFor="modality">Modalidade: <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setModality(e)}>
                           <SelectTrigger
                             className="w-full"
@@ -514,7 +532,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="students">Categoria:</label>
+                        <label htmlFor="students">Categoria: <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setCategory(e)}>
                           <SelectTrigger
                             className="w-full"
@@ -530,6 +548,31 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="teacher">Professor:</label>
+                    <Select
+                      onValueChange={(e) => setTeacher(e)}
+                      defaultValue={teacher}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        id="teacher"
+                        name="teacher"
+                      >
+                        <SelectValue placeholder="Selecione o professor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {
+                          teachers.map(t => {
+                            return (
+                              <SelectItem value={String(t.id)}>{t.name}</SelectItem>
+                            )
+                          })
+                        }
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                       {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="students">Alunos:</label>
@@ -554,7 +597,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="status">Status:</label>
+                        <label htmlFor="status">Status: <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger
                             className="w-full"
@@ -658,7 +701,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       </section>
       <div className={`${route != "studentsClass" ? "border-2 rounded-lg bg-white" : "border rounded-sm bg-white"}`}>
         <Table>
-          <TableHeader style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "white" }}>
+          <TableHeader style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "white" }} className="text-center">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -685,7 +728,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  // className={`${row.original && row.original.status == 1 && "bg-yellow-400"}`}
+                  className={`${route != "studentsClass" && "text-center"}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

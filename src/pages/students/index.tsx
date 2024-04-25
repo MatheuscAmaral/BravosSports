@@ -1,6 +1,5 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";  
 import {
   DropdownMenu,
   DropdownMenuContent,
