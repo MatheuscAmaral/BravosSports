@@ -26,30 +26,7 @@ export interface StudentsProps {
 }
 
 
-
 export const columns: ColumnDef<RowProps>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
   {
     accessorKey: "image",
     header: () => {
@@ -185,9 +162,14 @@ export const columns: ColumnDef<RowProps>[] = [
 ];
 
 const Students = () => {
-  const { reloadPage } = useContext(ReloadContext);
+  const { reloadPage, newStudents } = useContext(ReloadContext);
 
   useEffect(() => {
+    if (newStudents) {
+       setData(newStudents);
+       return;
+    }
+
     const getStudents = async () => {
       try {
         const response = await api.get("/students");

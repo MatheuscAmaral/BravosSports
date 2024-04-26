@@ -64,7 +64,7 @@ interface ChildrenProps {
   children: ReactNode;
 }
 
-const columns: ColumnDef<RowProps>[] = [
+const columnsStudentClass: ColumnDef<RowProps>[] = [
   {
     accessorKey: "image",
     header: "Foto",
@@ -99,6 +99,41 @@ const columns: ColumnDef<RowProps>[] = [
   },
 ];
 
+const columnsClass: ColumnDef<RowProps>[] = [
+  {
+    accessorKey: "id",
+    header: () => {
+      return "Código";
+    },
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
+  },
+  {
+    accessorKey: "description",
+    header: () => {
+      return "Descrição";
+    },
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+  },
+  {
+    accessorKey: "modality",
+    header: () => {
+      return "Modalidade";
+    },
+    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("status") == 0 && "Inativo"}
+
+        {row.getValue("status") == 1 && "Ativo"}
+      </div>
+    ),
+  },
+];
+
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
@@ -124,6 +159,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
+  const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -138,14 +174,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setResponsible(String(row[0].responsible));
       setClasses(String(row[0].class));
       setPhone(String(row[0].phone));
-      setId(String(row[0].id));
     }
 
     if (type == "classes") {
       setDescription(String(row[0].description));
       setModality(String(row[0].modality));
       setCategory(row[0].category);
-      setId(String(row[0].id));
       setTeacher(String(row[0].teacher_id));
     }
 
@@ -153,9 +187,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setName(row[0].name);
     }
 
+    if (type == "teacherClass") {
+      await getClassesOfTeacher(row[0].id);
+    }
+
     if (type == "studentsClass") {
       try {
-        const response = await api.get(`/students/turma/${row[0].id}`);
+        const response = await api.get(`/students/class/${row[0].id}`);
 
         setStudents(response.data);
         setModalData(`Alunos ${row[0].description}`);
@@ -165,6 +203,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
 
     setStatus(String(row[0].status));
+    setId(String(row[0].id));
   };
 
   const getResponsibles = async () => {
@@ -190,12 +229,22 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const getTeachers = async () => {
     try {
       const response = await api.get("/teachers");
-  
+
       setTeachers(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
-    }  
-  }
+    }
+  };
+
+  const getClassesOfTeacher = async (id: number) => {
+    try {
+      const response = await api.get(`/classes/teacher/${id}`);
+
+      setTeacherClass(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as turmas do professor!");
+    }
+  };
 
   const open = async (row: RowProps[], data: string, type: string) => {
     setOpenModal(true);
@@ -256,8 +305,26 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
+    if (type == "teacher") {
+      data = {
+        image: link,
+        name: name,
+        status: status,
+      };
+
+      if (!link) {
+        toast("É necessário que o professor possua uma foto cadastrada!", {
+          position: "top-right",
+          icon: "⚠️",
+        });
+
+        setError(true);
+
+        return;
+      }
+    }
+
     if (type == "classes") {
-      console.log(id)
       data = {
         description: description,
         modality: modality,
@@ -271,8 +338,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
       type == "classes" && (await api.put(`/classes/${id}`, data));
+      type == "teacher" && (await api.put(`/teachers/${id}`, data));
 
-      toast.success(`${data && data.name || data?.description} editado com sucesso!`);
+      toast.success(
+        `${(data && data.name) || data?.description} editado com sucesso!`
+      );
       setError(false);
       setOpenModal(false);
       reloadPage();
@@ -293,8 +363,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
             className="relative overflow-auto"
             style={{ maxHeight: "500px" }}
           >
-            <div className={`${type != "studentsClass" && "space-y-6"}`}>
-              {type == "students" && (
+            <div
+              className={`${
+                type != "studentsClass" && type != "teacherClass" && "space-y-6"
+              }`}
+            >
+              {(type == "students" || type == "teacher") && (
                 <UploadButton
                   uploader={uploader}
                   options={options}
@@ -418,14 +492,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              <FaTrash
-                fontSize={22}
-                onClick={() => setLink("")}
-                className={`${
-                  link ? "block" : "hidden"
-                } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
-              />
-
+              {type != "teacherClass" && (
+                <FaTrash
+                  fontSize={22}
+                  onClick={() => setLink("")}
+                  className={`${
+                    link ? "block" : "hidden"
+                  } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
+                />
+              )}
               {type == "students" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -503,7 +578,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 (students.length > 0 ? (
                   <DataTable
                     //@ts-ignore
-                    columns={columns}
+                    columns={columnsStudentClass}
                     //@ts-ignore
                     data={students}
                     route={"studentsClass"}
@@ -513,6 +588,24 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     <MdContentPasteSearch fontSize={30} />
                     <p className="text-md font-medium">
                       Nenhum aluno encontrado nessa turma!
+                    </p>
+                  </div>
+                ))}
+
+              {type == "teacherClass" &&
+                (teacherClass.length > 0 ? (
+                  <DataTable
+                    //@ts-ignore
+                    columns={columnsClass}
+                    //@ts-ignore
+                    data={teacherClass}
+                    route={"teacherClass"}
+                  />
+                ) : (
+                  <div className="flex flex-col gap-3 justify-center items-center">
+                    <MdContentPasteSearch fontSize={30} />
+                    <p className="text-md font-medium">
+                      Nenhuma turma encontrada para este professor!
                     </p>
                   </div>
                 ))}
@@ -574,7 +667,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            {type != "studentsClass" && (
+            {type != "studentsClass" && type != "teacherClass" && (
               <Button className="text-center " type="submit">
                 {loading ? <TbLoader3 /> : "Salvar"}
               </Button>

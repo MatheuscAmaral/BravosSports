@@ -28,29 +28,7 @@ export interface ClassesProps {
 }
 
 
-const columns: ColumnDef<RowProps>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
+export const columnsClass: ColumnDef<RowProps>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -220,7 +198,7 @@ const Classes = () => {
               </div>
           ) : (
             //@ts-ignore       
-            <DataTable columns={columns} data={data} route={"turmas"} />
+            <DataTable columns={columnsClass} data={data} route={"turmas"} />
           )
         }
       </div>

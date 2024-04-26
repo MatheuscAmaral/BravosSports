@@ -22,6 +22,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { MdDisplaySettings } from "react-icons/md";
 
 const Sidebar = () => {
   const [open, setOpen] = useState(0);
@@ -70,6 +71,16 @@ const Sidebar = () => {
         </ListItem>
 
         {/* @ts-ignore */}
+        <ListItem onClick={() => navigate("/professores")}>
+          {/* @ts-ignore */}
+          <ListItemPrefix>
+            <PiChalkboardTeacherBold fontSize={25} />
+          </ListItemPrefix>
+          {/* @ts-ignore */}
+          Professores
+        </ListItem>
+
+        {/* @ts-ignore */}
         <Accordion
           open={open === 2}
           icon={
@@ -90,11 +101,11 @@ const Sidebar = () => {
             >
               {/* @ts-ignore */}
               <ListItemPrefix>
-                <PiChalkboardTeacherBold fontSize={25} />
+                <MdDisplaySettings fontSize={25} />
               </ListItemPrefix>
               {/* @ts-ignore */}
               <Typography color="blue-gray" className="mr-auto">
-                Professores
+                Controle de alunos
               </Typography>
             </AccordionHeader>
           </ListItem>
