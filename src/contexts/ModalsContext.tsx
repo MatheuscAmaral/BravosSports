@@ -137,7 +137,7 @@ const columnsClass: ColumnDef<RowProps>[] = [
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
-  const { reloadPage } = useContext(ReloadContext);
+  const { filterStudentsByClass, reloadPage, filterId } = useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState("");
@@ -181,6 +181,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setModality(String(row[0].modality));
       setCategory(row[0].category);
       setTeacher(String(row[0].teacher_id));
+    }
+
+    if (type == "responsibles") {
+      setName(String(row[0].name));
+      setPhone(String(row[0].phone));
     }
 
     if (type == "teacher") {
@@ -334,18 +339,29 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       };
     }
 
+    if (type == "responsibles") {
+      data = {
+        name: name,
+        phone: phone,
+        status: status,
+      };
+    }
+
     try {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
       type == "classes" && (await api.put(`/classes/${id}`, data));
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
+      type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
 
       toast.success(
         `${(data && data.name) || data?.description} editado com sucesso!`
       );
+      
+      filterStudentsByClass(filterId);
+      reloadPage();
       setError(false);
       setOpenModal(false);
-      reloadPage();
     } catch {
       toast.error(`Ocorreu um erro ao editar os dados de ${data && data.name}`);
     } finally {
@@ -386,7 +402,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     >
                       {link ? (
                         <div className="flex justify-center">
-                          <img src={link} className="w-32" alt="foto_aluno" />
+                          <img src={link} className="w-32" alt="foto" />
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2 items-center justify-center ">
@@ -399,6 +415,34 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </button>
                   )}
                 </UploadButton>
+              )}
+
+              {type == "responsibles" && (
+                <>
+                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="name">
+                          Nome: <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          placeholder="Digite o nome do responsável..."
+                          onChange={(e) => setName(e.target.value)}
+                          value={name}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="phone">
+                          Telefone: <span className="text-red-500">*</span>
+                        </label>
+                        <MaskedInput
+                          value={phone}
+                          onChange={handlePhoneChange}
+                        />
+                      </div>
+                </>
               )}
 
               {type == "classes" && (
@@ -501,6 +545,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
                 />
               )}
+
               {type == "students" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -655,6 +700,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       )}
 
                       {(type == "classes" || type == "teacher") && (
+                        <>
+                          <SelectItem value="0">Inativo</SelectItem>
+                          <SelectItem value="1">Ativo</SelectItem>
+                        </>
+                      )}
+
+                      {type == "responsibles" && (
                         <>
                           <SelectItem value="0">Inativo</SelectItem>
                           <SelectItem value="1">Ativo</SelectItem>

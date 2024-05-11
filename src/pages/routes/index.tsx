@@ -9,49 +9,100 @@ import ControllStudents from "../portaria/students";
 import Settings from "../settings";
 import Classes from "../classes";
 import Teachers from "../teachers";
+import Auth from "../auth";
+import PrivateRoute from "./PrivateRoute";
+import Responsibles from "../responsibles";
 
 const router = createBrowserRouter([
-    {
-        element: <Layout/>,
-        children: [
-            {
-                path: "/",
-                element: <Home/>
-            }, 
-            {
-                path: "/alunos",
-                element: <Students/>
-            }, 
-            {
-                path: "/buscar",
-                element: <GetClass/>
-            }, 
-            {
-                path: "/professores",
-                element: <Teachers/>
-            }, 
-            {
-                path: "/chamada",
-                element: <Call/>
-            }, 
-            {
-                path: "/controle/alunos",
-                element: <ControllStudents/>
-            },
-            {
-                path: "/controle/chamada",
-                element: <ControllCall/>
-            },
-            {
-                path: "/configuracoes",
-                element: <Settings/>
-            }, 
-            {
-                path: "/turmas",
-                element: <Classes/>
-            }
-        ]
-    }
+  {
+    element: <Layout />,
+    children: [
+      {
+        path: "/",
+        element: (
+          <PrivateRoute>
+            <Home />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/alunos",
+        element: (
+          <PrivateRoute>
+            <Students />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/buscar",
+        element: (
+          <PrivateRoute>
+            <GetClass />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/professores",
+        element: (
+          <PrivateRoute>
+            <Teachers />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/responsaveis",
+        element: (
+          <PrivateRoute>
+            <Responsibles />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/chamada",
+        element: (
+          <PrivateRoute>
+            <Call />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/controle/alunos",
+        element: (
+          <PrivateRoute>
+            <ControllStudents />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/controle/chamada",
+        element: (
+          <PrivateRoute>
+            <ControllCall />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/configuracoes",
+        element: (
+          <PrivateRoute>
+            <Settings />,
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/turmas",
+        element: (
+          <PrivateRoute>
+            <Classes />,
+          </PrivateRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Auth />,
+  },
 ]);
 
 export default router;

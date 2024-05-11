@@ -1,6 +1,7 @@
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useContext, useState } from "react";
 import logo from "../../assets/bravosLogoBlack.png";
 import { BiSolidBusSchool } from "react-icons/bi";
+import { IoLogOutOutline } from "react-icons/io5";
 import {
   Card,
   Typography,
@@ -23,13 +24,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { MdDisplaySettings } from "react-icons/md";
+import { AuthContext, UserProps } from "@/contexts/AuthContext";
+import { FaUserAlt, FaHome, FaUserSecret } from "react-icons/fa";
 
 const Sidebar = () => {
   const [open, setOpen] = useState(0);
   const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
 
   const handleOpen = (value: SetStateAction<number>) => {
     setOpen(open === value ? 0 : value);
+  };
+
+  const LogOut = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -39,8 +48,7 @@ const Sidebar = () => {
         <img
           src={logo}
           alt="brand"
-          className="h-16 cursor-pointer"
-          onClick={() => navigate("/")}
+          className="h-16"
         />
       </div>
       <div className="p-2">
@@ -52,34 +60,60 @@ const Sidebar = () => {
       </div>
       {/* @ts-ignore */}
       <List>
-        {/* @ts-ignore */}
-        <ListItem onClick={() => navigate("/alunos")}>
-          {/* @ts-ignore */}
-          <ListItemPrefix>
-            <FaUsers fontSize={24} />
-          </ListItemPrefix>
-          Alunos
-        </ListItem>
+         {/* @ts-ignore */}
+          <ListItem onClick={() => navigate("/")}>
+            {/* @ts-ignore */}
+            <ListItemPrefix>
+              <FaHome fontSize={24} />
+            </ListItemPrefix>
+            Home
+          </ListItem>
+        {user && ((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
+          /* @ts-ignore */
+          <ListItem onClick={() => navigate("/alunos")}>
+            {/* @ts-ignore */}
+            <ListItemPrefix>
+              <FaUsers fontSize={24} />
+            </ListItemPrefix>
+            Alunos
+          </ListItem>
+        )}
 
-        {/* @ts-ignore */}
-        <ListItem onClick={() => navigate("/turmas")}>
-          {/* @ts-ignore */}
-          <ListItemPrefix>
-            <BiSolidBusSchool fontSize={24} />
-          </ListItemPrefix>
-          Turmas
-        </ListItem>
+        {user && ((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
+          /* @ts-ignore */
+          <ListItem onClick={() => navigate("/turmas")}>
+            {/* @ts-ignore */}
+            <ListItemPrefix>
+              <BiSolidBusSchool fontSize={24} />
+            </ListItemPrefix>
+            Turmas
+          </ListItem>
+        )}
 
-        {/* @ts-ignore */}
-        <ListItem onClick={() => navigate("/professores")}>
-          {/* @ts-ignore */}
-          <ListItemPrefix>
-            <PiChalkboardTeacherBold fontSize={25} />
-          </ListItemPrefix>
-          {/* @ts-ignore */}
-          Professores
-        </ListItem>
 
+        {user && ((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
+          /* @ts-ignore */
+          <ListItem onClick={() => navigate("/professores")}>
+            {/* @ts-ignore */}
+            <ListItemPrefix>
+              <PiChalkboardTeacherBold fontSize={25} />
+            </ListItemPrefix>
+            {/* @ts-ignore */}
+            Professores
+          </ListItem>    
+        )}
+
+        {user && ((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
+          /* @ts-ignore */
+          <ListItem onClick={() => navigate("/responsaveis")}>
+            {/* @ts-ignore */}
+            <ListItemPrefix>
+              <FaUserSecret fontSize={22} />
+            </ListItemPrefix>
+            Responsáveis
+          </ListItem>
+        )}
+        
         {/* @ts-ignore */}
         <Accordion
           open={open === 2}
@@ -187,6 +221,19 @@ const Sidebar = () => {
         </Accordion>
 
         <hr className="my-2 border-blue-gray-50" />
+
+        <div className="flex justify-between gap-4 p-3 items-center">
+          <div className="flex gap-4 items-center">
+            <FaUserAlt fontSize={20} />
+            <p style={{ fontSize: 15 }}>{(user as unknown as UserProps).name}</p>
+          </div>
+
+          <IoLogOutOutline
+            onClick={LogOut}
+            fontSize={26}
+            className="cursor-pointer ml-5"
+          />
+        </div>
       </List>
     </Card>
   );

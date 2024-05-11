@@ -85,7 +85,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const { reloadPage } = React.useContext(ReloadContext);
+  const { reloadPage, verifyUserCreate } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [newData, setNewData] = React.useState([]);
   const quantity_students = 0;
@@ -98,7 +98,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     []
   );
   const [students, setStudents] = React.useState<StudentsProps[]>([]);
-  const [classes, setClasses] = React.useState("0");
+  const [classes, setClasses] = React.useState("");
+  const [classesFilter, setClassesFilter] = React.useState("0");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
   const [teacher, setTeacher] = React.useState("1");
@@ -137,8 +138,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
  if (route == "students") {
   React.useEffect(() => {
-    filterStudentsByClass(Number(classes));
-  }, [classes]);
+    filterStudentsByClass(Number(classesFilter));
+  }, [classesFilter]);
  }
 
   const createClasses = async (e: React.FormEvent) => {
@@ -167,6 +168,34 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar a turma!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createResponsibles = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
+
+    const data = {
+      name: name,
+      phone: phone,
+      status: status,
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/responsibles", data);
+      toast.success(`${name} cadastrada com sucesso!`);
+      setNewData((allData) => ({ ...allData, data }));
+      setOpenModal(false);
+      reloadPage();
+      handlePhoneChange("");
+    } catch {
+      toast.error("Ocorreu um erro ao cadastrar o responsável!");
     } finally {
       setLoading(false);
     }
@@ -271,6 +300,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setOpenModal(false);
       reloadPage();
       setLink("");
+      verifyUserCreate(true);
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o aluno!");
     }
@@ -325,7 +355,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         } pt-5 mb-10 border xl:border-0 rounded-lg transition-all`}
       >
         <div
-          className={`flex xl:hidden justify-between items-center cursor-pointer`}
+          className={`flex xl:hidden justify-between  cursor-pointer`}
           onClick={() => setOpenFilter(!openFilter)}
         >
           <h3 className="text-lg text-gray-700 font-bold">Filtros</h3>
@@ -398,7 +428,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                                 <img
                                   src={link}
                                   className="w-32"
-                                  alt="foto_aluno"
+                                  alt="foto_professor"
                                 />
                               </div>
                             ) : (
@@ -481,7 +511,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select onValueChange={(e) => setClasses(e)}>
+                <Select onValueChange={(e) => setClassesFilter(e)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
@@ -640,6 +670,97 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </Modal>
             </>
           )}
+
+        {route == "responsibles" && (
+          <>
+              <div className={`flex justify-center w-full gap-4`}>
+                <Input
+                  placeholder="Pesquise pelo código da responsável..."
+                  value={
+                    (table.getColumn("id")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table
+                      .getColumn("id")
+                      ?.setFilterValue(String(event.target.value))
+                  }
+                />
+
+                <Input
+                  placeholder="Pesquise pelo nome do responsável..."
+                  value={
+                    (table
+                      .getColumn("name")
+                      ?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table
+                      .getColumn("name")
+                      ?.setFilterValue(event.target.value)
+                  }
+                />
+              </div>
+
+              <Modal show={openModal} onClose={() => setOpenModal(false)}>
+                <Modal.Header>Cadastro de responsáveis</Modal.Header>
+                <form onSubmit={(e) => createResponsibles(e)}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="name">
+                          Nome: <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          placeholder="Digite o nome do responsável..."
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="phone">
+                          Telefone: <span className="text-red-500">*</span>
+                        </label>
+                        <MaskedInput
+                          value={phone}
+                          onChange={handlePhoneChange}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">
+                          Status: <span className="text-red-500">*</span>
+                        </label>
+                        <Select required onValueChange={(e) => setStatus(e)}>
+                          <SelectTrigger
+                            className="w-full"
+                            id="status"
+                            name="status"
+                          >
+                            <SelectValue placeholder="Selecione o status da turma" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">Inativo</SelectItem>
+                            <SelectItem value="1">Ativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button className="text-center " type="submit">
+                      {loading ? <TbLoader3 /> : "Salvar"}
+                    </Button>
+                    <Button color="gray" onClick={() => setOpenModal(false)}>
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
+        )}
 
           {route == "turmas" && (
             <>
@@ -887,6 +1008,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               Cadastrar professor
             </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
+                route != "responsibles" ? "hidden" : "block"
+              } w-full xl:max-w-44`}
+            >
+              Cadastrar responsável
+            </Button>
           </div>
         </article>
       </section>
@@ -936,7 +1066,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   className={`${
                     (route != "studentsClass" && route != "teacherClass") &&
                     route != "teachers" &&
-                    "text-center"
+                    "text-start"
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (

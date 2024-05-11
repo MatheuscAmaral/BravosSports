@@ -1,9 +1,17 @@
 import { ReactNode, createContext, useState } from "react";
 
 interface UserDataProps {
-    user: string,
-    authUser: (user: string) => void,
+    user: UserProps[],
+    authUser: (user: UserProps[]) => void,
     logout: () => void,
+}
+
+export interface UserProps {
+    id: number;
+    name: string;
+    level: number;
+    user: string;
+    email: string;
 }
 
 interface ChildrenProps {
@@ -13,18 +21,20 @@ interface ChildrenProps {
 export const AuthContext = createContext({} as UserDataProps);
 
 const AuthProvider = ({children} : ChildrenProps) => {
-    const [user, setUser] = useState<string>("");
+    const [user, setUser] = useState<UserProps[]>([]);
 
-    const authUser = (user: string) => {
+    const authUser = (user: UserProps[]) => {
         setUser(user);
     }
     
     const logout = () => {
-        setUser("");
+        setUser([]);
+        localStorage.removeItem("@bravosSports:user");
+        localStorage.removeItem("@bravosSports:lastVisitedRoute");
     }
 
     return (
-        <AuthContext.Provider value={{user, authUser, logout}}>
+        <AuthContext.Provider value={{ user, authUser, logout }}>
             {children}
         </AuthContext.Provider>
     )

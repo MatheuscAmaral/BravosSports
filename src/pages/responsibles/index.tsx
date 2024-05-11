@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/table/dataTable";
+import { DataTable, ResponsibleProps } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -12,36 +12,11 @@ import { Button } from "@/components/ui/button";
 import { useContext, useEffect, useState } from "react";
 import api from "@/api";
 import toast from "react-hot-toast";
-import { ReloadContext } from "@/contexts/ReloadContext";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
-
-export interface StudentsProps {
-  id: number;
-  image: string;
-  name: string;
-  responsible: number;
-  class: number;
-  phone: string;
-  status: number;
-}
+import { ReloadContext } from "@/contexts/ReloadContext";
 
 
 export const columns: ColumnDef<RowProps>[] = [
-  {
-    accessorKey: "image",
-    header: () => {
-      return <Button variant="ghost">Foto</Button>;
-    },
-    cell: ({ row }) => (
-      <div>
-        <img
-          src={row.getValue("image")}
-          className="w-12"
-          style={{ borderRadius: "100%" }}
-        />
-      </div>
-    ),
-  },
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -50,7 +25,7 @@ export const columns: ColumnDef<RowProps>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Matrícula
+          Código
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -71,36 +46,6 @@ export const columns: ColumnDef<RowProps>[] = [
       );
     },
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "responsible",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Responsável
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("responsible")}</div>,
-  },
-  {
-    accessorKey: "class",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Turma
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("class")}</div>,
   },
   {
     accessorKey: "phone",
@@ -124,9 +69,7 @@ export const columns: ColumnDef<RowProps>[] = [
       <div className="capitalize">
         {row.getValue("status") == 0 && "Inativo"}
 
-        {row.getValue("status") == 1 && "Pendente"}
-
-        {row.getValue("status") == 2 && "Ativo"}
+        {row.getValue("status") == 1 && "Ativo"}
       </div>
     ),
   },
@@ -137,7 +80,7 @@ export const columns: ColumnDef<RowProps>[] = [
       const { open } = useContext(modalContext);
 
       const openModals = (data: RowProps[]) => {
-        open(data, "Editar aluno", "students");
+        open(data, "Editar responsável", "responsibles");
       }
 
       return (
@@ -161,43 +104,40 @@ export const columns: ColumnDef<RowProps>[] = [
   },
 ];
 
-const Students = () => {
-  const { reloadPage, newStudents, createdUser } = useContext(ReloadContext);
+const Responsibles = () => {
+  const [data, setData] = useState<ResponsibleProps[]>([]);
+  const { reloadPage } = useContext(ReloadContext);
 
   useEffect(() => {
-    const getStudents = async () => {
-      try {
-        const response = await api.get("/students");
-        
-        setData(response.data);
-        
-        if (newStudents && !createdUser) {
-          setData(newStudents);
-        }
-      } catch {
-        toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
-      }
-    };
-    
-    getStudents();
-  }, [reloadPage, createdUser]);
+    const getResponsibles = async () => {
+       try {
+        const response = await api.get("/responsibles");
 
-  const [data, setData] = useState<StudentsProps[]>([]);
+        setData(response.data);
+       }
+
+       catch {
+        toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+       }
+    }
+
+    getResponsibles();
+  }, [reloadPage]);
 
   return (
     <main className="w-full">
       <section className="mt-10">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
-          Alunos <span className="text-sm mt-1">({data.length})</span>
+          Responsáveis <span className="text-sm mt-1">({data.length})</span>
         </h1>
       </section>
 
       <section className="w-full mx-auto mt-10">
         {/* @ts-ignore */}
-        <DataTable columns={columns} data={data} route={"students"} />
+        <DataTable columns={columns} data={data} route={"responsibles"} />
       </section>
     </main>
   );
 };
 
-export default Students;
+export default Responsibles;
