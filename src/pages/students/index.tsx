@@ -29,11 +29,9 @@ export interface StudentsProps {
 export const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "image",
-    header: () => {
-      return <Button variant="ghost">Foto</Button>;
-    },
+    header: "Foto",
     cell: ({ row }) => (
-      <div>
+      <div className="flex justify-center">
         <img
           src={row.getValue("image")}
           className="w-12"
@@ -132,6 +130,7 @@ export const columns: ColumnDef<RowProps>[] = [
   },
   {
     id: "actions",
+    header: "Ações",
     enableHiding: false,
     cell: ({ row }) => {
       const { open } = useContext(modalContext);

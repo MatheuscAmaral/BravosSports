@@ -17,9 +17,12 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 
-export interface ClassesProps {
+export interface SportsProps {
   id: number;
   description: string;
+  quantity_students: number;
+  modality: string,
+  class: number,
   status: number;
 }
 
@@ -55,6 +58,38 @@ export const columnsClass: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
+    accessorKey: "modality",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Modalidade
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+  },
+   {
+    accessorKey: "class",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Turma
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>
+      {row.getValue("class")}
+    </div>,
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
@@ -86,7 +121,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => openModals([row.original], "Alunos da Turma", "studentsClass")}>Ver alunos</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openModals([row.original], "Editar turma", "classes")}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModals([row.original], "Editar esportes", "esportes")}>Editar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -95,7 +130,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 ];
 
 
-const Classes = () => {
+const Sports = () => {
   const { reloadPage } = useContext(ReloadContext);
   const [load, setLoad] = useState(false);
 
@@ -103,13 +138,13 @@ const Classes = () => {
     const getClasses = async () => {
       try {
         setLoad(true);
-        const response = await api.get("/classes");
+        const response = await api.get("/sports");
   
         setData(response.data);
       }
 
       catch {
-        toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+        toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");
       }
 
       finally {
@@ -120,22 +155,22 @@ const Classes = () => {
     getClasses();
   }, [reloadPage]);
 
-  const [data, setData] = useState<ClassesProps[]>([]);
+  const [data, setData] = useState<SportsProps[]>([]);
 
   return (
     <main className="w-full">
       <section className="mt-10">
-        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Turmas<span className="text-sm mt-1">({data.length})</span></h1>
+        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Equipes<span className="text-sm mt-1">({data.length})</span></h1>
       </section>
 
       <div className="w-full mx-auto mt-10">
         {
           //@ts-ignore       
-          <DataTable columns={columnsClass} data={data} route={"turmas"} />
+          <DataTable columns={columnsClass} data={data} route={"esportes"} />
         }
       </div>
     </main>
   );
 };
 
-export default Classes;
+export default Sports;

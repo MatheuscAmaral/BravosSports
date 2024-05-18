@@ -12,6 +12,7 @@ import Teachers from "../teachers";
 import Auth from "../auth";
 import PrivateRoute from "./PrivateRoute";
 import Responsibles from "../responsibles";
+import Sports from "../teams";
 
 const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ const router = createBrowserRouter([
         path: "/",
         element: (
           <PrivateRoute>
-            <Home />,
+            <Home />
           </PrivateRoute>
         ),
       },
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
         path: "/buscar",
         element: (
           <PrivateRoute>
-            <GetClass />,
+            <GetClass />
           </PrivateRoute>
         ),
       },
@@ -45,7 +46,7 @@ const router = createBrowserRouter([
         path: "/professores",
         element: (
           <PrivateRoute>
-            <Teachers />,
+            <Teachers />
           </PrivateRoute>
         ),
       },
@@ -61,7 +62,7 @@ const router = createBrowserRouter([
         path: "/chamada",
         element: (
           <PrivateRoute>
-            <Call />,
+            <Call />
           </PrivateRoute>
         ),
       },
@@ -69,7 +70,7 @@ const router = createBrowserRouter([
         path: "/controle/alunos",
         element: (
           <PrivateRoute>
-            <ControllStudents />,
+            <ControllStudents />
           </PrivateRoute>
         ),
       },
@@ -77,7 +78,7 @@ const router = createBrowserRouter([
         path: "/controle/chamada",
         element: (
           <PrivateRoute>
-            <ControllCall />,
+            <ControllCall />
           </PrivateRoute>
         ),
       },
@@ -85,7 +86,7 @@ const router = createBrowserRouter([
         path: "/configuracoes",
         element: (
           <PrivateRoute>
-            <Settings />,
+            <Settings />
           </PrivateRoute>
         ),
       },
@@ -93,7 +94,15 @@ const router = createBrowserRouter([
         path: "/turmas",
         element: (
           <PrivateRoute>
-            <Classes />,
+            <Classes />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/equipes",
+        element: (
+          <PrivateRoute>
+            <Sports />
           </PrivateRoute>
         ),
       },

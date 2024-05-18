@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/bravosLogoBlack.png";
-import { FaHome, FaUserAlt, FaUserSecret } from "react-icons/fa";
+import { FaClipboardList, FaHome, FaUserAlt, FaUserSecret } from "react-icons/fa";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { FaSchoolLock, FaUsers } from "react-icons/fa6";
@@ -107,12 +107,20 @@ const Header = () => {
               </li>
           )}
 
-          <li
+          {/* <li
             onClick={() => navigateToRoute("/controle/alunos")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
           >
             <FaSchoolLock fontSize={25} />
             <p className="text-lg">Controle de acesso</p>
+          </li> */}
+
+          <li
+            onClick={() => navigateToRoute("/chamada")}
+            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+          >
+            <FaClipboardList fontSize={25} />
+            <p className="text-lg">Chamada</p>
           </li>
 
           <hr />

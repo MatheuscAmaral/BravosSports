@@ -23,11 +23,9 @@ export interface TeachersProps {
 export const columnsProf: ColumnDef<RowProps>[] = [
   {
     accessorKey: "image",
-    header: () => {
-      return <Button variant="ghost">Foto</Button>;
-    },
+    header: "Foto",
     cell: ({ row }) => (
-      <div>
+      <div className="flex justify-center">
         <img
           src={row.getValue("image")}
           className="w-12"

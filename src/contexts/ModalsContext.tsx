@@ -34,6 +34,7 @@ import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
 import { TeachersProps } from "@/pages/teachers";
+import { UserProps } from "./AuthContext";
 
 export interface RowProps {
   id: number;
@@ -47,6 +48,8 @@ export interface RowProps {
   modality: string;
   category: string;
   teacher_id: number;
+  userId: string;
+  team: string;
 }
 
 const uploader = Uploader({
@@ -69,7 +72,7 @@ const columnsStudentClass: ColumnDef<RowProps>[] = [
     accessorKey: "image",
     header: "Foto",
     cell: ({ row }) => (
-      <div>
+      <div className="flex justify-center">
         {<img src={row.getValue("image")} className="w-12 rounded-lg" />}
       </div>
     ),
@@ -137,7 +140,8 @@ const columnsClass: ColumnDef<RowProps>[] = [
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
-  const { filterStudentsByClass, reloadPage, filterId } = useContext(ReloadContext);
+  const { filterStudentsByClass, reloadPage, filterId } =
+    useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState("");
@@ -156,10 +160,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
   const [name, setName] = useState("");
+  const [team, setTeam] = useState("");
+  const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
+  const [user, setUser] = useState("");
+  const [users, setUsers] = useState<UserProps[]>([]);
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -173,14 +181,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setName(String(row[0].name));
       setResponsible(String(row[0].responsible));
       setClasses(String(row[0].class));
+      setTeam(String(row[0].team));
+      console.log(row[0].team)
       setPhone(String(row[0].phone));
     }
 
     if (type == "classes") {
       setDescription(String(row[0].description));
+    }
+
+    if (type == "esportes") {
+      setDescription(String(row[0].description));
       setModality(String(row[0].modality));
-      setCategory(row[0].category);
       setTeacher(String(row[0].teacher_id));
+      setClasses(String(row[0].class));
+      setId(String(row[0].id));
     }
 
     if (type == "responsibles") {
@@ -190,6 +205,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "teacher") {
       setName(row[0].name);
+      setUser(row[0].userId);
     }
 
     if (type == "teacherClass") {
@@ -221,6 +237,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
+  const getUsers = async () => {
+    try {
+      const response = await api.get("/users/level/2");
+
+      setUsers(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os usuários disponíveis!");
+    }
+  };
+
   const getClasses = async () => {
     try {
       const response = await api.get("/classes");
@@ -241,9 +267,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
+  const getTeams = async () => {
+    try {
+      const response = await api.get("/sports");
+
+      setTeamsDisp(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
+    }
+  };
+
   const getClassesOfTeacher = async (id: number) => {
     try {
-      const response = await api.get(`/classes/teacher/${id}`);
+      const response = await api.get(`/sports/teacher/${id}`);
 
       setTeacherClass(response.data);
     } catch {
@@ -261,11 +297,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setLoading(true);
       await getClasses();
       await getResponsibles();
+      await getTeams();
       setLoading(false);
     }
 
     if (type == "classes") {
       await getTeachers();
+    }
+
+    if (type == "esportes") {
+      await getTeachers();
+      await getClasses();
+    }
+
+    if (type == "teacher") {
+      await getUsers();
     }
   };
 
@@ -281,6 +327,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setModality("");
     setCategory("");
     setId("");
+    setUser("");
     handlePhoneChange("");
   };
 
@@ -294,6 +341,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         name: name,
         responsible: responsible,
         class: classes,
+        team: team,
         phone: phone,
         status: status,
       };
@@ -314,6 +362,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       data = {
         image: link,
         name: name,
+        userId: user,
         status: status,
       };
 
@@ -332,8 +381,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "classes") {
       data = {
         description: description,
+        status: status,
+      };
+    }
+
+    if (type == "esportes") {
+      data = {
+        description: description,
         modality: modality,
-        category: category,
+        class: classes,
         teacher_id: teacher,
         status: status,
       };
@@ -351,13 +407,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
       type == "classes" && (await api.put(`/classes/${id}`, data));
+      type == "esportes" && (await api.put(`/sports/${id}`, data));
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
 
       toast.success(
         `${(data && data.name) || data?.description} editado com sucesso!`
       );
-      
+
       filterStudentsByClass(filterId);
       reloadPage();
       setError(false);
@@ -419,33 +476,48 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
               {type == "responsibles" && (
                 <>
-                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="name">
-                          Nome: <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                          id="name"
-                          name="name"
-                          placeholder="Digite o nome do responsável..."
-                          onChange={(e) => setName(e.target.value)}
-                          value={name}
-                          required
-                        />
-                      </div>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="name">
+                      Nome: <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="Digite o nome do responsável..."
+                      onChange={(e) => setName(e.target.value)}
+                      value={name}
+                      required
+                    />
+                  </div>
 
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="phone">
-                          Telefone: <span className="text-red-500">*</span>
-                        </label>
-                        <MaskedInput
-                          value={phone}
-                          onChange={handlePhoneChange}
-                        />
-                      </div>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="phone">
+                      Telefone: <span className="text-red-500">*</span>
+                    </label>
+                    <MaskedInput value={phone} onChange={handlePhoneChange} />
+                  </div>
                 </>
               )}
 
               {type == "classes" && (
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="description">
+                      Descrição: <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="description"
+                      name="description"
+                      placeholder="Digite o descrição da turma..."
+                      onChange={(e) => setDescription(e.target.value)}
+                      value={description}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {type == "esportes" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="description">
@@ -486,25 +558,24 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="category">
-                      Categoria: <span className="text-red-500">*</span>
+                    <label htmlFor="class">
+                      Turma: <span className="text-red-500">*</span>
                     </label>
                     <Select
-                      required
-                      onValueChange={(e) => setCategory(e)}
-                      defaultValue={category}
+                      defaultValue={classes}
+                      onValueChange={(e) => setClasses(e)}
                     >
-                      <SelectTrigger
-                        className="w-full"
-                        id="category"
-                        name="category"
-                      >
-                        <SelectValue placeholder="Selecione a categoria" />
+                      <SelectTrigger className="w-full" id="class">
+                        <SelectValue placeholder="Selecione a turma" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">1° ao 3° ano</SelectItem>
-                        <SelectItem value="2">4° ao 6° ano</SelectItem>
-                        <SelectItem value="3">7° ao 9° ano</SelectItem>
+                        {classesDisp.map((c) => {
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -611,6 +682,26 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="team">
+                      Equipe: <span className="text-red-500">*</span>
+                    </label>
+                    <Select defaultValue={team} onValueChange={(e) => setTeam(e)}>
+                      <SelectTrigger className="w-full" id="team">
+                        <SelectValue placeholder="Selecione a equipe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teamsDisp.map((t) => {
+                          return (
+                            <SelectItem key={t.id} value={String(t.id)}>
+                              {t.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="nome">
                       Telefone: <span className="text-red-500">*</span>
                     </label>
@@ -674,6 +765,28 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       required
                     />
                   </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 mt-5 text-sm font-medium">
+                    <label htmlFor="user">Usuário:</label>
+                    <Select
+                      defaultValue={String(user)}
+                      required
+                      onValueChange={(e) => setUser(e)}
+                    >
+                      <SelectTrigger id="user" className="w-full">
+                        <SelectValue placeholder="Selecione o usuário para vincular" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((u) => {
+                          return (
+                            <SelectItem key={String(u.id)} value={String(u.id)}>
+                              {u.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
 
@@ -699,7 +812,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         </>
                       )}
 
-                      {(type == "classes" || type == "teacher") && (
+                      {(type == "classes" ||
+                        type == "teacher" ||
+                        type == "esportes") && (
                         <>
                           <SelectItem value="0">Inativo</SelectItem>
                           <SelectItem value="1">Ativo</SelectItem>

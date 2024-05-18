@@ -27,7 +27,7 @@ function Auth() {
     if (lastVisitedRoute) {
       navigate(lastVisitedRoute);
     }
-  },[]);
+  }, []);
 
   const LogIn = async (e: FormEvent) => {
     e.preventDefault();
@@ -35,32 +35,38 @@ function Auth() {
     setLoading(true);
 
     const data = {
-      user: user,
-      password: password,
+        user: user,
+        password: password,
     };
 
     try {
-      const response = await api.post("/users/login", data);
+        const response = await api.post("/users/login", data);
 
-      authUser(response.data);
-      localStorage.setItem("@bravosSports:user", JSON.stringify(response.data));
-      navigate("/");
-      toast.success("Usuário logado com sucesso!", {
-        position: "top-right"
-      });
-      setError1(false);
-      setError2(false);
+        authUser(response.data);
+        localStorage.setItem("@bravosSports:user", JSON.stringify(response.data));
+        navigate("/");
+        toast.success("Usuário logado com sucesso!", {
+            position: "top-right"
+        });
+        setError1(false);
+        setError2(false);
     } catch (err: any) {
-      toast.error(err.response.data.error, {
-        position: "top-right"
-      });
-      setError1(true);
-      setError2(true);
+        if (err.response) {
+           toast.error(err.response.data.error, {
+                position: "top-right"
+            });
+        } else {
+            toast.error("Ocorreu um erro ao entrar em contato com o servidor.", {
+                position: "top-right"
+            });
+        }
+        setError1(true);
+        setError2(true);
+    } finally {
+        setLoading(false);
     }
-    finally {
-      setLoading(false);
-    }
-  };
+};
+
 
   return (
     <main className="grid lg:grid-cols-2 mx-7 md:mx-0">
