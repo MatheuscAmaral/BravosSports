@@ -182,7 +182,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setResponsible(String(row[0].responsible));
       setClasses(String(row[0].class));
       setTeam(String(row[0].team));
-      console.log(row[0].team)
       setPhone(String(row[0].phone));
     }
 
@@ -426,6 +425,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
+  const filterTeams = async (idClass: any) => {
+    setClasses(idClass);
+    
+    try {
+      const response = await api.get(`/sports/class/${idClass}`);
+
+      setTeamsDisp(response.data);
+      setTeam("");
+    }
+
+    catch {
+      toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
+    }
+  }
+
   return (
     <modalContext.Provider value={{ getData, open }}>
       {children}
@@ -607,7 +621,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "teacherClass" && (
+              {type != "teacherClass" && type != "call" && (
                 <FaTrash
                   fontSize={22}
                   onClick={() => setLink("")}
@@ -663,7 +677,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       Turma: <span className="text-red-500">*</span>
                     </label>
                     <Select
-                      onValueChange={(e) => setClasses(e)}
+                      onValueChange={(e) => filterTeams(e)}
                       defaultValue={classes}
                     >
                       <SelectTrigger className="w-full" id="class">
@@ -790,7 +804,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "studentsClass" && type != "teacherClass" && (
+              {type != "studentsClass" && type != "teacherClass" && type != "call" && (
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                   <label htmlFor="status">
                     Status: <span className="text-red-500">*</span>
@@ -834,7 +848,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            {type != "studentsClass" && type != "teacherClass" && (
+            {type != "studentsClass" && type != "teacherClass" && type != "call" && (
               <Button className="text-center " type="submit">
                 {loading ? <TbLoader3 /> : "Salvar"}
               </Button>

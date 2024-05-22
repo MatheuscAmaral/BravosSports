@@ -1,14 +1,17 @@
 import { AuthContext } from "@/contexts/AuthContext";
+import { ReloadContext } from "@/contexts/ReloadContext";
 import { useContext, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useLocation } from "react-router-dom";
 
 const PrivateRoute = ({ children }: any) => {
     const { user, authUser } = useContext(AuthContext);
+    const { resetNewStudents } = useContext(ReloadContext);
     const location = useLocation();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("@bravosSports:user");
+        resetNewStudents();
     
         if (storedUser) { 
             const parsedUser = JSON.parse(storedUser);

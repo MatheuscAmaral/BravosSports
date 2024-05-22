@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/bravosLogoBlack.png";
-import { FaClipboardList, FaHome, FaUserAlt, FaUserSecret } from "react-icons/fa";
+import { FaClipboardList, FaHome, FaUserAlt, FaUserTie } from "react-icons/fa";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { BiSolidBusSchool } from "react-icons/bi";
-import { FaSchoolLock, FaUsers } from "react-icons/fa6";
+import { FaUsers } from "react-icons/fa6";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { IoClose, IoLogOutOutline } from "react-icons/io5";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
@@ -102,7 +102,7 @@ const Header = () => {
                 onClick={() => navigateToRoute("/responsaveis")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
               >
-                <FaUserSecret fontSize={25} />
+                <FaUserTie fontSize={25} />
                 <p className="text-lg">Responsáveis</p>
               </li>
           )}

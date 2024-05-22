@@ -31,7 +31,7 @@ function Home() {
       {statistics &&
         statistics.map((s) => {
           return (
-            <section className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
+            <section key={s.classes} className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
               <div onClick={() => navigate("/alunos")} className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer">
                 <p className="text-lg md:text-2xl font-bold">Alunos</p>
 

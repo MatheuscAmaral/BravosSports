@@ -1,15 +1,22 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
+import { TbArrowsExchange } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
-import { ReloadContext } from "@/contexts/ReloadContext";
-import { RowProps } from "@/contexts/ModalsContext";
+import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { StudentsProps } from "../students";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Modal } from "flowbite-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -19,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { ClassesProps } from "../classes";
+import { ReloadContext } from "@/contexts/ReloadContext";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -89,38 +97,33 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "responsible",
+    accessorKey: "team",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Responsável
+          Equipe
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("responsible")}</div>,
-  },
-  {
-    accessorKey: "class",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Turma
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("class")}</div>,
+    cell: ({ row }) => <div>{row.getValue("team")}</div>,
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }) => {
+        return (
+          <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
     cell: ({ row }) => (
       <div className="capitalize">
         {row.getValue("status") == 0 && "Inativo"}
@@ -131,14 +134,46 @@ export const columns: ColumnDef<RowProps>[] = [
       </div>
     ),
   },
+  {
+    id: "actions",
+    header: "Ações",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const { open } = useContext(modalContext);
+
+      const openModals = (data: RowProps[]) => {
+        open(data, "Responsáveis cadastrados", "call");
+      }
+
+      return (
+        <div>
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => openModals([row.original])}>Ver responsáveis</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        </div>
+      );
+    },
+  },
 ];
 
 const Call = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<StudentsProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
+  const { reloadPage, newStudentsCall, saveClassId } = useContext(ReloadContext);
 
   useEffect(() => {
     const getClasses = async () => {
@@ -152,34 +187,48 @@ const Call = () => {
       }
     };
 
-    getClasses();
-  }, []);
+    if (newStudentsCall.length <= 0) {
+      getClasses();
+      setData([]);
+    } else {
+      setData(newStudentsCall)
+    }
+  }, [reloadPage]);
 
   const getStudents = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
+      setClassId("");
+      saveClassId(Number(classId));
       const response = await api.get(`/students/class/${classId}`);
 
       setData(response.data);
+      setLoading(true);
       setOpenModal(false);
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     }
   }
 
-
   const closeModal = () => {
-      setOpenModal(false);
+    setOpenModal(false);
+
+    if (!loading) {
       navigate("/");
+    }
   }
 
   return (
     <main className="w-full">
-      <section className="mt-10">
+      <section className="mt-10 flex justify-between w-full">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
           Chamada <span className="text-sm mt-1">({data.length})</span>
         </h1>
+
+        <button className={`${loading ? "flex" : "hidden"} rounded-lg bg-gray-200 p-2 hover:bg-gray-300 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
+          <TbArrowsExchange fontSize={20}/>
+        </button>
       </section>
 
       <Modal show={openModal} onClose={() => closeModal()}>
@@ -215,7 +264,7 @@ const Call = () => {
       </Modal>
 
       {
-        data.length >= 1 && (
+        loading && (
           <section className="w-full mx-auto mt-10">
               {/* @ts-ignore */}
               <DataTable columns={columns} data={data} route={"call"} /> 

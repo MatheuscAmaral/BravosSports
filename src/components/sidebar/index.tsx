@@ -18,7 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
-import { FaUserAlt, FaHome, FaUserSecret, FaClipboardList} from "react-icons/fa";
+import { FaUserAlt, FaHome, FaClipboardList, FaUserTie} from "react-icons/fa";
 import { MdSportsHandball } from "react-icons/md";
 
 const Sidebar = () => {
@@ -43,7 +43,7 @@ const Sidebar = () => {
         { label: "Turmas", icon: <BiSolidBusSchool fontSize={24} />, path: "/turmas" },
         { label: "Professores", icon: <PiChalkboardTeacherBold fontSize={25} />, path: "/professores" },
         { label: "Equipes", icon: <MdSportsHandball fontSize={25} />, path: "/equipes" },
-        { label: "Responsáveis", icon: <FaUserSecret fontSize={22} />, path: "/responsaveis" },
+        { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
         { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
         // { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos"},
       ].filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()))
