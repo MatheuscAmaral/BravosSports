@@ -570,7 +570,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
-
+{/* 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="class">
                       Turma: <span className="text-red-500">*</span>
@@ -592,7 +592,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         })}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </div> */}
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="teacher">Professor:</label>

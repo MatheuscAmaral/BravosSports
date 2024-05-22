@@ -1172,7 +1172,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         </Select>
                       </div>
 
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="class">Turma:</label>
                         <Select onValueChange={(e) => setClasses(e)}>
                           <SelectTrigger
@@ -1192,7 +1192,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             })}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="teacher">Professor:</label>
