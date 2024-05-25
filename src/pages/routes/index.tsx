@@ -12,7 +12,7 @@ import Teachers from "../teachers";
 import Auth from "../auth";
 import PrivateRoute from "./PrivateRoute";
 import Responsibles from "../responsibles";
-import Sports from "../teams";
+import Sports from "../sports";
 
 const router = createBrowserRouter([
   {
@@ -99,7 +99,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/equipes",
+        path: "/esportes",
         element: (
           <PrivateRoute>
             <Sports />

@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
-import wallpaper from "../../assets/wallpaper.jpg";
-import logo from "../../assets/bravosLogoBlack.png";
+import wallpaper from "../../assets/walpp.jpg";
+import logo from "../../assets/logo-bravos-laranja.png";
 import api from "@/api";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -69,19 +69,19 @@ function Auth() {
 
 
   return (
-    <main className="grid lg:grid-cols-2 mx-7 md:mx-0">
-      <section className="relative hidden lg:block">
-        <img src={wallpaper} className="h-svh blur-sm" />
+    <main className="flex mx-7 md:mx-0 mt-20 md:mt-0">
+      <section className="relative hidden lg:block max-w-5xl">
+        <img src={wallpaper} className="h-svh" style={{ filter: "blur(3px)" }}/>
 
         <div
           className="absolute inset-0 flex justify-center items-center"
-          style={{ backgroundColor: "rgba(214, 211, 211, 0.575)" }}
+          style={{ backgroundColor: "rgba(218, 52, 2, 0.24)" }}
         >
-          <img src={logo} className="w-72" />
+          <img src={logo} className="w-80" />
         </div>
       </section>
 
-      <section className="md:px-10">
+      <section className="md:px-10 max-w-5xl w-full">
         <form
           onSubmit={(e) => LogIn(e)}
           className="max-w-2xl mt-20 md:mt-32 lg:mt-0 justify-center h-full mx-auto w-full flex flex-col gap-7"
@@ -122,7 +122,8 @@ function Auth() {
 
           <button
             type="submit"
-            className=" bg-black text-white p-3 rounded-md border-0"
+            className=" text-white p-3 rounded-md border-0"
+            style={{backgroundColor: "#F43806"}}
           >
             {
               loading ? <TbLoader3 /> : "Entrar"

@@ -14,23 +14,24 @@ import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import noFoto from "../../assets/noFoto.jpg";
 
 
 export const columns: ColumnDef<RowProps>[] = [
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Código
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
+    accessorKey: "image",
+    header: "Foto",
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
+      </div>
+    ),
   },
   {
     accessorKey: "name",

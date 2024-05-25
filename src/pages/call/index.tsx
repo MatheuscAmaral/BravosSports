@@ -8,8 +8,8 @@ import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { StudentsProps } from "../students";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Modal } from "flowbite-react";
+import noFoto from "../../assets/noFoto.jpg";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,29 +27,37 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ClassesProps } from "../classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => {
-          row.toggleSelected(!!value);
-        }}
-        aria-label="Select row"
-      />
-    ),
+    header: "Presença",
+    cell: ({ row }) => {
+      const [presence, setPresence] = useState(row.original.presence);
+
+      const changePresence = (presence: number) => {
+        setPresence(presence);
+        row.original.presence = presence;
+      };
+
+      return (
+        <div className="flex justify-center items-center gap-3 text-2xl">
+          <button onClick={() => changePresence(1)}>
+             <IoIosCheckmarkCircle
+              className={`${row.original.presence != null && row.original.presence == 1 ? "text-green-500" : "text-gray-300"} cursor-pointer`} 
+            />
+          </button>
+
+          <button onClick={() => changePresence(0)}>
+            <IoMdCloseCircle  
+              className={`${row.original.presence != null && row.original.presence == 0 ? "text-red-500" : "text-gray-300"} cursor-pointer`} 
+            />
+          </button>
+        </div>
+      );
+
+    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -58,28 +66,15 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Foto",
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <img
-          src={row.getValue("image")}
-          className="w-12"
-          style={{ borderRadius: "100%" }}
-        />
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
       </div>
     ),
-  },
-  {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Matrícula
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
   },
   {
     accessorKey: "name",
@@ -95,21 +90,6 @@ export const columns: ColumnDef<RowProps>[] = [
       );
     },
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "team",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Equipe
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("team")}</div>,
   },
   {
     accessorKey: "status",
@@ -173,15 +153,15 @@ const Call = () => {
   const [data, setData] = useState<StudentsProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
-  const { reloadPage, newStudentsCall, saveClassId } = useContext(ReloadContext);
+  const { reloadPage, newStudentsCall, saveClassId, resetSelect } = useContext(ReloadContext);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
         const response = await api.get("/classes");
 
+        response.data.unshift({id: -99, description: 'Todos', status: 1});
         setClasses(response.data);
-
       } catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
       }
@@ -200,6 +180,7 @@ const Call = () => {
 
     try {
       setClassId("");
+      resetSelect();
       saveClassId(Number(classId));
       const response = await api.get(`/students/class/${classId}`);
 
@@ -221,13 +202,13 @@ const Call = () => {
 
   return (
     <main className="w-full">
-      <section className="mt-10 flex justify-between w-full">
+      <section className="mt-10 flex justify-between items-center w-full">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
           Chamada <span className="text-sm mt-1">({data.length})</span>
         </h1>
 
-        <button className={`${loading ? "flex" : "hidden"} rounded-lg bg-gray-200 p-2 hover:bg-gray-300 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
-          <TbArrowsExchange fontSize={20}/>
+        <button className={`${loading ? "flex" : "hidden"} rounded-lg p-2 bg-orange-900 hover:bg-orange-700 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
+          <TbArrowsExchange className="text-white" fontSize={20}/>
         </button>
       </section>
 
@@ -257,7 +238,7 @@ const Call = () => {
               </div>
             </div>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
             <Button type="submit" disabled={!classId} >Selecionar</Button>
           </Modal.Footer>
         </form>

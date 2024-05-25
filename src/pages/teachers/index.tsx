@@ -14,6 +14,8 @@ import { useContext, useEffect, useState } from "react";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import toast from "react-hot-toast";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import noFoto from "../../assets/noFoto.jpg"; 
+
 export interface TeachersProps {
   id: number;
   name: string;
@@ -26,28 +28,15 @@ export const columnsProf: ColumnDef<RowProps>[] = [
     header: "Foto",
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <img
-          src={row.getValue("image")}
-          className="w-12"
-          style={{ borderRadius: "100%" }}
-        />
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
       </div>
     ),
-  },
-  {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Código
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
   },
   {
     accessorKey: "name",

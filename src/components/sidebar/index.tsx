@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import logo from "../../assets/bravosLogoBlack.png";
+import logo from "../../assets/logo-bravos-laranja.png";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { IoLogOutOutline } from "react-icons/io5";
 import {
@@ -38,16 +38,17 @@ const Sidebar = () => {
   const filteredItems = user ? (
     (user as unknown as UserProps).level === 0 || (user as unknown as UserProps).level === 1 ? (
       [
-        { label: "Home", icon: <FaHome fontSize={24} />, path: "/" },
+        { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
         { label: "Alunos", icon: <FaUsers fontSize={24} />, path: "/alunos" },
         { label: "Turmas", icon: <BiSolidBusSchool fontSize={24} />, path: "/turmas" },
         { label: "Professores", icon: <PiChalkboardTeacherBold fontSize={25} />, path: "/professores" },
-        { label: "Equipes", icon: <MdSportsHandball fontSize={25} />, path: "/equipes" },
+        { label: "Esportes", icon: <MdSportsHandball fontSize={25} />, path: "/esportes" },
         { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
         { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
         // { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos"},
       ].filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()))
-    ) : [
+      ) : [
+      { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
       { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
       { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos" },
         
@@ -58,7 +59,7 @@ const Sidebar = () => {
     // @ts-ignore
     <Card className="hidden xl:block h-svh w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none relative">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
-        <img src={logo} alt="brand" className="h-16" />
+        <img src={logo} alt="brand" className="h-11 my-2" />
       </div>
       <div className="p-2">
       {/* @ts-ignore */}
@@ -78,6 +79,7 @@ const Sidebar = () => {
             {item.label}
           </ListItem>
         ))}
+        
         <hr className="my-2 border-blue-gray-50" />
 
         <div className="flex justify-between gap-4 p-3 items-center">

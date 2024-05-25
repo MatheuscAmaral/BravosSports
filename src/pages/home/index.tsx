@@ -36,7 +36,7 @@ function Home() {
                 <p className="text-lg md:text-2xl font-bold">Alunos</p>
 
                 <div className="flex justify-between w-full">
-                  <PiStudentBold fontSize={34} />
+                  <PiStudentBold fontSize={34}/>
                   <p className="text-3xl font-bold">{s.students}</p>
                 </div>
               </div>

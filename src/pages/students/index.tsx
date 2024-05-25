@@ -14,13 +14,16 @@ import api from "@/api";
 import toast from "react-hot-toast";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
+import noFoto from "../../assets/noFoto.jpg";
 
 export interface StudentsProps {
   id: number;
   image: string;
   name: string;
   responsible: number;
+  responsible_name: string;
   class: number;
+  description: string;
   team: string;
   phone: string;
   status: number;
@@ -33,29 +36,32 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Foto",
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <img
-          src={row.getValue("image")}
-          className="w-12"
-          style={{ borderRadius: "100%" }}
-        />
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
       </div>
     ),
   },
-  {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Matrícula
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
-  },
+ 
+  // {
+  //   accessorKey: "id",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Matrícula
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => <div>{row.getValue("id")}</div>,
+  // },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -72,7 +78,7 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "responsible",
+    accessorKey: "responsible_name",
     header: ({ column }) => {
       return (
         <Button
@@ -84,10 +90,10 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("responsible")}</div>,
+    cell: ({ row }) => <div>{row.getValue("responsible_name")}</div>,
   },
   {
-    accessorKey: "class",
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
@@ -99,23 +105,23 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("class")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
-  {
-    accessorKey: "phone",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Telefone
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("phone")}</div>,
-  },
+  // {
+  //   accessorKey: "phone",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Telefone
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => <div className="lowercase">{row.getValue("phone")}</div>,
+  // },
   {
     accessorKey: "status",
     header: ({ column }) => {
@@ -178,7 +184,6 @@ const Students = () => {
     const getStudents = async () => {
       try {
         const response = await api.get("/students");
-        
         setData(response.data);
         
         if (newStudents && !createdUser) {

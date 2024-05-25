@@ -7,9 +7,8 @@ import {
 } from "react";
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-
 import { MdContentPasteSearch } from "react-icons/md";
-
+import noFoto from "../assets/noFoto.jpg";
 import { Modal } from "flowbite-react";
 import { Button } from "@/components/ui/button";
 import { TbLoader3 } from "react-icons/tb";
@@ -40,6 +39,7 @@ export interface RowProps {
   id: number;
   image: string;
   name: string;
+  responsible_name: string;
   responsible: number;
   class: number;
   phone: string;
@@ -50,6 +50,10 @@ export interface RowProps {
   teacher_id: number;
   userId: string;
   team: string;
+  presence: number;
+  id_responsible: number;
+  days_training: string;
+  date_of_birth: string;
 }
 
 const uploader = Uploader({
@@ -73,7 +77,13 @@ const columnsStudentClass: ColumnDef<RowProps>[] = [
     header: "Foto",
     cell: ({ row }) => (
       <div className="flex justify-center">
-        {<img src={row.getValue("image")} className="w-12 rounded-lg" />}
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
       </div>
     ),
   },
@@ -102,14 +112,46 @@ const columnsStudentClass: ColumnDef<RowProps>[] = [
   },
 ];
 
-const columnsClass: ColumnDef<RowProps>[] = [
+const columnsResponsibleRealeaseds: ColumnDef<RowProps>[] = [
   {
-    accessorKey: "id",
-    header: () => {
-      return "Código";
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
+    accessorKey: "image",
+    header: "Foto",
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <div className="w-12 h-12 overflow-hidden rounded-full">
+          <img
+            src={row.getValue("image") ? row.getValue("image") : noFoto}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: "100%" }}
+          />
+        </div>
+      </div>
+    ),
   },
+  {
+    accessorKey: "name",
+    header: "Nome",
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "phone",
+    header: "Telefone",
+    cell: ({ row }) => <div>{row.getValue("phone")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("status") == "0" && "Inativo"}
+
+        {row.getValue("status") == "1" && "Ativo"}
+      </div>
+    ),
+  },
+];
+
+const columnsClass: ColumnDef<RowProps>[] = [
   {
     accessorKey: "description",
     header: () => {
@@ -161,6 +203,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [error, setError] = useState(false);
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
+  const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
@@ -168,10 +211,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
   const [users, setUsers] = useState<UserProps[]>([]);
+  const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<ResponsibleProps[]>([]);
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
   };
+
 
   const getData = async (row: RowProps[], type: string) => {
     setData(row);
@@ -183,6 +228,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setClasses(String(row[0].class));
       setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
+      setDaysTraining(row[0].days_training != null ? String(row[0].days_training) : "");
     }
 
     if (type == "classes") {
@@ -196,10 +242,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setClasses(String(row[0].class));
       setId(String(row[0].id));
     }
-
+    
     if (type == "responsibles") {
       setName(String(row[0].name));
       setPhone(String(row[0].phone));
+    }
+    
+    if (type == "call") {
+      setId(String(row[0].id_responsible));
     }
 
     if (type == "teacher") {
@@ -222,6 +272,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
+    if (type == "call") {
+      try {
+        const response = await api.get(`/responsibles/releaseds/${row[0].responsible}`);
+
+        setResponsibleRealeaseds(response.data);
+      } catch {
+        toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+      }
+    }
+
     setStatus(String(row[0].status));
     setId(String(row[0].id));
   };
@@ -235,7 +295,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
     }
   };
-
+  
   const getUsers = async () => {
     try {
       const response = await api.get("/users/level/2");
@@ -258,7 +318,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
   const getTeachers = async () => {
     try {
-      const response = await api.get("/teachers");
+      const response =   await api.get("/teachers");
 
       setTeachers(response.data);
     } catch {
@@ -327,6 +387,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setCategory("");
     setId("");
     setUser("");
+    setDaysTraining("");
     handlePhoneChange("");
   };
 
@@ -341,7 +402,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         responsible: responsible,
         class: classes,
         team: team,
-        phone: phone,
+        days_training: daysTraining,
         status: status,
       };
 
@@ -396,10 +457,22 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "responsibles") {
       data = {
+        image: link,
         name: name,
         phone: phone,
         status: status,
       };
+
+      if (!link) {
+        toast("É necessário que o responsável possua uma foto cadastrada!", {
+          position: "top-right",
+          icon: "⚠️",
+        });
+
+        setError(true);
+
+        return;
+      }
     }
 
     try {
@@ -455,7 +528,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 type != "studentsClass" && type != "teacherClass" && "space-y-6"
               }`}
             >
-              {(type == "students" || type == "teacher") && (
+              {(type == "students" || type == "teacher" || type == "responsibles") && (
                 <UploadButton
                   uploader={uploader}
                   options={options}
@@ -478,7 +551,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       ) : (
                         <div className="flex flex-col gap-2 items-center justify-center ">
                           <IoIosImages fontSize={40} />
-                          <p className="w-full">
+                          <p className="w-full text-sm md:text-lg">
                             Clique aqui para selecionar uma imagem.
                           </p>
                         </div>
@@ -647,6 +720,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     />
                   </div>
 
+                  <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="dateBirth">
+                      Data de nascimento: <span className="text-red-500">*</span>
+                    </label>
+                  </div>
+
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="responsible">
                       Responsável: <span className="text-red-500">*</span>
@@ -668,6 +747,26 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             </SelectItem>
                           );
                         })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="days_training">
+                      Dias de treino: <span className="text-red-500">*</span>
+                    </label>
+                    
+                    <Select onValueChange={(e) => setDaysTraining(e)} defaultValue={daysTraining.trim()}>
+                      <SelectTrigger className="w-full" id="days_training">
+                        <SelectValue placeholder="Selecione os dias de treino" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Segunda e Quarta">
+                            Segunda e Quarta
+                          </SelectItem>
+                          <SelectItem value="Terça e Quinta">
+                            Terça e Quinta
+                          </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -760,6 +859,25 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
                 ))}
 
+
+              {type == "call" &&
+                (responsibleRealeaseds.length > 0 ? (
+                  <DataTable
+                    //@ts-ignore
+                    columns={columnsResponsibleRealeaseds}
+                    //@ts-ignore
+                    data={responsibleRealeaseds}
+                    route={"responsibleRealeaseds"}
+                  />
+                ) : (
+                  <div className="flex flex-col gap-3 justify-center items-center">
+                    <MdContentPasteSearch fontSize={30} />
+                    <p className="text-md font-medium">
+                      Nenhum responsável liberado para este aluno!
+                    </p>
+                  </div>
+                ))}
+
               {type == "teacherClass" && (
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium"></div>
               )}
@@ -847,13 +965,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
               )}
             </div>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
             {type != "studentsClass" && type != "teacherClass" && type != "call" && (
               <Button className="text-center " type="submit">
                 {loading ? <TbLoader3 /> : "Salvar"}
               </Button>
             )}
-            <Button color="gray" onClick={() => closeModal()}>
+            <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
               Fechar
             </Button>
           </Modal.Footer>

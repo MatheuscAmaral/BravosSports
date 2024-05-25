@@ -3,7 +3,6 @@ import { StudentsProps } from "@/pages/students";
 import { ReactNode, createContext, useState } from "react";
 import toast from "react-hot-toast";
 
-
 interface ReloadDataProps {
     reloadPage: () => void;
     filterStudentsByClass: (id: number) => void;
@@ -16,7 +15,8 @@ interface ReloadDataProps {
     idClass: number;
     saveClassId: (id: number) => void;
     createdUser: boolean;
-    resetNewStudents: () => void; 
+    resetNewStudents: () => void
+    resetSelect: () => void;
 }
 
 interface ChildrenProps {
@@ -51,7 +51,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     
                 setNewStudents(response.data);          
             } else {
-                const response = await api.get(`/students/class/${id}`);
+                const response = await api.get(`/students/class/filter/${id}`);
     
                 setNewStudents(response.data);    
             }
@@ -87,8 +87,12 @@ const ReloadProvider = ({children}: ChildrenProps) => {
         setNewStudentsCall([]);
     }
 
+    const resetSelect = () => {
+        setTeamId(999);
+    }
+
     return (
-        <ReloadContext.Provider value={{reloadPage, filterStudentsByClass, filterStudentsByTeam, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetNewStudents, idClass, saveClassId}}>
+        <ReloadContext.Provider value={{reloadPage, filterStudentsByClass, filterStudentsByTeam, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

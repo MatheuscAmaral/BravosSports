@@ -28,21 +28,6 @@ export interface SportsProps {
 
 export const columnsClass: ColumnDef<RowProps>[] = [
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Código
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
-  },
-  {
     accessorKey: "description",
     header: ({ column }) => {
       return (
@@ -142,12 +127,10 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 const Sports = () => {
   const { reloadPage } = useContext(ReloadContext);
-  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
-        setLoad(true);
         const response = await api.get("/sports");
   
         setData(response.data);
@@ -155,10 +138,6 @@ const Sports = () => {
 
       catch {
         toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");
-      }
-
-      finally {
-        setLoad(false);
       }
     }
   
@@ -170,7 +149,7 @@ const Sports = () => {
   return (
     <main className="w-full">
       <section className="mt-10">
-        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Equipes<span className="text-sm mt-1">({data.length})</span></h1>
+        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Esportes<span className="text-sm mt-1">({data.length})</span></h1>
       </section>
 
       <div className="w-full mx-auto mt-10">
