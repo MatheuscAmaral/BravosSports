@@ -7,7 +7,7 @@ const Layout = () => {
 
     return (
       <div className="flex bg-gray-50 h-svh font-sans">
-        <div className="hidden xl:flex">
+        <div className="hidden xl:flex fixed z-50">
           <Sidebar />
         </div>
 

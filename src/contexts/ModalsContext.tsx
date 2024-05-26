@@ -5,11 +5,11 @@ import {
   useContext,
   useState,
 } from "react";
-import { DataTable } from "@/components/table/dataTable";
+import { DataTable, UnitsProps } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { MdContentPasteSearch } from "react-icons/md";
 import noFoto from "../assets/noFoto.jpg";
-import { Modal } from "flowbite-react";
+import Datepicker from "tailwind-datepicker-react";
 import { Button } from "@/components/ui/button";
 import { TbLoader3 } from "react-icons/tb";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,9 @@ import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
 import { TeachersProps } from "@/pages/teachers";
 import { UserProps } from "./AuthContext";
+import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
+import { Modal } from "flowbite-react";
+import { CalendarIcon } from "lucide-react";
 
 export interface RowProps {
   id: number;
@@ -54,6 +57,8 @@ export interface RowProps {
   id_responsible: number;
   days_training: string;
   date_of_birth: string;
+  unit: number;
+  desc_unit: string;
 }
 
 const uploader = Uploader({
@@ -193,6 +198,8 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [status, setStatus] = useState("");
   const [classesDisp, setClassesDisp] = useState<ClassesProps[]>([]);
   const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
+  const [units, setUnits] = useState("");
+  const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
   const [responsible, setResponsible] = useState("");
   const [classes, setClasses] = useState("");
   const [id, setId] = useState("");
@@ -210,13 +217,60 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
+  const [date, setDate] = useState("");
   const [users, setUsers] = useState<UserProps[]>([]);
   const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<ResponsibleProps[]>([]);
+  const [show, setShow] = useState<boolean>(false);
+
+  const optionsDate = {
+    title: "",
+    autoHide: true,
+    todayBtn: false,
+    clearBtn: true,
+    clearBtnText: "Limpar",
+    maxDate: new Date("2030-01-01"),
+    minDate: new Date("1950-01-01"),
+    theme: {
+        background: "bg-white",
+        todayBtn: "bg-primary-color",
+        clearBtn: "",
+        icons: "",
+        text: "",
+        disabledText: "bg-gray-100",
+        input: "",
+        inputIcon: "",
+        selected: "bg-primary-color",
+    },
+    icons: {
+        prev: () => <span><IoChevronBackOutline/></span>,
+        next: () => <span><IoChevronForward/></span>,
+    },
+    datepickerClassNames: "top-12",
+    defaultDate: new Date("2022-01-01"),
+    language: "pt-br",
+    disabledDates: [],
+    weekDays: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
+    inputNameProp: "date",
+    inputIdProp: "date",
+    inputPlaceholderProp: "Selecionar data de nascimento",
+    inputDateFormatProp: {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    }
+}
+
+  const handleChange = (selectedDate: Date) => {
+      setDate(selectedDate.toLocaleDateString('pt-BR'));
+  }
+  const handleClose = (state: boolean) => {
+      setShow(state)
+  }
+
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
   };
-
 
   const getData = async (row: RowProps[], type: string) => {
     setData(row);
@@ -228,14 +282,18 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setClasses(String(row[0].class));
       setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
+      setDate(String(row[0].date_of_birth));
       setDaysTraining(row[0].days_training != null ? String(row[0].days_training) : "");
+      setUnits(String(row[0].unit));
     }
-
+    
     if (type == "classes") {
+      setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
     }
-
+    
     if (type == "esportes") {
+      setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
       setModality(String(row[0].modality));
       setTeacher(String(row[0].teacher_id));
@@ -245,14 +303,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     
     if (type == "responsibles") {
       setName(String(row[0].name));
+      setUnits(String(row[0].unit));
       setPhone(String(row[0].phone));
     }
     
     if (type == "call") {
       setId(String(row[0].id_responsible));
     }
-
+    
     if (type == "teacher") {
+      setUnits(String(row[0].unit));
       setName(row[0].name);
       setUser(row[0].userId);
     }
@@ -303,6 +363,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setUsers(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os usuários disponíveis!");
+    }
+  };
+
+  const getUnits = async () => {
+    try {
+      const response = await api.get("/units");
+
+      setUnitsDisp(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
     }
   };
 
@@ -359,19 +429,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       await getTeams();
       setLoading(false);
     }
-
+    
     if (type == "classes") {
       await getTeachers();
     }
-
+    
     if (type == "esportes") {
       await getTeachers();
       await getClasses();
     }
-
+    
     if (type == "teacher") {
       await getUsers();
     }
+    
+    type != "call" && await getUnits();
   };
 
   const closeModal = () => {
@@ -387,8 +459,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setCategory("");
     setId("");
     setUser("");
+    setDate("");
+    setUnits("");
     setDaysTraining("");
     handlePhoneChange("");
+    setShow(false);
   };
 
   const editData = async (e: FormEvent) => {
@@ -403,37 +478,40 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         class: classes,
         team: team,
         days_training: daysTraining,
+        date_of_birth: date,
+        unit: units,
         status: status,
       };
-
+      
       if (!link) {
         toast("É necessário que o aluno possua uma foto cadastrada!", {
           position: "top-right",
           icon: "⚠️",
         });
-
+        
         setError(true);
-
+        
         return;
       }
     }
-
+    
     if (type == "teacher") {
       data = {
         image: link,
         name: name,
         userId: user,
+        unit: units,
         status: status,
       };
-
+      
       if (!link) {
         toast("É necessário que o professor possua uma foto cadastrada!", {
           position: "top-right",
           icon: "⚠️",
         });
-
+        
         setError(true);
-
+        
         return;
       }
     }
@@ -441,6 +519,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "classes") {
       data = {
         description: description,
+        unit: units,
         status: status,
       };
     }
@@ -451,15 +530,17 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         modality: modality,
         class: classes,
         teacher_id: teacher,
+        unit: units,
         status: status,
       };
     }
-
+    
     if (type == "responsibles") {
       data = {
         image: link,
         name: name,
         phone: phone,
+        unit: units,
         status: status,
       };
 
@@ -583,6 +664,27 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </label>
                     <MaskedInput value={phone} onChange={handlePhoneChange} />
                   </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="units">
+                      Unidade: <span className="text-red-500">*</span>
+                    </label>
+                    <Select onValueChange={(e) => setUnits(e)} value={units}>
+                      <SelectTrigger className="w-full" id="units">
+                        <SelectValue placeholder="Selecione a unidade" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {unitsDisp.map((c) => {
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>  
                 </>
               )}
 
@@ -600,6 +702,27 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       value={description}
                       required
                     />
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="units">
+                      Unidade: <span className="text-red-500">*</span>
+                    </label>
+                    <Select onValueChange={(e) => setUnits(e)} value={units}>
+                      <SelectTrigger className="w-full" id="units">
+                        <SelectValue placeholder="Selecione a unidade" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {unitsDisp.map((c) => {
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               )}
@@ -643,20 +766,18 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
-{/* 
+
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="class">
-                      Turma: <span className="text-red-500">*</span>
+                    <label htmlFor="units">
+                      Unidade: <span className="text-red-500">*</span>
                     </label>
-                    <Select
-                      defaultValue={classes}
-                      onValueChange={(e) => setClasses(e)}
-                    >
-                      <SelectTrigger className="w-full" id="class">
-                        <SelectValue placeholder="Selecione a turma" />
+                    <Select onValueChange={(e) => setUnits(e)} value={units}>
+                      <SelectTrigger className="w-full" id="units">
+                        <SelectValue placeholder="Selecione a unidade" />
                       </SelectTrigger>
+
                       <SelectContent>
-                        {classesDisp.map((c) => {
+                        {unitsDisp.map((c) => {
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
@@ -665,7 +786,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         })}
                       </SelectContent>
                     </Select>
-                  </div> */}
+                  </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="teacher">Professor:</label>
@@ -724,12 +845,24 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     <label htmlFor="dateBirth">
                       Data de nascimento: <span className="text-red-500">*</span>
                     </label>
+
+                     {/* @ts-ignore */}
+                     <Datepicker options={optionsDate} onChange={handleChange} show={show} setShow={handleClose}>
+                        <div className="flex gap-2 p-2 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
+                          <input type="text" className=" pl-1.5 cursor-pointer w-full select-none" placeholder="Selecione sua data de nascimento" value={date} readOnly />
+
+                          <div className="...">
+                              <CalendarIcon fontSize={15} />
+                          </div>
+                        </div>
+                    </Datepicker>
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="responsible">
                       Responsável: <span className="text-red-500">*</span>
                     </label>
+
                     <Select
                       required
                       onValueChange={(e) => setResponsible(e)}
@@ -750,6 +883,30 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="units">
+                      Unidade: <span className="text-red-500">*</span>
+                    </label>
+
+                    <Select onValueChange={(e) => setUnits(e)} defaultValue={units}>
+                      <SelectTrigger className="w-full" id="units">
+                        <SelectValue placeholder="Selecione a unidade" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {unitsDisp.map((c) => {
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="days_training">
@@ -919,6 +1076,27 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex flex-col gap-1 mt-5 text-gray-700 text-sm font-medium">
+                    <label htmlFor="units">
+                      Unidade: <span className="text-red-500">*</span>
+                    </label>
+                    <Select onValueChange={(e) => setUnits(e)} value={units}>
+                      <SelectTrigger className="w-full" id="units">
+                        <SelectValue placeholder="Selecione a unidade" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {unitsDisp.map((c) => {
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
 
@@ -967,7 +1145,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
           </Modal.Body>
           <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
             {type != "studentsClass" && type != "teacherClass" && type != "call" && (
-              <Button className="text-center " type="submit">
+              <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
                 {loading ? <TbLoader3 /> : "Salvar"}
               </Button>
             )}

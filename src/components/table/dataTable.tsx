@@ -1,7 +1,9 @@
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
-import { MdFormatListBulletedAdd, MdPersonAdd, MdGroupAdd,MdSportsKabaddi } from "react-icons/md";
+import { MdFormatListBulletedAdd, MdPersonAdd, MdGroupAdd } from "react-icons/md";
+import Datepicker from "tailwind-datepicker-react";
+import { IoChevronBackOutline, IoChevronForward  } from "react-icons/io5";
 import {
   ColumnFiltersState,
   SortingState,
@@ -13,9 +15,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
+import { CalendarIcon, ChevronDown } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
-import { FaTrash } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { Modal } from "flowbite-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,6 +74,12 @@ export interface ResponsibleProps {
   status: number;
 }
 
+export interface UnitsProps {
+  id: number;
+  description: string;
+  status: number;
+}
+
 export function DataTable({ data, columns, route }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -95,6 +103,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [teamsDisp, setTeamsDisp] = React.useState<ClassesProps[]>([]);
   const [responsible, setResponsible] = React.useState("");
   const [modality, setModality] = React.useState("");
+  const [units, setUnits] = React.useState("");
+  const [unitsDisp, setUnitsDisp] = React.useState<UnitsProps[]>([]);
   const [daysTraining, setDaysTraining] = React.useState("");
   const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
   const [classes, setClasses] = React.useState("");
@@ -106,6 +116,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [teachers, setTeachers] = React.useState<TeachersProps[]>([]);
   const [userSelected, setUserSelected] = React.useState("");
   const [users, setUsers] = React.useState<UserProps[]>([]);
+  const [date, setDate] = React.useState("");
   const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId } = React.useContext(ReloadContext);
 
   React.useEffect(() => {
@@ -113,19 +124,55 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "students") {
       getClasses();
     }
-
   }, []);
 
-  addLocale('pt-BR', {
-    firstDayOfWeek: 0,
-    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-    dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
-    monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-    today: 'Hoje',
-    clear: 'Limpar'
-  });
+  const optionsDate = {
+    title: "",
+    autoHide: true,
+    todayBtn: false,
+    clearBtn: true,
+    clearBtnText: "Limpar",
+    maxDate: new Date("2030-01-01"),
+    minDate: new Date("1950-01-01"),
+    theme: {
+        background: "bg-white",
+        todayBtn: "bg-primary-color",
+        clearBtn: "",
+        icons: "",
+        text: "",
+        disabledText: "bg-gray-100",
+        input: "",
+        inputIcon: "",
+        selected: "bg-primary-color",
+    },
+    icons: {
+        prev: () => <span><IoChevronBackOutline/></span>,
+        next: () => <span><IoChevronForward/></span>,
+    },
+    datepickerClassNames: "top-12",
+    defaultDate: new Date("2022-01-01"),
+    language: "pt-br",
+    disabledDates: [],
+    weekDays: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
+    inputNameProp: "date",
+    inputIdProp: "date",
+    inputPlaceholderProp: "Selecionar data de nascimento",
+    inputDateFormatProp: {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    }
+}
+
+  const [show, setShow] = React.useState<boolean>(false);
+
+  const handleChange = (selectedDate: Date) => {
+    setDate(selectedDate.toLocaleDateString('pt-BR'));
+  }
+  
+  const handleClose = (state: boolean) => {
+      setShow(state)
+  }
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -178,6 +225,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       description: description,
+      unit: units,
       status: status,
     };
 
@@ -208,6 +256,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       modality: modality,
       class: classes,
       teacher_id: teacher,
+      unit: units,
       status: status,
     };
 
@@ -237,6 +286,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: link,
       name: name,
       phone: phone,
+      unit: units,
       status: status,
     };
 
@@ -262,6 +312,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setResponsibles(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+    }
+  };
+
+  const getUnits = async () => {
+    try {
+      const response = await api.get("/units");
+
+      setUnitsDisp(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
     }
   };
 
@@ -352,7 +412,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       await getResponsibles();
       await getTeams();
     }
-
+    
+    if (route == "turmas") {
+    }
+    
     if (route == "esportes") {
       await getClasses();
       await getTeachers();
@@ -362,16 +425,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       await getUsers();
     }
 
+    route != "call" && await getUnits();
+    
     if (route == "call") {
       makeCall(table.getRowModel().rows);
     }
   };
 
-
   const closeModal = () => {
     setError(false);
     setOpenModal(false);
     handlePhoneChange("");
+    setDate("");
+    setShow(false);
     setPhone("");
   };
 
@@ -389,6 +455,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       class: classes,
       team: team,
       days_training: daysTraining,
+      date_of_birth: date,
+      unit: units,
       status: status,
     };
 
@@ -429,6 +497,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: link,
       name: name,
       userId: user,
+      unit: units,
       status: status,
     };
 
@@ -463,7 +532,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           route == "studentsClass" || route == "teacherClass" || route == "responsibleRealeaseds"
           ? "hidden"
           : openFilter
-          ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10"
+          ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10 xl:py-0"
           : "bg-white p-5 xl:p-0 xl:bg-gray-50"
         } pt-5 mb-10 border xl:border-0 rounded-lg transition-all`}
       >
@@ -497,7 +566,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-72"
+                className="xl:max-w-72"
               />
 
               <Modal show={openModal} onClose={() => closeModal()}>
@@ -588,6 +657,27 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="units">
+                          Unidade: <span className="text-red-500">*</span>
+                        </label>
+                        <Select onValueChange={(e) => setUnits(e)}>
+                          <SelectTrigger className="w-full" id="units">
+                            <SelectValue placeholder="Selecione a unidade" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {unitsDisp.map((c) => {
+                              return (
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">Status:</label>
                         <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger className="w-full">
@@ -602,7 +692,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer  className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button type="submit">Salvar</Button>
+                    <Button type="submit" className="bg-primary-color hover:bg-secondary-color">Salvar</Button>
                     <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
                       Fechar
                     </Button>
@@ -677,7 +767,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
               <Modal show={openModal} onClose={() => closeModal()}>
                 <Modal.Header>Cadastro de aluno</Modal.Header>
-                <form onSubmit={createStudent}>
+                <form onSubmit={createStudent} >
                   <Modal.Body
                     className="relative"
                     style={{ maxHeight: "500px" }}
@@ -742,6 +832,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         <label htmlFor="dateBirth">
                           Data de nascimento: <span className="text-red-500">*</span>
                         </label>
+
+                        {/* @ts-ignore */}
+                        <Datepicker options={optionsDate} onChange={handleChange} show={show} setShow={handleClose}>
+                            <div className="flex gap-2 p-2 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
+                                <input type="text" className=" pl-1.5 cursor-pointer w-full" placeholder="Selecione sua data de nascimento" value={date} readOnly />
+
+                                <div>
+                                    <CalendarIcon/>
+                                </div>
+                            </div>
+                        </Datepicker>
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -761,6 +862,27 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               return (
                                 <SelectItem key={r.id} value={String(r.id)}>
                                   {r.name}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="units">
+                          Unidade: <span className="text-red-500">*</span>
+                        </label>
+                        <Select onValueChange={(e) => setUnits(e)}>
+                          <SelectTrigger className="w-full" id="units">
+                            <SelectValue placeholder="Selecione a unidade" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {unitsDisp.map((c) => {
+                              return (
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
                                 </SelectItem>
                               );
                             })}
@@ -859,7 +981,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button type="submit">Salvar</Button>
+                    <Button type="submit" className="bg-primary-color hover:bg-secondary-color">Salvar</Button>
                     <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
                       Fechar
                     </Button>
@@ -879,7 +1001,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-72"
+                className="xl:max-w-72"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -954,6 +1076,27 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="units">
+                          Unidade: <span className="text-red-500">*</span>
+                        </label>
+                        <Select onValueChange={(e) => setUnits(e)}>
+                          <SelectTrigger className="w-full" id="units">
+                            <SelectValue placeholder="Selecione a unidade" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {unitsDisp.map((c) => {
+                              return (
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
                           Status: <span className="text-red-500">*</span>
                         </label>
@@ -974,7 +1117,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center " type="submit">
+                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
                     <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
@@ -1000,7 +1143,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     .getColumn("description")
                     ?.setFilterValue(event.target.value)
                 }
-                className="max-w-72 w-full"
+                className="xl:max-w-72 w-full"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -1021,92 +1164,26 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         />
                       </div>
 
-                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="modality">
-                          Modalidade: <span className="text-red-500">*</span>
-                        </label>
-                        <Select required onValueChange={(e) => setModality(e)}>
-                          <SelectTrigger
-                            className="w-full"
-                            id="modality"
-                            name="modality"
-                          >
-                            <SelectValue placeholder="Selecione a modalidade" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Futsal">Futsal</SelectItem>
-                            <SelectItem value="Handebol">Handebol</SelectItem>
-                            <SelectItem value="Vôlei">Vôlei</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="students">
-                          Categoria: <span className="text-red-500">*</span>
+                        <label htmlFor="units">
+                          Unidade: <span className="text-red-500">*</span>
                         </label>
-                        <Select required onValueChange={(e) => setCategory(e)}>
-                          <SelectTrigger
-                            className="w-full"
-                            id="category"
-                            name="category"
-                          >
-                            <SelectValue placeholder="Selecione a categoria" />
+                        <Select onValueChange={(e) => setUnits(e)}>
+                          <SelectTrigger className="w-full" id="units">
+                            <SelectValue placeholder="Selecione a unidade" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1° ao 3° ano</SelectItem>
-                            <SelectItem value="2">4° ao 6° ano</SelectItem>
-                            <SelectItem value="3">7° ao 9° ano</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
 
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="teacher">Professor:</label>
-                        <Select
-                          onValueChange={(e) => setTeacher(e)}
-                          defaultValue={teacher}
-                        >
-                          <SelectTrigger
-                            className="w-full"
-                            id="teacher"
-                            name="teacher"
-                          >
-                            <SelectValue placeholder="Selecione o professor" />
-                          </SelectTrigger>
                           <SelectContent>
-                            {teachers.map((t) => {
+                            {unitsDisp.map((c) => {
                               return (
-                                <SelectItem value={String(t.id)}>
-                                  {t.name}
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
                                 </SelectItem>
                               );
                             })}
                           </SelectContent>
                         </Select>
-                      </div> */}
-
-                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="students">Alunos:</label>
-                        <Select required onValueChange={(e) => (e)}>
-                          <SelectTrigger
-                            className="w-full"
-                            id="quantity_students"
-                            name="quantity_students"
-                          >
-                            <SelectValue placeholder="Selecione os alunos" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {
-                              students.map(s => {
-                                return (
-                                  <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                                )
-                              })
-                            }
-                          </SelectContent>
-                        </Select>
-                      </div> */}
+                      </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
@@ -1129,7 +1206,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center " type="submit">
+                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
                     <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
@@ -1144,7 +1221,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           {route == "esportes" && (
             <>
               <Input
-                placeholder="Pesquise pela descrição da equipe..."
+                placeholder="Pesquise pela descrição do esporte..."
                 value={
                   (table
                     .getColumn("description")
@@ -1155,7 +1232,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     .getColumn("description")
                     ?.setFilterValue(event.target.value)
                 }
-                className="max-w-72"
+                className="xl:max-w-72"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -1192,6 +1269,27 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             <SelectItem value="Futsal">Futsal</SelectItem>
                             <SelectItem value="Handebol">Handebol</SelectItem>
                             <SelectItem value="Vôlei">Vôlei</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="units">
+                          Unidade: <span className="text-red-500">*</span>
+                        </label>
+                        <Select onValueChange={(e) => setUnits(e)}>
+                          <SelectTrigger className="w-full" id="units">
+                            <SelectValue placeholder="Selecione a unidade" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {unitsDisp.map((c) => {
+                              return (
+                                <SelectItem key={c.id} value={String(c.id)}>
+                                  {c.description}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1261,7 +1359,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center " type="submit">
+                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
                     <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
@@ -1333,60 +1431,60 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               onClick={() => openModals()}
               className={`${
                 route != "students" ? "hidden" : "flex"
-              } w-full xl:max-w-40 gap-2 items-center justify-center`}
+              } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              Cadastrar aluno
-              <MdPersonAdd fontSize={23}/>
+              <MdPersonAdd fontSize={23} className="hidden md:flex"/>
+              Cadastrar <span className="hidden md:block">aluno</span>
             </Button>
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "turmas" ? "hidden" : "flex"
-              } w-full xl:max-w-40 gap-2 items-center justify-center`}
+              } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              Cadastrar turma
-              <MdGroupAdd fontSize={23}/>
+              <MdGroupAdd fontSize={22} className="hidden md:flex"/>
+              Cadastrar <span className="hidden md:block">turma</span>
             </Button>
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "esportes" ? "hidden" : "flex"
-              } w-full xl:max-w-44 gap-2 items-center justify-center`}
+              } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              Cadastrar equipe
-              <MdSportsKabaddi fontSize={20}/>
+              <FaPlus fontSize={15} className="hidden md:flex"/>
+              Cadastrar <span className="hidden md:block">esporte</span>
             </Button>
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "teachers" ? "hidden" : "flex"
-              } w-full xl:max-w-48 gap-2 items-center justify-center`}
+              } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              Cadastrar professor
-              <MdPersonAdd fontSize={20}/>
+              <MdPersonAdd fontSize={20} className="hidden md:flex" />
+              Cadastrar <span className="hidden md:block">professor</span> 
             </Button>
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "responsibles" ? "hidden" : "flex"
-              } w-full xl:max-w-52 gap-2 items-center justify-center`}
+              } w-full xl:max-w-56 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              Cadastrar responsável
-              <MdPersonAdd fontSize={20}/>
+              <MdPersonAdd fontSize={20} className="hidden md:flex"/>
+              Cadastrar <span className="hidden md:block">responsável</span>
             </Button>
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "call" ? "hidden" : "flex"
-              } w-full xl:max-w-44 gap-2 items-center justify-center`}
+              } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
+              <MdFormatListBulletedAdd fontSize={23} className="hidden md:flex"/>
               Chamada
-              <MdFormatListBulletedAdd fontSize={23}/>
             </Button>
           </div>
         </article>

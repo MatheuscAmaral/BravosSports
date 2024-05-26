@@ -46,22 +46,6 @@ export const columns: ColumnDef<RowProps>[] = [
       </div>
     ),
   },
- 
-  // {
-  //   accessorKey: "id",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Matrícula
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>{row.getValue("id")}</div>,
-  // },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -76,6 +60,21 @@ export const columns: ColumnDef<RowProps>[] = [
       );
     },
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "date_of_birth",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Data de nascimento
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("date_of_birth")}</div>,
   },
   {
     accessorKey: "responsible_name",
@@ -107,21 +106,6 @@ export const columns: ColumnDef<RowProps>[] = [
     },
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
-  // {
-  //   accessorKey: "phone",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Telefone
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div className="lowercase">{row.getValue("phone")}</div>,
-  // },
   {
     accessorKey: "status",
     header: ({ column }) => {
@@ -200,7 +184,7 @@ const Students = () => {
   const [data, setData] = useState<StudentsProps[]>([]);
 
   return (
-    <main className="w-full">
+    <main className="w-full overflow-auto">
       <section className="mt-10">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
           Alunos <span className="text-sm mt-1">({data.length})</span>

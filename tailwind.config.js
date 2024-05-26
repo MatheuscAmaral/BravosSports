@@ -10,6 +10,7 @@ module.exports = withMT({
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
     "node_modules/flowbite-react/lib/esm/**/*.js",
+    "./node_modules/tailwind-datepicker-react/dist/**/*.js",
   ],
   prefix: "",
   theme: {
@@ -21,6 +22,13 @@ module.exports = withMT({
       },
     },
     extend: {
+      fontFamily: {
+        'sans': ['Poppins', 'Helvetica', 'Arial', 'sans-serif'],
+      },
+      colors: {
+        'primary-color': '#EB4519',
+        'secondary-color': '#B42904'
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -35,12 +43,7 @@ module.exports = withMT({
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
-    },
-
-      fontFamily: {
-        'sans': ['Poppins', 'Helvetica', 'Arial', 'sans-serif'],
-      },
-      
+    }, 
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

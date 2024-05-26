@@ -47,8 +47,8 @@ const Header = () => {
           mobile ? "flex flex-col xl:hidden" : "hidden"
         } items-center bg-white w-full h-svh absolute z-50 py-1 px-3`}
       >
-        <div className="flex justify-between w-full">
-          <img src={logo} alt="logo" className="h-20 py-3" />
+        <div className="flex justify-between items-center w-full">
+          <img src={logo} alt="logo" className=" h-16 py-3" />
 
           <button
             className="p-2 my-5 rounded-lg hover:bg-gray-100"
@@ -58,19 +58,20 @@ const Header = () => {
           </button>
         </div>
 
-        <ul className="flex flex-col gap-2 w-full mt-5 select-none">
+        <ul className="flex flex-col gap-2 w-full mt-1 select-none">
           <li
             onClick={() => navigateToRoute("/")}
-            className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+            className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
           >
             <FaHome fontSize={24} />
             <p className="text-lg">Home</p>
           </li>
+
           {
             ((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
                 <li
                   onClick={() => navigateToRoute("/alunos")}
-                  className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+                  className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
                 >
                   <FaUsers fontSize={24} />
                   <p className="text-lg">Alunos</p>
@@ -81,7 +82,7 @@ const Header = () => {
           {((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) && (
               <li
                 onClick={() => navigateToRoute("/turmas")}
-                className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
                 <BiSolidBusSchool fontSize={24} />
                 <p className="text-lg">Turmas</p>
@@ -91,7 +92,7 @@ const Header = () => {
           {((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) &&  (
               <li
                 onClick={() => navigateToRoute("/esportes")}
-                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
                 <MdSportsHandball fontSize={27} />
                 <p className="text-lg">Esportes</p>
@@ -101,7 +102,7 @@ const Header = () => {
           {((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) &&  (
               <li
                 onClick={() => navigateToRoute("/professores")}
-                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
                 <PiChalkboardTeacherBold fontSize={27} />
                 <p className="text-lg">Professores</p>
@@ -111,7 +112,7 @@ const Header = () => {
           {((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) &&  (
               <li
                 onClick={() => navigateToRoute("/responsaveis")}
-                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
                 <FaUserTie fontSize={25} />
                 <p className="text-lg">Responsáveis</p>
@@ -120,7 +121,7 @@ const Header = () => {
 
           {/* <li
             onClick={() => navigateToRoute("/controle/alunos")}
-            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
           >
             <FaSchoolLock fontSize={25} />
             <p className="text-lg">Controle de acesso</p>
@@ -128,26 +129,28 @@ const Header = () => {
 
           <li
             onClick={() => navigateToRoute("/chamada")}
-            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer"
+            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
           >
             <FaClipboardList fontSize={25} />
             <p className="text-lg">Chamada</p>
           </li>
 
-          <hr />
+          <div className="fixed bottom-3 left-3 w-full">
+            <hr className="mr-6"/>
 
-          <li className="flex justify-between gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-700 font-semibold cursor-pointer">
-            <div className="flex items-center gap-3.5">
-              <FaUserAlt fontSize={23} />
-              <p className="text-lg">{(user as unknown as UserProps).name}</p>
-            </div>
+            <li className="flex justify-between gap-3 mt-2 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer">
+              <div className="flex items-center gap-3.5">
+                <FaUserAlt fontSize={23} />
+                <p className="text-lg">{(user as unknown as UserProps).name}</p>
+              </div>
 
-            <IoLogOutOutline
-              onClick={LogOut}
-              fontSize={26}
-              className="cursor-pointer mr-1"
-            />
-          </li>
+              <IoLogOutOutline
+                onClick={LogOut}
+                fontSize={26}
+                className="cursor-pointer mr-10"
+              />
+            </li>
+          </div>
         </ul>
       </section>
     </div>

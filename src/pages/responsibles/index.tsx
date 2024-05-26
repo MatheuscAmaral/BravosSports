@@ -64,6 +64,21 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div className="lowercase">{row.getValue("phone")}</div>,
   },
   {
+    accessorKey: "desc_unit",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Unidade
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => {
       return (

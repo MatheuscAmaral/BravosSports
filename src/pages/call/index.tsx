@@ -92,6 +92,21 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
+    accessorKey: "date_of_birth",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Data de nascimento
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("date_of_birth")}</div>,
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => {
         return (
@@ -207,7 +222,7 @@ const Call = () => {
           Chamada <span className="text-sm mt-1">({data.length})</span>
         </h1>
 
-        <button className={`${loading ? "flex" : "hidden"} rounded-lg p-2 bg-orange-900 hover:bg-orange-700 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
+        <button className={`${loading ? "flex" : "hidden"} rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
           <TbArrowsExchange className="text-white" fontSize={20}/>
         </button>
       </section>
@@ -239,7 +254,7 @@ const Call = () => {
             </div>
           </Modal.Body>
           <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-            <Button type="submit" disabled={!classId} >Selecionar</Button>
+            <Button type="submit" className="bg-primary-color hover:bg-secondary-color" disabled={!classId} >Selecionar</Button>
           </Modal.Footer>
         </form>
       </Modal>
