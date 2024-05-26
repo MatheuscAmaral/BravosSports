@@ -68,8 +68,8 @@ function Auth() {
 
 
   return (
-    <main className="grid lg:grid-cols-2 mx-7 md:mx-0 mt-20 md:mt-0">
-      <section className="flex flex-col justify-center py-44 items-center gap-5 border-black p-16 my-auto mx-auto w-full max-w-3xl">
+    <main className="grid lg:grid-cols-2 mx-7 md:mx-0  md:mt-0">
+      <section className="flex flex-col justify-center py-20 md:py-44 items-center gap-5 border-black p-5 my-auto mx-auto w-full max-w-3xl">
         <form
           onSubmit={(e) => LogIn(e)}
           className="lg:max-w-md mt-20 md:mt-32 lg:mt-0 justify-center h-full mx-auto w-full flex flex-col gap-7"
