@@ -107,12 +107,10 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 const Classes = () => {
   const { reloadPage } = useContext(ReloadContext);
-  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
-        setLoad(true);
         const response = await api.get("/classes");
   
         setData(response.data);
@@ -120,10 +118,6 @@ const Classes = () => {
 
       catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
-      }
-
-      finally {
-        setLoad(false);
       }
     }
   

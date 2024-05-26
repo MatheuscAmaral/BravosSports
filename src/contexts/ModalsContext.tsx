@@ -192,12 +192,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState("");
-  const [data, setData] = useState<StudentsProps[]>([]);
   const [type, setType] = useState("");
   const [link, setLink] = useState("");
   const [status, setStatus] = useState("");
   const [classesDisp, setClassesDisp] = useState<ClassesProps[]>([]);
-  const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
+  const [responsiblesDisp, setResponsiblesDisp] = useState<ResponsibleProps[]>([]);
   const [units, setUnits] = useState("");
   const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
   const [responsible, setResponsible] = useState("");
@@ -205,7 +204,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [id, setId] = useState("");
   const [description, setDescription] = useState("");
   const [modality, setModality] = useState("");
-  const [category, setCategory] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
   const [name, setName] = useState("");
@@ -263,28 +261,27 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const handleChange = (selectedDate: Date) => {
       setDate(selectedDate.toLocaleDateString('pt-BR'));
   }
+
   const handleClose = (state: boolean) => {
       setShow(state)
   }
-
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
   };
 
   const getData = async (row: RowProps[], type: string) => {
-    setData(row);
     setLink(row[0].image);
 
     if (type == "students") {
       setName(String(row[0].name));
-      setResponsible(String(row[0].responsible));
       setClasses(String(row[0].class));
       setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
       setDate(String(row[0].date_of_birth));
       setDaysTraining(row[0].days_training != null ? String(row[0].days_training) : "");
       setUnits(String(row[0].unit));
+      setResponsible(String(row[0].responsible));
     }
     
     if (type == "classes") {
@@ -350,7 +347,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     try {
       const response = await api.get("/responsibles");
 
-      setResponsibles(response.data);
+      setResponsiblesDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
     }
@@ -456,7 +453,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setId("");
     setDescription("");
     setModality("");
-    setCategory("");
     setId("");
     setUser("");
     setDate("");
@@ -873,7 +869,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectTrigger>
 
                       <SelectContent>
-                        {responsibles.map((r) => {
+                        {responsiblesDisp.map((r) => {
                           return (
                             <SelectItem key={r.id} value={String(r.id)}>
                               {r.name}
@@ -952,12 +948,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="team">
-                      Equipe: <span className="text-red-500">*</span>
+                    <label htmlFor="sport">
+                      Esporte: <span className="text-red-500">*</span>
                     </label>
                     <Select defaultValue={team} onValueChange={(e) => setTeam(e)}>
-                      <SelectTrigger className="w-full" id="team">
-                        <SelectValue placeholder="Selecione a equipe" />
+                      <SelectTrigger className="w-full" id="sport">
+                        <SelectValue placeholder="Selecione o esporte" />
                       </SelectTrigger>
                       <SelectContent>
                         {teamsDisp.map((t) => {
@@ -1057,6 +1053,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                   <div className="flex flex-col gap-1 text-gray-700 mt-5 text-sm font-medium">
                     <label htmlFor="user">Usuário:</label>
+
                     <Select
                       defaultValue={String(user)}
                       required

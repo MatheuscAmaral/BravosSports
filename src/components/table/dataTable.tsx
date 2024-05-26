@@ -85,7 +85,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const { user } = React.useContext(AuthContext);
+  const { username } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
@@ -96,7 +96,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [loading, setLoading] = React.useState(false);
   const { reloadPage, verifyUserCreate } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
-  const [newData, setNewData] = React.useState([]);
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
   const [team, setTeam] = React.useState("");
@@ -109,7 +108,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
   const [classes, setClasses] = React.useState("");
   const [classesFilter, setClassesFilter] = React.useState("0");
-  const [teamFilter, setTeamFilter] = React.useState("0");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
   const [teacher, setTeacher] = React.useState("1");
@@ -120,7 +118,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId } = React.useContext(ReloadContext);
 
   React.useEffect(() => {
-    setNewData(data);
     if (route == "students") {
       getClasses();
     }
@@ -233,7 +230,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(true);
       await api.post("/classes", data);
       toast.success("Turma cadastrada com sucesso!");
-      setNewData((allData) => ({ ...allData, data }));
       setOpenModal(false);
       reloadPage();
       handlePhoneChange("");
@@ -254,7 +250,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       description: description,
       modality: modality,
-      class: classes,
       teacher_id: teacher,
       unit: units,
       status: status,
@@ -264,7 +259,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(true);
       await api.post("/sports", data);
       toast.success("Esporte cadastrado com sucesso!");
-      setNewData((allData) => ({ ...allData, data }));
       setOpenModal(false);
       reloadPage();
       handlePhoneChange("");
@@ -294,7 +288,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(true);
       await api.post("/responsibles", data);
       toast.success(`${name} cadastrada com sucesso!`);
-      setNewData((allData) => ({ ...allData, data }));
       setOpenModal(false);
       reloadPage();
       handlePhoneChange("");
@@ -357,8 +350,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   };
 
   const getStudentsFilter = (idTeam: any) => {
-    setTeamFilter(idTeam);
-
     filterStudentsByTeam(idClass, idTeam);
   }
 
@@ -374,6 +365,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   type Student = {
     original: {
+      id_call: any;
       id: string;
       class: string;
       name: string;
@@ -391,9 +383,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         class: student.class,
         name: student.name,
         presence: student.presence,
-        edit_by: user.name,
+        edit_by: username,
         id_call: student.id_call,
-        ...((student.presence == null || student.date == null) && { made_by: user.name })
+        ...((student.presence == null || student.date == null) && { made_by: username })
       }));      
 
       const filterTransformedStudents = transformedStudents.filter(t => t.presence != null);
@@ -496,7 +488,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       image: link,
       name: name,
-      userId: user,
+      userId: userSelected,
       unit: units,
       status: status,
     };

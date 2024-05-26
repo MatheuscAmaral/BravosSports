@@ -80,7 +80,7 @@ const Sidebar = () => {
           </ListItem>
         ))}
         
-        <div className="fixed bottom-7 left-6">
+        <div className="fixed bottom-7 left-6 max-w-60 w-full">
           <hr className="my-4 border-blue-gray-50" />
 
           <div className="flex justify-between gap-4 p-0 items-center mx-1.5">
@@ -95,7 +95,6 @@ const Sidebar = () => {
               className="cursor-pointer ml-5"
             />
           </div>
-          
         </div>
 
       </List>

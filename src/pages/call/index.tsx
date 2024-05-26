@@ -35,7 +35,7 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Presença",
     cell: ({ row }) => {
       const [presence, setPresence] = useState(row.original.presence);
-
+      
       const changePresence = (presence: number) => {
         setPresence(presence);
         row.original.presence = presence;
@@ -45,13 +45,13 @@ export const columns: ColumnDef<RowProps>[] = [
         <div className="flex justify-center items-center gap-3 text-2xl">
           <button onClick={() => changePresence(1)}>
              <IoIosCheckmarkCircle
-              className={`${row.original.presence != null && row.original.presence == 1 ? "text-green-500" : "text-gray-300"} cursor-pointer`} 
+              className={`${row.original.presence != null && presence != null && row.original.presence == 1 ? "text-green-500" : "text-gray-300"} cursor-pointer`} 
             />
           </button>
 
           <button onClick={() => changePresence(0)}>
             <IoMdCloseCircle  
-              className={`${row.original.presence != null && row.original.presence == 0 ? "text-red-500" : "text-gray-300"} cursor-pointer`} 
+              className={`${row.original.presence != null && presence != null && row.original.presence == 0 ? "text-red-500" : "text-gray-300"} cursor-pointer`} 
             />
           </button>
         </div>

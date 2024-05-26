@@ -31,7 +31,6 @@ function Auth() {
 
   const LogIn = async (e: FormEvent) => {
     e.preventDefault();
-
     setLoading(true);
 
     const data = {
@@ -70,7 +69,7 @@ function Auth() {
 
   return (
     <main className="grid lg:grid-cols-2 mx-7 md:mx-0 mt-20 md:mt-0">
-      <section className="flex flex-col justify-center py-44 items-center gap-5 border-black p-16 my-auto mx-auto w-full max-w-xl">
+      <section className="flex flex-col justify-center py-44 items-center gap-5 border-black p-16 my-auto mx-auto w-full max-w-3xl">
         <form
           onSubmit={(e) => LogIn(e)}
           className="lg:max-w-md mt-20 md:mt-32 lg:mt-0 justify-center h-full mx-auto w-full flex flex-col gap-7"
@@ -78,6 +77,7 @@ function Auth() {
           <h3 className="text-4xl font-semibold text-center hidden lg:block">
             Entrar <span className="text-red-600">com</span>
           </h3>
+
           <div className="flex justify-center lg:hidden">
             <img src={logo} className="w-72" />
           </div>

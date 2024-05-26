@@ -27,8 +27,10 @@ export interface StudentsProps {
   team: string;
   phone: string;
   status: number;
+  presence?: boolean | null;
+  date?: Date | null;
+  id_call: number;
 }
-
 
 export const columns: ColumnDef<RowProps>[] = [
   {

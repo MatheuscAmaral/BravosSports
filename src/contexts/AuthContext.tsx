@@ -4,6 +4,7 @@ interface UserDataProps {
     user: UserProps[],
     authUser: (user: UserProps[]) => void,
     logout: () => void,
+    username: string,
 }
 
 export interface UserProps {
@@ -22,9 +23,11 @@ export const AuthContext = createContext({} as UserDataProps);
 
 const AuthProvider = ({children} : ChildrenProps) => {
     const [user, setUser] = useState<UserProps[]>([]);
+    const [username, setUsername] = useState("");
 
     const authUser = (user: UserProps[]) => {
         setUser(user);
+        setUsername((user as unknown as UserProps).name);
     }
     
     const logout = () => {
@@ -34,7 +37,7 @@ const AuthProvider = ({children} : ChildrenProps) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, authUser, logout }}>
+        <AuthContext.Provider value={{ user, authUser, logout, username }}>
             {children}
         </AuthContext.Provider>
     )
