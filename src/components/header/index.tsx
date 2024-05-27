@@ -135,7 +135,7 @@ const Header = () => {
             <p className="text-lg">Chamada</p>
           </li>
 
-          <div className="fixed bottom-3 left-3 w-full">
+          <div className="fixed bottom-3 bg-white left-3 w-full">
             <hr className="mr-6"/>
 
             <li className="flex justify-between gap-3 mt-2 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer">

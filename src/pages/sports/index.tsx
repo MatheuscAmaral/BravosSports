@@ -20,7 +20,6 @@ import { RowProps, modalContext } from "@/contexts/ModalsContext";
 export interface SportsProps {
   id: number;
   description: string;
-  quantity_students: number;
   modality: string,
   class: number,
   status: number;
@@ -57,23 +56,6 @@ export const columnsClass: ColumnDef<RowProps>[] = [
     },
     cell: ({ row }) => <div>{row.getValue("modality")}</div>,
   },
-  //  {
-  //   accessorKey: "class",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Turma
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>
-  //     {row.getValue("class")}
-  //   </div>,
-  // },
   {
     accessorKey: "desc_unit",
     header: ({ column }) => {
@@ -141,13 +123,17 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 
 const Sports = () => {
-  const { reloadPage } = useContext(ReloadContext);
+  const { reloadPage, newData } = useContext(ReloadContext);
+  const [data, setData] = useState<SportsProps[]>([]);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
+        if (newData.length > 0) {
+          return setData(newData);
+        }
+
         const response = await api.get("/sports");
-  
         setData(response.data);
       }
 
@@ -159,7 +145,6 @@ const Sports = () => {
     getClasses();
   }, [reloadPage]);
 
-  const [data, setData] = useState<SportsProps[]>([]);
 
   return (
     <main className="w-full">

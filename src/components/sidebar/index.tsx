@@ -11,7 +11,7 @@ import {
 } from "@material-tailwind/react";
 
 import { PiChalkboardTeacherBold } from "react-icons/pi";
-import { FaSchoolLock, FaUsers } from "react-icons/fa6";
+import { FaUsers } from "react-icons/fa6";
 
 import {
   MagnifyingGlassIcon,
@@ -50,7 +50,7 @@ const Sidebar = () => {
       ) : [
       { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
       { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
-      { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos" },
+      // { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos" },
         
       ].filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()))
   ) : [];

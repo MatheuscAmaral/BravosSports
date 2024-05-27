@@ -106,13 +106,17 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 
 const Classes = () => {
-  const { reloadPage } = useContext(ReloadContext);
+  const { reloadPage, newData } = useContext(ReloadContext);
+  const [data, setData] = useState<ClassesProps[]>([]);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
+        if (newData.length > 0) {
+          return setData(newData);
+        }
+
         const response = await api.get("/classes");
-  
         setData(response.data);
       }
 
@@ -122,9 +126,8 @@ const Classes = () => {
     }
   
     getClasses();
-  }, [reloadPage]);
+  }, [reloadPage, newData]);
 
-  const [data, setData] = useState<ClassesProps[]>([]);
 
   return (
     <main className="w-full">

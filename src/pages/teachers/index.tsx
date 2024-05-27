@@ -136,13 +136,16 @@ export const columnsProf: ColumnDef<RowProps>[] = [
 
 const Teachers = () => {
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
-  const { reloadPage } = useContext(ReloadContext);
+  const { reloadPage, newData } = useContext(ReloadContext);
 
   useEffect(() => {
     const getTeachers = async () => {
       try {
-        const response = await api.get("/teachers");
+        if (newData.length > 0) {
+          return setTeachers(newData);
+        }
 
+        const response = await api.get("/teachers");
         setTeachers(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os professores disponíveis!");

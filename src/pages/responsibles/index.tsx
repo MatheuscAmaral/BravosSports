@@ -132,13 +132,16 @@ export const columns: ColumnDef<RowProps>[] = [
 
 const Responsibles = () => {
   const [data, setData] = useState<ResponsibleProps[]>([]);
-  const { reloadPage } = useContext(ReloadContext);
+  const { reloadPage, newData } = useContext(ReloadContext);
 
   useEffect(() => {
     const getResponsibles = async () => {
        try {
-        const response = await api.get("/responsibles");
+        if (newData.length > 0) {
+          return setData(newData);
+        }
 
+        const response = await api.get("/responsibles");
         setData(response.data);
        }
 

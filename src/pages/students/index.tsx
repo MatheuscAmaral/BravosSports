@@ -27,9 +27,6 @@ export interface StudentsProps {
   team: string;
   phone: string;
   status: number;
-  presence?: boolean | null;
-  date?: Date | null;
-  id_call: number;
 }
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -169,10 +166,10 @@ const Students = () => {
   useEffect(() => {
     const getStudents = async () => {
       try {
-        const response = await api.get("/students");
+        const response = await api.get(`/students/`);
         setData(response.data);
         
-        if (newStudents && !createdUser) {
+        if (newStudents.length > 0 && !createdUser) {
           setData(newStudents);
         }
       } catch {

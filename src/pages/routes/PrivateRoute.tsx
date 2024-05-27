@@ -6,11 +6,12 @@ import { Navigate, useLocation } from "react-router-dom";
 
 const PrivateRoute = ({ children }: any) => {
     const { user, authUser } = useContext(AuthContext);
-    const { resetNewStudents } = useContext(ReloadContext);
+    const { resetNewStudents, resetData } = useContext(ReloadContext);
     const location = useLocation();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("@bravosSports:user");
+        resetData();
         resetNewStudents();
     
         if (storedUser) { 

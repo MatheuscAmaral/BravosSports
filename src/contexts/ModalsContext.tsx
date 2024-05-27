@@ -32,7 +32,7 @@ import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
-import { TeachersProps } from "@/pages/teachers";
+// import { TeachersProps } from "@/pages/teachers";
 import { UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
@@ -212,7 +212,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
-  const [teachers, setTeachers] = useState<TeachersProps[]>([]);
+  // const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
   const [date, setDate] = useState("");
@@ -383,15 +383,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const getTeachers = async () => {
-    try {
-      const response =   await api.get("/teachers");
+  // const getTeachers = async () => {
+  //   try {
+  //     const response =   await api.get("/teachers");
 
-      setTeachers(response.data);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
-    }
-  };
+  //     setTeachers(response.data);
+  //   } catch {
+  //     toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
+  //   }
+  // };
 
   const getTeams = async () => {
     try {
@@ -427,12 +427,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setLoading(false);
     }
     
-    if (type == "classes") {
-      await getTeachers();
-    }
+    // if (type == "classes") {
+    //   await getTeachers();
+    // }
     
     if (type == "esportes") {
-      await getTeachers();
+      // await getTeachers();
       await getClasses();
     }
     
@@ -777,31 +777,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="teacher">Professor:</label>
-                    <Select
-                      onValueChange={(e) => setTeacher(e)}
-                      defaultValue={teacher}
-                    >
-                      <SelectTrigger
-                        className="w-full"
-                        id="teacher"
-                        name="teacher"
-                      >
-                        <SelectValue placeholder="Selecione o professor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {teachers.map((t) => {
-                          return (
-                            <SelectItem value={String(t.id)}>
-                              {t.name}
                             </SelectItem>
                           );
                         })}

@@ -19,7 +19,7 @@ const MaskedInput: React.FC<MaskedInputProps> = ({
   };
 
   return (
-    <InputMask mask="(99) 99999-9999" value={value} onChange={handleChange}>
+    <InputMask mask="(99) 99999-9999" value={value} onChange={handleChange} >
       {(inputProps: any) => (
         <Input
           {...inputProps}

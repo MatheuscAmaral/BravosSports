@@ -58,7 +58,7 @@ import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import MaskedInput from "../InputMask";
-import { TeachersProps } from "@/pages/teachers";
+// import { TeachersProps } from "@/pages/teachers";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 interface DataTableProps {
@@ -85,7 +85,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const { username } = React.useContext(AuthContext);
+  const { user, username } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
@@ -107,21 +107,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [daysTraining, setDaysTraining] = React.useState("");
   const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
   const [classes, setClasses] = React.useState("");
-  const [classesFilter, setClassesFilter] = React.useState("0");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
-  const [teacher, setTeacher] = React.useState("1");
-  const [teachers, setTeachers] = React.useState<TeachersProps[]>([]);
   const [userSelected, setUserSelected] = React.useState("");
   const [users, setUsers] = React.useState<UserProps[]>([]);
   const [date, setDate] = React.useState("");
-  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId } = React.useContext(ReloadContext);
-
-  React.useEffect(() => {
-    if (route == "students") {
-      getClasses();
-    }
-  }, []);
+  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit } = React.useContext(ReloadContext);
 
   const optionsDate = {
     title: "",
@@ -196,11 +187,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   if (route == "students") {
     React.useEffect(() => {
-      filterStudentsByClass(Number(classesFilter));
-    }, [classesFilter]);
+      getClasses();
+    }, []);
   }
 
-  if (route == "call") {
+  if (route == "turmas" || route == "teachers" || route == "esportes" || route == "responsibles") {
+    React.useEffect(() => {
+      getUnits();
+    }, []);
+  }
+
+  if (route == "call") {   
     React.useEffect(() => {
       const getTeamsFilter = async () => {
         const response = await api.get(`/sports`);
@@ -250,7 +247,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       description: description,
       modality: modality,
-      teacher_id: teacher,
       unit: units,
       status: status,
     };
@@ -312,6 +308,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const response = await api.get("/units");
 
+      response.data.unshift({id: 999, description: 'Todos', status: 1});
       setUnitsDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
@@ -329,15 +326,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
   };
 
-  const getTeachers = async () => {
-    try {
-      const response = await api.get("/teachers");
+  // const getTeachers = async () => {
+  //   try {
+  //     const response = await api.get("/teachers");
 
-      setTeachers(response.data);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
-    }
-  };
+  //     setTeachers(response.data);
+  //   } catch {
+  //     toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
+  //   }
+  // };
 
   const getTeams = async () => {
     try {
@@ -348,10 +345,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
     }
   };
-
-  const getStudentsFilter = (idTeam: any) => {
-    filterStudentsByTeam(idClass, idTeam);
-  }
 
   const getUsers = async () => {
     try {
@@ -405,12 +398,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       await getTeams();
     }
     
-    if (route == "turmas") {
-    }
-    
     if (route == "esportes") {
       await getClasses();
-      await getTeachers();
+      // await getTeachers();
     }
 
     if (route == "teachers") {
@@ -550,16 +540,35 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         >
           {route == "teachers" && (
             <>
+             <div className="flex items-center gap-4">
               <Input
-                placeholder="Pesquise pelo nome do professor..."
-                value={
-                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("name")?.setFilterValue(event.target.value)
-                }
-                className="xl:max-w-72"
-              />
+                  placeholder="Pesquise pelo nome do professor..."
+                  value={
+                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("name")?.setFilterValue(event.target.value)
+                  }
+                />
+
+                <Select onValueChange={(e) => filterByUnit("teachers", Number(e))}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Unidade" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {unitsDisp.map((c) => {
+                      if (c.status == 1) {
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      }
+                    })}
+                  </SelectContent>
+                </Select>
+             </div>
 
               <Modal show={openModal} onClose={() => closeModal()}>
                 <Modal.Header>Cadastro de professor</Modal.Header>
@@ -659,6 +668,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <SelectContent>
                             {unitsDisp.map((c) => {
+                              if (c.id == 999) {
+                                return;
+                              }
+
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
                                   {c.description}
@@ -670,9 +683,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Status:</label>
+                        <label htmlFor="status">Status: <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setStatus(e)}>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" id="status">
                             <SelectValue placeholder="Selecione o status" />
                           </SelectTrigger>
                           <SelectContent>
@@ -706,9 +719,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 }
               />
 
-              <Select value={String(teamId)} onValueChange={(e) => getStudentsFilter(e)}>
+              <Select value={String(teamId)} onValueChange={(e) => filterStudentsByTeam(idClass, Number(e), (user as unknown as UserProps).id, (user as unknown as UserProps).level)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Equipe" />
+                  <SelectValue placeholder="Esportes" />
                 </SelectTrigger>
 
                 <SelectContent>
@@ -739,10 +752,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select onValueChange={(e) => setClassesFilter(e)}>
+                <Select onValueChange={(e) => filterStudentsByClass(Number(e))}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
+                  
                   <SelectContent>
                     {classesDisp.map((c) => {
                       if (c.status == 1) {
@@ -958,9 +972,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">Status:</label>
+                        <label htmlFor="status">Status:  <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setStatus(e)}>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" id="status">
                             <SelectValue placeholder="Selecione o status" />
                           </SelectTrigger>
                           <SelectContent>
@@ -985,16 +999,35 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
           {route == "responsibles" && (
             <>
-              <Input
-                placeholder="Pesquise pelo nome do responsável..."
-                value={
-                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("name")?.setFilterValue(event.target.value)
-                }
-                className="xl:max-w-72"
-              />
+              <div className="flex items-center gap-4">
+                <Input
+                  placeholder="Pesquise pelo nome do responsável..."
+                  value={
+                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("name")?.setFilterValue(event.target.value)
+                  }
+                />
+
+                <Select onValueChange={(e) => filterByUnit("responsibles", Number(e))}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Unidade" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {unitsDisp.map((c) => {
+                      if (c.status == 1) {
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      }
+                    })}
+                  </SelectContent>
+                </Select>
+             </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>Cadastro de responsáveis</Modal.Header>
@@ -1123,20 +1156,40 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
           {route == "turmas" && (
             <>
-              <Input
-                placeholder="Pesquise pela descrição da turma..."
-                value={
-                  (table
-                    .getColumn("description")
-                    ?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table
-                    .getColumn("description")
-                    ?.setFilterValue(event.target.value)
-                }
-                className="xl:max-w-72 w-full"
-              />
+              <div className="flex items-center gap-4">
+                <Input
+                  placeholder="Pesquise pela descrição da turma..."
+                  value={
+                    (table
+                      .getColumn("description")
+                      ?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table
+                      .getColumn("description")
+                      ?.setFilterValue(event.target.value)
+                  }
+                  className="w-full"
+                />
+
+                <Select onValueChange={(e) => filterByUnit("classes", Number(e))}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Unidade" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {unitsDisp.map((c) => {
+                      if (c.status == 1) {
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      }
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>Cadastro de turma</Modal.Header>
@@ -1167,6 +1220,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <SelectContent>
                             {unitsDisp.map((c) => {
+                              if (c.id == 999) {
+                                return;
+                              }
+
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
                                   {c.description}
@@ -1212,23 +1269,42 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
           {route == "esportes" && (
             <>
-              <Input
-                placeholder="Pesquise pela descrição do esporte..."
-                value={
-                  (table
-                    .getColumn("description")
-                    ?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table
-                    .getColumn("description")
-                    ?.setFilterValue(event.target.value)
-                }
-                className="xl:max-w-72"
-              />
+             <div className="flex items-center gap-4">
+                <Input
+                  placeholder="Pesquise pela descrição do esporte..."
+                  value={
+                    (table
+                      .getColumn("description")
+                      ?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table
+                      .getColumn("description")
+                      ?.setFilterValue(event.target.value)
+                  }
+                />
+
+                <Select onValueChange={(e) => filterByUnit("sports", Number(e))}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Unidade" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {unitsDisp.map((c) => {
+                      if (c.status == 1) {
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      }
+                    })}
+                  </SelectContent>
+                </Select>
+             </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de equipes</Modal.Header>
+                <Modal.Header>Cadastro de esportes</Modal.Header>
                 <form onSubmit={(e) => createSports(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
@@ -1239,7 +1315,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         <Input
                           id="description"
                           name="description"
-                          placeholder="Digite a descrição da equipe..."
+                          placeholder="Digite a descrição do esporte..."
                           onChange={(e) => setDescription(e.target.value)}
                           required
                         />
@@ -1309,28 +1385,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="teacher">Professor:</label>
-                        <Select onValueChange={(e) => setTeacher(e)}>
-                          <SelectTrigger
-                            className="w-full"
-                            id="teacher"
-                            name="teacher"
-                          >
-                            <SelectValue placeholder="Selecione o professor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teachers.map((t) => {
-                              return (
-                                <SelectItem value={String(t.id)}>
-                                  {t.name}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
                           Status: <span className="text-red-500">*</span>
                         </label>
@@ -1340,7 +1394,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             id="status"
                             name="status"
                           >
-                            <SelectValue placeholder="Selecione o status da equipe" />
+                            <SelectValue placeholder="Selecione o status do esporte" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="0">Inativo</SelectItem>
@@ -1395,6 +1449,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "phone" && "Telefone"}
 
+                          {column.id == "desc_unit" && "Unidade"}
+
+                          {column.id == "date_of_birth" && "Data de nascimento"}
+
                           {column.id == "category" && "Categoria"}
 
                           {column.id == "modality" && "Modalidade"}
@@ -1410,8 +1468,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             : column.id == "id" && "Código"}
 
                           {column.id == "description" && "Descrição"}
-
-                          {column.id == "quantity_students" && "Alunos"}
                         </DropdownMenuCheckboxItem>
                       );
                     })}
@@ -1550,12 +1606,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        {route != "teacherClass" && route != "studentsClass" && route != "responsibleRealeaseds" && route != "call" && (
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} de{" "}
-            {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
-          </div>
-        )}
+        <div className="flex-1 text-sm text-muted-foreground hidden">
+          {table.getFilteredSelectedRowModel().rows.length} de{" "}
+          {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+        </div>
 
         <div className="space-x-2">
           <Button

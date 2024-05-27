@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import { ClassesProps } from "../classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
+import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -169,6 +170,7 @@ const Call = () => {
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const { reloadPage, newStudentsCall, saveClassId, resetSelect } = useContext(ReloadContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const getClasses = async () => {
@@ -197,7 +199,7 @@ const Call = () => {
       setClassId("");
       resetSelect();
       saveClassId(Number(classId));
-      const response = await api.get(`/students/class/${classId}`);
+      const response = await api.get(`/students/class/${classId}/${(user as unknown as UserProps).id}/${(user as unknown as UserProps).level}`);
 
       setData(response.data);
       setLoading(true);
