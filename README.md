@@ -1,30 +1,22 @@
-# React + TypeScript + Vite
+# Bravos Sports
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bem-vindo ao repositório do frontend do Bravos Sports, um sistema para a gestão de uma escola de esportes. Este projeto foi desenvolvido utilizando React com TypeScript para proporcionar uma interface de usuário moderna, eficiente e de fácil manutenção.
 
-Currently, two official plugins are available:
+## Descrição
+Bravos Sports é um sistema completo para a gestão de escolas de esportes, oferecendo funcionalidades como:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Cadastro e gerenciamento de alunos.
+- Gestão de turmas e horários.
+- Acompanhamento de presença e desempenho.
+- Comunicação entre a administração, instrutores e alunos.
 
-## Expanding the ESLint configuration
+Este repositório contém exclusivamente o frontend do projeto, desenvolvido com React e TypeScript.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Tecnologias Utilizadas
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- **React** - Biblioteca JavaScript para a construção de interfaces de usuário.
+- **TypeScript** - Superset do JavaScript que adiciona tipos estáticos ao código.
+- **Tailwind CSS** - Framework de CSS utilitário para estilização rápida e eficiente.
+- **React Router** - Biblioteca para gerenciamento de rotas no React.
+- **Axios** - Cliente HTTP para realizar chamadas à API backend.
+- **ShadCn** - Biblioteca para componentes em react.
