@@ -85,7 +85,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const { user, username } = React.useContext(AuthContext);
+  const { username } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
@@ -94,7 +94,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
@@ -113,7 +112,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [userSelected, setUserSelected] = React.useState("");
   const [users, setUsers] = React.useState<UserProps[]>([]);
   const [date, setDate] = React.useState("");
-  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit } = React.useContext(ReloadContext);
+  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit, reloadPage, unitId } = React.useContext(ReloadContext);
 
   const optionsDate = {
     title: "",
@@ -687,7 +686,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 }
               />
 
-              <Select value={String(teamId)} onValueChange={(e) => filterStudentsByTeam(idClass, Number(e), (user as unknown as UserProps).id, (user as unknown as UserProps).level)}>
+              <Select value={String(teamId)} onValueChange={(e) => filterStudentsByTeam(idClass, Number(e), Number(unitId))}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Esportes" />
                 </SelectTrigger>

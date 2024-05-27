@@ -7,7 +7,7 @@ import { RowProps } from "./ModalsContext";
 interface ReloadDataProps {
     reloadPage: () => void;
     filterStudentsByClass: (id: number) => void;
-    filterStudentsByTeam: (idClass: number, idTeam: number, idUser: number, level: number) => void;
+    filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number) => void;
     filterByUnit: (route: string, idUnit: number) => void;
     newStudents: StudentsProps[];
     newStudentsCall: StudentsProps[];
@@ -21,6 +21,8 @@ interface ReloadDataProps {
     createdUser: boolean;
     resetNewStudents: () => void
     resetSelect: () => void;
+    unitId: number;
+    saveUnitId: (id: number) => void;
 }
 
 interface ChildrenProps {
@@ -38,9 +40,14 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [teamId, setTeamId] = useState(0);
     const [idClass, setIdClass] = useState(0);
     const [createdUser, setCreatedUser] = useState(false);
+    const [unitId, setUnitId] = useState(0);
 
     const reloadPage = () => {
         setReload(!reload);
+    }
+
+    const saveUnitId = (id: number) => {
+        setUnitId(id);
     }
 
     const verifyUserCreate = (response: boolean) => {
@@ -49,33 +56,27 @@ const ReloadProvider = ({children}: ChildrenProps) => {
 
     const filterStudentsByClass = async (id: number) => {   
         try {
-            if (id == 0) {
-                const response = await api.get(`/students`);
-                
-                setNewStudents(response.data);   
-            } else {
-                setFilterId(id);
-                const response = await api.get(`/students/class/filter/${id}`);
-                
-                setNewStudents(response.data);     
-                setCreatedUser(false);
-            }
+            setFilterId(id);
+            const response = await api.get(`/students/class/filter/${id}`);
+            
+            setNewStudents(response.data);     
+            setCreatedUser(false);
         } catch {
             toast.error("Ocorreu um erro ao buscar os alunos desta turma!");
         }
     }
 
-    const filterStudentsByTeam = async (idClass: number, idTeam: number) => {
+    const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number) => {
         setFilterId(idClass);
         setTeamId(idTeam);
         
         try {
            if (idClass != 0) {
-                const response = await api.get(`/students/class/${idClass}/${idTeam}`);
+                const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}`);
 
                 setNewStudentsCall(response.data); 
             } else {
-                setNewStudentsCall([]); 
+                setNewStudentsCall([]);     
             }
             
         } catch {
@@ -114,7 +115,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     return (
-        <ReloadContext.Provider value={{reloadPage, resetData, filterStudentsByClass, filterStudentsByTeam, filterByUnit, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
+        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitId, filterStudentsByClass, filterStudentsByTeam, filterByUnit, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

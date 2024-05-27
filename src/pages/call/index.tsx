@@ -170,7 +170,7 @@ const Call = () => {
   const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
-  const { reloadPage, newStudentsCall, saveClassId, resetSelect } = useContext(ReloadContext);
+  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId } = useContext(ReloadContext);
 
   useEffect(() => {
     const getUnits = async () => {
@@ -218,7 +218,8 @@ const Call = () => {
       setClassId("");
       resetSelect();
       saveClassId(Number(classId));
-      const response = await api.get(`/students/class/${classId}/`);
+      saveUnitId(Number(unitId));
+      const response = await api.get(`/students/class/${classId}/unit/${unitId}`);
 
       setData(response.data);
       setLoading(true);
