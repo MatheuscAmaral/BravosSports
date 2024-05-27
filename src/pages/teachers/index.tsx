@@ -54,21 +54,6 @@ export const columnsProf: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "desc_unit",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Unidade
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
-  },
-  {
     accessorKey: "status",
     header: ({ column }) => {
       return (
@@ -136,16 +121,13 @@ export const columnsProf: ColumnDef<RowProps>[] = [
 
 const Teachers = () => {
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
-  const { reloadPage, newData } = useContext(ReloadContext);
+  const { reloadPage } = useContext(ReloadContext);
 
   useEffect(() => {
     const getTeachers = async () => {
       try {
-        if (newData.length > 0) {
-          return setTeachers(newData);
-        }
-
         const response = await api.get("/teachers");
+
         setTeachers(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os professores disponíveis!");

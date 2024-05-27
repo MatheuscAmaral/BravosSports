@@ -47,29 +47,31 @@ const ReloadProvider = ({children}: ChildrenProps) => {
         setCreatedUser(response);
     }
 
-    const filterStudentsByClass = async (id: number) => {
-        setFilterId(id);
-        
+    const filterStudentsByClass = async (id: number) => {   
         try {
             if (id == 0) {
-                return setNewStudents([]);          
+                const response = await api.get(`/students`);
+                
+                setNewStudents(response.data);   
+            } else {
+                setFilterId(id);
+                const response = await api.get(`/students/class/filter/${id}`);
+                
+                setNewStudents(response.data);     
+                setCreatedUser(false);
             }
-
-            const response = await api.get(`/students/class/filter/${id}`);
-            setNewStudents(response.data);     
-            setCreatedUser(false);
         } catch {
             toast.error("Ocorreu um erro ao buscar os alunos desta turma!");
         }
     }
 
-    const filterStudentsByTeam = async (idClass: number, idTeam: number, idUser: number, level: number) => {
+    const filterStudentsByTeam = async (idClass: number, idTeam: number) => {
         setFilterId(idClass);
         setTeamId(idTeam);
         
         try {
            if (idClass != 0) {
-                const response = await api.get(`/students/class/${idClass}/${idTeam}/${idUser}/${level}`);
+                const response = await api.get(`/students/class/${idClass}/${idTeam}`);
 
                 setNewStudentsCall(response.data); 
             } else {

@@ -112,7 +112,7 @@ const Classes = () => {
   useEffect(() => {
     const getClasses = async () => {
       try {
-        if (newData.length > 0) {
+        if (newData.length > 0) {      
           return setData(newData);
         }
 

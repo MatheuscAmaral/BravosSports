@@ -377,6 +377,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     try {
       const response = await api.get("/classes");
 
+      if (type == "students") {
+        response.data.map((s: { id: number; description: string; desc_unit: string }) => {
+          if (s.id != 999) {
+            s.description += ' - ' + s.desc_unit;
+          }
+        });
+      }
+
       setClassesDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -496,7 +504,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         image: link,
         name: name,
         userId: user,
-        unit: units,
         status: status,
       };
       
@@ -536,7 +543,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         image: link,
         name: name,
         phone: phone,
-        unit: units,
         status: status,
       };
 
@@ -660,27 +666,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </label>
                     <MaskedInput value={phone} onChange={handlePhoneChange} />
                   </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="units">
-                      Unidade: <span className="text-red-500">*</span>
-                    </label>
-                    <Select onValueChange={(e) => setUnits(e)} value={units}>
-                      <SelectTrigger className="w-full" id="units">
-                        <SelectValue placeholder="Selecione a unidade" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {unitsDisp.map((c) => {
-                          return (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>  
                 </>
               )}
 
@@ -1042,27 +1027,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           return (
                             <SelectItem key={String(u.id)} value={String(u.id)}>
                               {u.name}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 mt-5 text-gray-700 text-sm font-medium">
-                    <label htmlFor="units">
-                      Unidade: <span className="text-red-500">*</span>
-                    </label>
-                    <Select onValueChange={(e) => setUnits(e)} value={units}>
-                      <SelectTrigger className="w-full" id="units">
-                        <SelectValue placeholder="Selecione a unidade" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {unitsDisp.map((c) => {
-                          return (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.description}
                             </SelectItem>
                           );
                         })}

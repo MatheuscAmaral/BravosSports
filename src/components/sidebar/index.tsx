@@ -57,10 +57,11 @@ const Sidebar = () => {
 
   return (
     // @ts-ignore
-    <Card className="hidden xl:block h-svh relative w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 select-none">
+    <Card className="hidden xl:block h-svh relative w-full p-4 shadow-xl shadow-blue-gray-900/5 select-none">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
         <img src={logo} alt="brand" className="h-11 my-2" />
       </div>
+
       <div className="p-2">
       {/* @ts-ignore */}
         <Input
@@ -80,10 +81,10 @@ const Sidebar = () => {
           </ListItem>
         ))}
         
-        <div className="fixed bottom-7 left-6 max-w-60 w-full">
-          <hr className="my-4 border-blue-gray-50" />
+        <div className="fixed bottom-7 left-6 max-w-64 w-full">
+          <hr className="my-4 mr-6 border-blue-gray-50" />
 
-          <div className="flex justify-between gap-4 p-0 items-center mx-1.5">
+          <div className="flex justify-between items-center ml-2 mr-5">
             <div className="flex gap-4 items-center whitespace-nowrap">
               <FaUserAlt fontSize={20} />
               <p style={{ fontSize: 15 }}>{(user as unknown as UserProps).name}</p>
@@ -91,8 +92,9 @@ const Sidebar = () => {
 
             <IoLogOutOutline
               onClick={LogOut}
-              fontSize={26}
-              className="cursor-pointer ml-5"
+              fontSize={32}
+              title="Sair"
+              className="cursor-pointer hover:bg-gray-100 p-1 rounded-md"
             />
           </div>
         </div>

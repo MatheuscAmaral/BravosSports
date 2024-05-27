@@ -10,7 +10,6 @@ import {
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContext, useEffect, useState } from "react";
-import api from "@/api";
 import toast from "react-hot-toast";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
@@ -91,6 +90,21 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("responsible_name")}</div>,
   },
   {
+    accessorKey: "desc_unit",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Unidade
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
+  },
+  {
     accessorKey: "description",
     header: ({ column }) => {
       return (
@@ -161,26 +175,21 @@ export const columns: ColumnDef<RowProps>[] = [
 ];
 
 const Students = () => {
-  const { reloadPage, newStudents, createdUser } = useContext(ReloadContext);
+  const { reloadPage, newStudents } = useContext(ReloadContext);
+  const [data, setData] = useState<StudentsProps[]>([]);
 
   useEffect(() => {
     const getStudents = async () => {
-      try {
-        const response = await api.get(`/students/`);
-        setData(response.data);
-        
-        if (newStudents.length > 0 && !createdUser) {
-          setData(newStudents);
-        }
+      try {  
+        setData(newStudents);
       } catch {
         toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
       }
     };
     
     getStudents();
-  }, [reloadPage, createdUser]);
+  }, [reloadPage]);
 
-  const [data, setData] = useState<StudentsProps[]>([]);
 
   return (
     <main className="w-full overflow-auto">

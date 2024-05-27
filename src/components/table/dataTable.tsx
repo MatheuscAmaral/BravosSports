@@ -94,7 +94,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const { reloadPage, verifyUserCreate } = React.useContext(ReloadContext);
+  const { reloadPage } = React.useContext(ReloadContext);
   const [description, setDescription] = React.useState("");
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
@@ -106,6 +106,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [unitsDisp, setUnitsDisp] = React.useState<UnitsProps[]>([]);
   const [daysTraining, setDaysTraining] = React.useState("");
   const [responsibles, setResponsibles] = React.useState<ResponsibleProps[]>([]);
+  const [classFilter, setClassFilter] = React.useState("999");
   const [classes, setClasses] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
@@ -187,8 +188,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   if (route == "students") {
     React.useEffect(() => {
-      getClasses();
-    }, []);
+      if (classFilter == "999") {
+        getClasses();
+      }
+
+      filterStudentsByClass(Number(classFilter))
+    }, [classFilter]);
   }
 
   if (route == "turmas" || route == "teachers" || route == "esportes" || route == "responsibles") {
@@ -320,6 +325,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       const response = await api.get("/classes");
 
       response.data.unshift({id: 999, description: 'Todos', status: 1});
+
+      if (route == "students") {
+        response.data.map((s: { id: number; description: string; desc_unit: string }) => {
+          if (s.id != 999) {
+            s.description += ' - ' + s.desc_unit;
+          }
+        });
+      }
+
       setClassesDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -400,7 +414,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     
     if (route == "esportes") {
       await getClasses();
-      // await getTeachers();
     }
 
     if (route == "teachers") {
@@ -449,11 +462,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       });
 
       setError(true);
-
       return;
     }
 
     try {
+      setClassFilter("999");
       setLoading(true);
       await api.post("/students", data);
 
@@ -462,7 +475,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setOpenModal(false);
       reloadPage();
       setLink("");
-      verifyUserCreate(true);
+      setDate("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o aluno!");
     }
@@ -479,7 +492,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: link,
       name: name,
       userId: userSelected,
-      unit: units,
       status: status,
     };
 
@@ -540,7 +552,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         >
           {route == "teachers" && (
             <>
-             <div className="flex items-center gap-4">
               <Input
                   placeholder="Pesquise pelo nome do professor..."
                   value={
@@ -549,29 +560,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   onChange={(event) =>
                     table.getColumn("name")?.setFilterValue(event.target.value)
                   }
-                />
-
-                <Select onValueChange={(e) => filterByUnit("teachers", Number(e))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Unidade" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {unitsDisp.map((c) => {
-                      if (c.status == 1) {
-                        return (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.description}
-                          </SelectItem>
-                        );
-                      }
-                    })}
-                  </SelectContent>
-                </Select>
-             </div>
+                  className="max-w-80"
+              />
 
               <Modal show={openModal} onClose={() => closeModal()}>
-                <Modal.Header>Cadastro de professor</Modal.Header>
+                <Modal.Header>Cadastro de <span className="text-primary-color">professor</span></Modal.Header>
                 <form onSubmit={createTeacher}>
                   <Modal.Body
                     className="relative"
@@ -658,31 +651,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="units">
-                          Unidade: <span className="text-red-500">*</span>
-                        </label>
-                        <Select onValueChange={(e) => setUnits(e)}>
-                          <SelectTrigger className="w-full" id="units">
-                            <SelectValue placeholder="Selecione a unidade" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {unitsDisp.map((c) => {
-                              if (c.id == 999) {
-                                return;
-                              }
-
-                              return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">Status: <span className="text-red-500">*</span></label>
                         <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger className="w-full" id="status">
@@ -752,7 +720,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select onValueChange={(e) => filterStudentsByClass(Number(e))}>
+                <Select onValueChange={(e) => setClassFilter(e)} value={classFilter}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
@@ -772,7 +740,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </div>
 
               <Modal show={openModal} onClose={() => closeModal()}>
-                <Modal.Header>Cadastro de aluno</Modal.Header>
+                <Modal.Header>Cadastro de <span className="text-primary-color">aluno</span></Modal.Header>
                 <form onSubmit={createStudent} >
                   <Modal.Body
                     className="relative"
@@ -886,6 +854,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <SelectContent>
                             {unitsDisp.map((c) => {
+                              if (c.id == 999) {
+                                return;
+                              }
+                              
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
                                   {c.description}
@@ -941,12 +913,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="team">
-                          Equipe: <span className="text-red-500">*</span>
+                        <label htmlFor="sport">
+                          Esporte: <span className="text-red-500">*</span>
                         </label>
                         <Select onValueChange={(e) => setTeam(e)}>
-                          <SelectTrigger className="w-full" id="team">
-                            <SelectValue placeholder="Selecione a equipe" />
+                          <SelectTrigger className="w-full" id="sport">
+                            <SelectValue placeholder="Selecione o esporte" />
                           </SelectTrigger>
                           <SelectContent>
                             {teamsDisp.map((t) => {
@@ -999,38 +971,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
           {route == "responsibles" && (
             <>
-              <div className="flex items-center gap-4">
-                <Input
-                  placeholder="Pesquise pelo nome do responsável..."
-                  value={
-                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
-                  }
-                  onChange={(event) =>
-                    table.getColumn("name")?.setFilterValue(event.target.value)
-                  }
-                />
-
-                <Select onValueChange={(e) => filterByUnit("responsibles", Number(e))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Unidade" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {unitsDisp.map((c) => {
-                      if (c.status == 1) {
-                        return (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.description}
-                          </SelectItem>
-                        );
-                      }
-                    })}
-                  </SelectContent>
-                </Select>
-             </div>
+              <Input
+                placeholder="Pesquise pelo nome do responsável..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="max-w-80"
+              />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de responsáveis</Modal.Header>
+                <Modal.Header>Cadastro de <span className="text-primary-color">responsável</span></Modal.Header>
                 <form onSubmit={(e) => createResponsibles(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
@@ -1098,27 +1051,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           value={phone}
                           onChange={handlePhoneChange}
                         />
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="units">
-                          Unidade: <span className="text-red-500">*</span>
-                        </label>
-                        <Select onValueChange={(e) => setUnits(e)}>
-                          <SelectTrigger className="w-full" id="units">
-                            <SelectValue placeholder="Selecione a unidade" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {unitsDisp.map((c) => {
-                              return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -1192,7 +1124,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de turma</Modal.Header>
+                <Modal.Header>Cadastro de <span className="text-primary-color">turma</span></Modal.Header>
                 <form onSubmit={(e) => createClasses(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
@@ -1304,7 +1236,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
              </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de esportes</Modal.Header>
+                <Modal.Header>Cadastro de <span className="text-primary-color">esporte</span></Modal.Header>
                 <form onSubmit={(e) => createSports(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">

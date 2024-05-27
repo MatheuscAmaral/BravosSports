@@ -64,21 +64,6 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div className="lowercase">{row.getValue("phone")}</div>,
   },
   {
-    accessorKey: "desc_unit",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Unidade
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
-  },
-  {
     accessorKey: "status",
     header: ({ column }) => {
       return (
@@ -132,16 +117,13 @@ export const columns: ColumnDef<RowProps>[] = [
 
 const Responsibles = () => {
   const [data, setData] = useState<ResponsibleProps[]>([]);
-  const { reloadPage, newData } = useContext(ReloadContext);
+  const { reloadPage } = useContext(ReloadContext);
 
   useEffect(() => {
     const getResponsibles = async () => {
        try {
-        if (newData.length > 0) {
-          return setData(newData);
-        }
-
         const response = await api.get("/responsibles");
+
         setData(response.data);
        }
 

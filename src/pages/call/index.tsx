@@ -28,7 +28,6 @@ import { useNavigate } from "react-router-dom";
 import { ClassesProps } from "../classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
-import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -167,30 +166,50 @@ const Call = () => {
   const [openModal, setOpenModal] = useState(true);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<StudentsProps[]>([]);
+  const [unitId, setUnitId] = useState("");
+  const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const { reloadPage, newStudentsCall, saveClassId, resetSelect } = useContext(ReloadContext);
-  const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    const getClasses = async () => {
+    const getUnits = async () => {
       try {
-        const response = await api.get("/classes");
+        const response = await api.get("/units");
 
-        response.data.unshift({id: -99, description: 'Todos', status: 1});
-        setClasses(response.data);
+        // response.data.unshift({id: -99, description: 'Todos', status: 1});
+        
+        setUnits(response.data);
       } catch {
-        toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+        toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
       }
     };
 
     if (newStudentsCall.length <= 0) {
-      getClasses();
+      getUnits();
       setData([]);
     } else {
       setData(newStudentsCall)
     }
   }, [reloadPage]);
+
+  const getClasses = async (idUnit: number) => {
+    try {
+      const response = await api.get(`/classes/call/${idUnit}`);
+
+      response.data.unshift({id: -99, description: 'Todos', status: 1});
+      
+      setClasses(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+    }
+  };
+
+  const filterAndSetUnitId = (e: string) => {
+    setUnitId(e);
+
+    getClasses(Number(e));
+  }
 
   const getStudents = async (e: FormEvent) => {
     e.preventDefault();
@@ -199,7 +218,7 @@ const Call = () => {
       setClassId("");
       resetSelect();
       saveClassId(Number(classId));
-      const response = await api.get(`/students/class/${classId}/${(user as unknown as UserProps).id}/${(user as unknown as UserProps).level}`);
+      const response = await api.get(`/students/class/${classId}/`);
 
       setData(response.data);
       setLoading(true);
@@ -230,15 +249,37 @@ const Call = () => {
       </section>
 
       <Modal show={openModal} onClose={() => closeModal()}>
-        <Modal.Header>Selecione uma turma</Modal.Header>
+        <Modal.Header>Selecione uma <span className="text-primary-color">turma</span></Modal.Header>
         <form onSubmit={getStudents}>
           <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
             <div className="space-y-6">
               <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                <label htmlFor="unit">
+                  Unidade: <span className="text-red-500">*</span>
+                </label>
+
+                <Select onValueChange={(e) => filterAndSetUnitId(e)} required defaultValue={unitId}>
+                  <SelectTrigger id="unit" className="w-full">
+                    <SelectValue placeholder="Selecione uma unidade" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {
+                      units.map(c => {
+                        return (
+                          <SelectItem key={String(c.id)} value={String(c.id)}>{c.description}</SelectItem>
+                        )
+                      })
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                 <label htmlFor="class">
                   Turma: <span className="text-red-500">*</span>
                 </label>
-                <Select onValueChange={(e) => setClassId(e)} required>
+                <Select onValueChange={(e) => setClassId(e)} required disabled={unitId == ""} defaultValue={String(classId)}>
                   <SelectTrigger id="class" className="w-full">
                     <SelectValue placeholder="Selecione uma turma" />
                   </SelectTrigger>
