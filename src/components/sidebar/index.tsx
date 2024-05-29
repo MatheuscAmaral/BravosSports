@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useContext, useState } from "react";
 import logo from "../../assets/logo-bravos-laranja.png";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { IoLogOutOutline } from "react-icons/io5";
@@ -12,14 +12,11 @@ import {
 
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { FaUsers } from "react-icons/fa6";
-
-import {
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
-import { AuthContext, UserProps } from "@/contexts/AuthContext";
-import { FaUserAlt, FaHome, FaClipboardList, FaUserTie} from "react-icons/fa";
+import { FaUserAlt, FaHome, FaClipboardList, FaUserTie } from "react-icons/fa";
 import { MdSportsHandball } from "react-icons/md";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { To, useNavigate } from "react-router-dom";
+import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,34 +26,44 @@ const Sidebar = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
-
+  
   const LogOut = () => {
     logout();
     navigate("/login");
   };
-
-  const filteredItems = user ? (
-    (user as unknown as UserProps).level === 0 || (user as unknown as UserProps).level === 1 ? (
-      [
+  
+  const filteredItems = user ? (() => {
+    let items: any = [];
+    
+    if ((user as unknown as UserProps).level === 0 || (user as unknown as UserProps).level === 1) {
+      items = [
         { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
         { label: "Alunos", icon: <FaUsers fontSize={24} />, path: "/alunos" },
         { label: "Turmas", icon: <BiSolidBusSchool fontSize={24} />, path: "/turmas" },
         { label: "Professores", icon: <PiChalkboardTeacherBold fontSize={25} />, path: "/professores" },
         { label: "Esportes", icon: <MdSportsHandball fontSize={25} />, path: "/esportes" },
         { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
-        { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
-        // { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos"},
-      ].filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()))
-      ) : [
-      { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
-      { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
-      // { label: "Controle de acesso", icon: <FaSchoolLock fontSize={24} />, path: "/controle/alunos" },
-        
-      ].filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()))
-  ) : [];
+        { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" }
+      ];
+    } else if ((user as unknown as UserProps).level === 2) {
+      items = [
+        { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
+        { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" }
+      ];
+    } else if ((user as unknown as UserProps).level === 3) {
+      items = [
+        { label: "Início", icon: <FaHome fontSize={24} />, path: "/" }
+      ];
+    }
+    
+    return items.filter((item: { label: string; }) => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
+  })() : [];
+
+  const firstName = user && (user as unknown as UserProps).name ? (user as unknown as UserProps).name.split(" ")[0] : "";
+  const lastName = user && (user as unknown as UserProps).name ? (user as unknown as UserProps).name.split(" ").slice(-1)[0] : "";
 
   return (
-    // @ts-ignore
+    //@ts-ignore
     <Card className="hidden xl:block h-svh relative w-full p-4 shadow-xl shadow-blue-gray-900/5 select-none">
       <div className="mb-2 flex items-center gap-4 pt-4 pb-1">
         <img src={logo} alt="brand" className="h-11 my-2" />
@@ -68,12 +75,13 @@ const Sidebar = () => {
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
           label="Pesquisar..."
           onChange={handleSearch}
-        />
+          />
       </div>
-        {/* @ts-ignore */}
+
+      {/* @ts-ignore */}
       <List>
-        {filteredItems.map((item, index) => (
-            //@ts-ignore 
+        {filteredItems.map((item: { path: To; icon: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; label: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, index: Key | null | undefined) => (
+          // @ts-ignore 
           <ListItem key={index} onClick={() => navigate(item.path)}>
             {/* @ts-ignore */}
             <ListItemPrefix>{item.icon}</ListItemPrefix>
@@ -87,7 +95,10 @@ const Sidebar = () => {
           <div className="flex justify-between items-center ml-2 mr-5">
             <div className="flex gap-4 items-center whitespace-nowrap">
               <FaUserAlt fontSize={20} />
-              <p style={{ fontSize: 15 }}>{(user as unknown as UserProps).name}</p>
+              <p className="flex gap-1" style={{ fontSize: 15 }}>
+                <span>{firstName}</span> 
+                <span>{lastName}</span>
+              </p>
             </div>
 
             <IoLogOutOutline

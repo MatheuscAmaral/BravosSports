@@ -119,21 +119,15 @@ const Header = () => {
               </li>
           )}
 
-          {/* <li
-            onClick={() => navigateToRoute("/controle/alunos")}
-            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
-          >
-            <FaSchoolLock fontSize={25} />
-            <p className="text-lg">Controle de acesso</p>
-          </li> */}
-
-          <li
-            onClick={() => navigateToRoute("/chamada")}
-            className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
-          >
-            <FaClipboardList fontSize={25} />
-            <p className="text-lg">Chamada</p>
-          </li>
+          {(user as unknown as UserProps).level != 3 &&  (
+              <li
+                onClick={() => navigateToRoute("/chamada")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <FaClipboardList fontSize={25} />
+                <p className="text-lg">Chamada</p>
+              </li>
+          )}
 
           <div className="fixed bottom-3 bg-white left-3 w-full">
             <hr className="mr-6"/>

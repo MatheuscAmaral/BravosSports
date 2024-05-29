@@ -17,6 +17,13 @@ import { StudentsProps } from "@/pages/students";
 import { IoIosImages } from "react-icons/io";
 import { FaTrash } from "react-icons/fa";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,11 +39,10 @@ import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
-// import { TeachersProps } from "@/pages/teachers";
 import { UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
-import { CalendarIcon } from "lucide-react";
+import { FiAlertOctagon } from "react-icons/fi";
 
 export interface RowProps {
   id: number;
@@ -196,7 +202,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [link, setLink] = useState("");
   const [status, setStatus] = useState("");
   const [classesDisp, setClassesDisp] = useState<ClassesProps[]>([]);
-  const [responsiblesDisp, setResponsiblesDisp] = useState<ResponsibleProps[]>([]);
   const [units, setUnits] = useState("");
   const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
   const [responsible, setResponsible] = useState("");
@@ -204,6 +209,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [id, setId] = useState("");
   const [description, setDescription] = useState("");
   const [modality, setModality] = useState("");
+  const [isStudent, setIsStudent] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
   const [name, setName] = useState("");
@@ -224,8 +230,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     title: "",
     autoHide: true,
     todayBtn: false,
-    clearBtn: true,
-    clearBtnText: "Limpar",
+    clearBtn: false,
     maxDate: new Date("2030-01-01"),
     minDate: new Date("1950-01-01"),
     theme: {
@@ -250,7 +255,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     weekDays: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
     inputNameProp: "date",
     inputIdProp: "date",
-    inputPlaceholderProp: "Selecionar data de nascimento",
     inputDateFormatProp: {
         day: "numeric",
         month: "long",
@@ -343,16 +347,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setId(String(row[0].id));
   };
 
-  const getResponsibles = async () => {
-    try {
-      const response = await api.get("/responsibles");
-
-      setResponsiblesDisp(response.data);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
-    }
-  };
-  
   const getUsers = async () => {
     try {
       const response = await api.get("/users/level/2");
@@ -391,15 +385,38 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  // const getTeachers = async () => {
-  //   try {
-  //     const response =   await api.get("/teachers");
+  const changeIsStudent = (e: string) => {
+    setIsStudent(e);
+    
+    if (units != "") {
+      filterUnitWithClass(units, e)
+    }
+  }
 
-  //     setTeachers(response.data);
-  //   } catch {
-  //     toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
-  //   }
-  // };
+
+  const filterUnitWithClass = async (e: string, isStudent: string) => {
+    setClasses("");
+    setUnits(e);
+    
+    const response = await api.get(`/classes/filter/${e}`);
+    
+    if (isStudent == "0") {
+      const newData = response.data.filter((d: { description: string }) => {
+        const description = d.description.toLocaleLowerCase();
+        return description.split(" ")[0] === "não";
+      });
+
+      return setClassesDisp(newData);
+      
+    } else {
+      const newData = response.data.filter((d: { description: string }) => {
+        const description = d.description.toLocaleLowerCase();
+        return description.split(" ")[0] != "não";
+      });
+
+      return setClassesDisp(newData);
+    }
+  }
 
   const getTeams = async () => {
     try {
@@ -430,17 +447,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "students") {
       setLoading(true);
       await getClasses();
-      await getResponsibles();
       await getTeams();
       setLoading(false);
     }
-    
-    // if (type == "classes") {
-    //   await getTeachers();
-    // }
+  
     
     if (type == "esportes") {
-      // await getTeachers();
       await getClasses();
     }
     
@@ -686,16 +698,41 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="units">
-                      Unidade: <span className="text-red-500">*</span>
+                    <label className="flex justify-between items-center cursor-pointer">
+                      <div>
+                        Unidade: <span className="text-red-500">*</span>
+                      </div>
+
+                      <div className={`${(unitsDisp.length == 1 && unitsDisp[0]?.id == 999) ? "block" : "hidden"}`}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <div className="py-2 p-3 text-sm">
+                              Nenhuma unidade encontrada, cadastre novas unidades e tente novamente!
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </label>
-                    <Select onValueChange={(e) => setUnits(e)} value={units}>
+
+                    <Select defaultValue={units} onValueChange={(e) => setUnits(e)} disabled={(unitsDisp.length <= 0)}>
                       <SelectTrigger className="w-full" id="units">
                         <SelectValue placeholder="Selecione a unidade" />
                       </SelectTrigger>
 
                       <SelectContent>
                         {unitsDisp.map((c) => {
+                          if (c.id == 999) {
+                            return;
+                          }
+                          
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
@@ -804,55 +841,67 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                      {/* @ts-ignore */}
                      <Datepicker options={optionsDate} onChange={handleChange} show={show} setShow={handleClose}>
-                        <div className="flex gap-2 p-2 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
-                          <input type="text" className=" pl-1.5 cursor-pointer w-full select-none" placeholder="Selecione sua data de nascimento" value={date} readOnly />
-
-                          <div className="...">
-                              <CalendarIcon fontSize={15} />
+                          <div className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
+                              <input type="text" placeholder="Selecione a data de nascimento" className=" placeholder:text-gray-600 cursor-pointer w-full" value={date} readOnly />
                           </div>
-                        </div>
-                    </Datepicker>
+                      </Datepicker>
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="responsible">
-                      Responsável: <span className="text-red-500">*</span>
+                    <label htmlFor="class">
+                      É um aluno do colégio ? <span className="text-red-500">*</span>
                     </label>
-
-                    <Select
-                      required
-                      onValueChange={(e) => setResponsible(e)}
-                      defaultValue={responsible}
-                    >
-                      <SelectTrigger className="w-full" id="responsible">
-                        <SelectValue placeholder="Selecione o responsável" />
+                    <Select onValueChange={(e) => changeIsStudent(e)}>
+                      <SelectTrigger className="w-full" id="class">
+                        <SelectValue placeholder="Selecione sim ou não" />
                       </SelectTrigger>
-
                       <SelectContent>
-                        {responsiblesDisp.map((r) => {
-                          return (
-                            <SelectItem key={r.id} value={String(r.id)}>
-                              {r.name}
-                            </SelectItem>
-                          );
-                        })}
+                          <SelectItem value={"1"}>
+                            Sim
+                          </SelectItem>
+                          <SelectItem value={"0"}>
+                            Não
+                          </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
                   
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="units">
-                      Unidade: <span className="text-red-500">*</span>
+                    <label className="flex justify-between items-center cursor-pointer">
+                      <div>
+                        Unidade: <span className="text-red-500">*</span>
+                      </div>
+
+                      <div className={`${(unitsDisp.length <= 0) ? "block" : "hidden"}`}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <div className="py-2 p-3 text-sm">
+                              Nenhuma unidade encontrada, cadastre novas unidades e tente novamente!
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </label>
 
-                    <Select onValueChange={(e) => setUnits(e)} defaultValue={units}>
+                    <Select defaultValue={unitsDisp.length <= 0 ? "" : units} onValueChange={(e) => filterUnitWithClass(e, isStudent)} disabled={(unitsDisp.length <= 0)}>
                       <SelectTrigger className="w-full" id="units">
                         <SelectValue placeholder="Selecione a unidade" />
                       </SelectTrigger>
 
                       <SelectContent>
                         {unitsDisp.map((c) => {
+                          if (c.id == 999) {
+                            return;
+                          }
+                          
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
@@ -866,7 +915,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="days_training">
-                      Dias de treino: <span className="text-red-500">*</span>
+                      Dias de treino:
                     </label>
                     
                     <Select onValueChange={(e) => setDaysTraining(e)} defaultValue={daysTraining.trim()}>
@@ -885,54 +934,92 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="class">
-                      Turma: <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      onValueChange={(e) => filterTeams(e)}
-                      defaultValue={classes}
-                    >
-                      <SelectTrigger className="w-full" id="class">
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {classesDisp.map((c) => {
-                          return (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                      <label className="flex justify-between items-center cursor-pointer">
+                        <div>
+                          Turma: <span className="text-red-500">*</span>
+                        </div>
+
+                        <div className={(classesDisp.length == 1 && classesDisp[0]?.id == 999) ? "flex" : "hidden"}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                                <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              </Button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent className="w-56">
+                              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <div className="py-2 p-3 text-sm">
+                                Nenhuma turma encontrada, cadastre novas turmas e tente novamente!
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </label>
+
+                      <Select defaultValue={classes} onValueChange={(e) => setClasses(e)} disabled={units == ""|| (classesDisp.length == 1 && classesDisp[0]?.id == 999)}>
+                        <SelectTrigger className="w-full" id="class">
+                          <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {classesDisp.map((c) => {
+                            if (c.id == 999) {
+                              return;
+                            }
+
+                            return (
+                              <SelectItem key={c.id} value={String(c.id)}>
+                                {c.description.split("-")[0]}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="sport">
-                      Esporte: <span className="text-red-500">*</span>
-                    </label>
-                    <Select defaultValue={team} onValueChange={(e) => setTeam(e)}>
-                      <SelectTrigger className="w-full" id="sport">
-                        <SelectValue placeholder="Selecione o esporte" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {teamsDisp.map((t) => {
-                          return (
-                            <SelectItem key={t.id} value={String(t.id)}>
-                              {t.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      <label className="flex justify-between items-center cursor-pointer">
+                        <div>
+                          Esporte: <span className="text-red-500">*</span>
+                        </div>
 
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="nome">
-                      Telefone: <span className="text-red-500">*</span>
-                    </label>
-                    <MaskedInput value={phone} onChange={handlePhoneChange} />
-                  </div>
+                        <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                                <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              </Button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent className="w-56">
+                              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <div className="py-2 p-3 text-sm">
+                                Nenhum esporte encontrado, cadastre novos esportes e tente novamente!
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </label>
+
+                      <Select defaultValue={teamsDisp.length <= 0 ? "" : team} onValueChange={(e) => setTeam(e)} disabled={teamsDisp.length <= 0}>
+                        <SelectTrigger className="w-full" id="sport">
+                          <SelectValue placeholder="Selecione o esporte" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {teamsDisp.map((t) => {
+                            return (
+                              <SelectItem key={t.id} value={String(t.id)}>
+                                {t.description}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
                 </div>
               )}
 
@@ -1052,9 +1139,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     <SelectContent>
                       {type == "students" && (
                         <>
+                          <SelectItem value="1">Ativo</SelectItem>
+                          <SelectItem value="2">Experimental</SelectItem>
                           <SelectItem value="0">Inativo</SelectItem>
-                          <SelectItem value="1">Pendente</SelectItem>
-                          <SelectItem value="2">Ativo</SelectItem>
                         </>
                       )}
 
@@ -1062,15 +1149,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         type == "teacher" ||
                         type == "esportes") && (
                         <>
-                          <SelectItem value="0">Inativo</SelectItem>
                           <SelectItem value="1">Ativo</SelectItem>
+                          <SelectItem value="0">Inativo</SelectItem>
                         </>
                       )}
 
                       {type == "responsibles" && (
                         <>
-                          <SelectItem value="0">Inativo</SelectItem>
                           <SelectItem value="1">Ativo</SelectItem>
+                          <SelectItem value="0">Inativo</SelectItem>
                         </>
                       )}
                     </SelectContent>

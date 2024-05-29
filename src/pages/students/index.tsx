@@ -102,7 +102,12 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
+    cell: ({ row }) => 
+      <div>
+        {
+          row.getValue("desc_unit") ? row.getValue("desc_unit") : "-"
+        }
+      </div>,
   },
   {
     accessorKey: "description",
@@ -117,7 +122,12 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+    cell: ({ row }) =>
+      <div>
+        {
+          row.getValue("description") ? row.getValue("description") : "-"
+        }
+      </div>,
   },
   {
     accessorKey: "status",
@@ -136,9 +146,10 @@ export const columns: ColumnDef<RowProps>[] = [
       <div className="capitalize">
         {row.getValue("status") == 0 && "Inativo"}
 
-        {row.getValue("status") == 1 && "Pendente"}
+        {row.getValue("status") == 1 && "Ativo"}
 
-        {row.getValue("status") == 2 && "Ativo"}
+        {row.getValue("status") == 2 && "Experimental"}
+
       </div>
     ),
   },

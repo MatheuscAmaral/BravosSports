@@ -27,7 +27,7 @@ const PrivateRoute = ({ children }: any) => {
         }
     }, [location.pathname]);
     
-    if (location.pathname == "/alunos" || location.pathname == "/professores" || location.pathname == "/turmas" || location.pathname == "/responsaveis" ) {
+    if (location.pathname == "/alunos" || location.pathname == "/professores" || location.pathname == "/turmas" || location.pathname == "/responsaveis" || location.pathname == "/chamada") {
         const storedUser = localStorage.getItem("@bravosSports:user");
 
         if (storedUser) {
@@ -35,6 +35,14 @@ const PrivateRoute = ({ children }: any) => {
                 toast('Você não tem permissão para acessar essa tela!', {
                     icon: '⚠️',
                   });
+
+                return <Navigate to={"/"} />
+            }
+
+            if (location.pathname == "/chamada" && JSON.parse(storedUser).level == 3) {
+                toast('Você não tem permissão para acessar essa tela!', {
+                    icon: '⚠️',
+                });
 
                 return <Navigate to={"/"} />
             }
