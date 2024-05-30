@@ -52,7 +52,8 @@ const Sidebar = () => {
       ];
     } else if ((user as unknown as UserProps).level === 3) {
       items = [
-        { label: "Início", icon: <FaHome fontSize={24} />, path: "/" }
+        { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
+        { label: "Liberados", icon: <FaUserTie fontSize={24} />, path: "/responsaveis/liberados" }
       ];
     }
     

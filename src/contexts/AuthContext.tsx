@@ -13,6 +13,7 @@ export interface UserProps {
     level: number;
     user: string;
     email: string;
+    complete_register: number;
 }
 
 interface ChildrenProps {

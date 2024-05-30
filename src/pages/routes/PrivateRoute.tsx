@@ -47,7 +47,20 @@ const PrivateRoute = ({ children }: any) => {
                 return <Navigate to={"/"} />
             }
         }
+    }
 
+    if (location.pathname == "/responsaveis/liberados") {
+        const storedUser = localStorage.getItem("@bravosSports:user");
+
+        if (storedUser) {
+            if (location.pathname == "/responsaveis/liberados" && JSON.parse(storedUser).level == 2) {
+                toast('Você não tem permissão para acessar essa tela!', {
+                    icon: '⚠️',
+                });
+
+                return <Navigate to={"/"} />
+            }
+        }
     }
 
     return user.length <= 0 ? <Navigate to={"/login"} /> : children;

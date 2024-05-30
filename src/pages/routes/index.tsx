@@ -13,6 +13,7 @@ import Auth from "../auth";
 import PrivateRoute from "./PrivateRoute";
 import Responsibles from "../responsibles";
 import Sports from "../sports";
+import ResponsiblesReleased from "../responsibles/responsiblesReleased";
 
 const router = createBrowserRouter([
   {
@@ -55,6 +56,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Responsibles />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/responsaveis/liberados",
+        element: (
+          <PrivateRoute>
+            <ResponsiblesReleased />
           </PrivateRoute>
         ),
       },

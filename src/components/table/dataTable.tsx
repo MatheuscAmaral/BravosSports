@@ -1,9 +1,13 @@
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
-import { MdFormatListBulletedAdd, MdPersonAdd, MdGroupAdd } from "react-icons/md";
+import {
+  MdFormatListBulletedAdd,
+  MdPersonAdd,
+  MdGroupAdd,
+} from "react-icons/md";
 import Datepicker from "tailwind-datepicker-react";
-import { IoChevronBackOutline, IoChevronForward  } from "react-icons/io5";
+import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import {
   ColumnFiltersState,
   SortingState,
@@ -55,7 +59,6 @@ const uploader = Uploader({
   apiKey: "free",
 });
 
-
 const options = { multi: true };
 
 import api from "@/api";
@@ -89,21 +92,24 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const { username } = React.useContext(AuthContext);
+  const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [link, setLink] = React.useState("");
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [name, setName] = React.useState("");
   const [nameResp, setNameResp] = React.useState("");
+  const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
-  const [classesDispFilter, setClassesDispFilter] = React.useState<ClassesProps[]>([]);
+  const [degreeKinship, setDegreeKinship] = React.useState("");
+  const [classesDispFilter, setClassesDispFilter] = React.useState<
+    ClassesProps[]
+  >([]);
   const [team, setTeam] = React.useState("");
   const [teamsDisp, setTeamsDisp] = React.useState<ClassesProps[]>([]);
   const [modality, setModality] = React.useState("");
@@ -114,9 +120,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
   const [userSelected, setUserSelected] = React.useState("");
-  const [users, setUsers] = React.useState<UserProps[]>([]);
+  const [daysTraining, setDaysTraining] = React.useState("");
   const [date, setDate] = React.useState("");
-  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit, reloadPage, verifyUserCreate, unitId } = React.useContext(ReloadContext);
+  const {
+    filterStudentsByClass,
+    filterStudentsByTeam,
+    idClass,
+    teamId,
+    filterByUnit,
+    reloadPage,
+    verifyUserCreate,
+    unitId,
+  } = React.useContext(ReloadContext);
 
   const optionsDate = {
     title: "",
@@ -126,19 +141,27 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     maxDate: new Date("2030-01-01"),
     minDate: new Date("1950-01-01"),
     theme: {
-        background: "bg-white",
-        todayBtn: "bg-primary-color",
-        clearBtn: "",
-        icons: "",
-        text: "",
-        disabledText: "bg-gray-100",
-        input: "",
-        inputIcon: "",
-        selected: "bg-primary-color",
+      background: "bg-white",
+      todayBtn: "bg-primary-color",
+      clearBtn: "",
+      icons: "",
+      text: "",
+      disabledText: "bg-gray-100",
+      input: "",
+      inputIcon: "",
+      selected: "bg-primary-color",
     },
     icons: {
-        prev: () => <span><IoChevronBackOutline/></span>,
-        next: () => <span><IoChevronForward/></span>,
+      prev: () => (
+        <span>
+          <IoChevronBackOutline />
+        </span>
+      ),
+      next: () => (
+        <span>
+          <IoChevronForward />
+        </span>
+      ),
     },
     datepickerClassNames: "top-12",
     defaultDate: new Date("2022-01-01"),
@@ -149,21 +172,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     inputIdProp: "date",
     inputPlaceholderProp: "",
     inputDateFormatProp: {
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-    }
-}
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  };
 
   const [show, setShow] = React.useState<boolean>(false);
 
   const handleChange = (selectedDate: Date) => {
-    setDate(selectedDate.toLocaleDateString('pt-BR'));
-  }
-  
+    setDate(selectedDate.toLocaleDateString("pt-BR"));
+  };
+
   const handleClose = (state: boolean) => {
-      setShow(state)
-  }
+    setShow(state);
+  };
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -171,18 +194,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const changeIsStudent = (e: string) => {
     setIsStudent(e);
-    
+
     if (units != "") {
-      filterUnitWithClass(units, e)
+      filterUnitWithClass(units, e);
     }
-  }
+  };
 
   const filterUnitWithClass = async (e: string, isStudent: string) => {
     setClasses("");
     setUnits(e);
-    
+
     const response = await api.get(`/classes/filter/${e}`);
-    
+
     if (isStudent == "0") {
       const newData = response.data.filter((d: { description: string }) => {
         const description = d.description.toLocaleLowerCase();
@@ -190,7 +213,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       });
 
       return setClassesDisp(newData);
-      
     } else {
       const newData = response.data.filter((d: { description: string }) => {
         const description = d.description.toLocaleLowerCase();
@@ -199,8 +221,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
       return setClassesDisp(newData);
     }
-  }
-  
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -226,24 +248,29 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         getClasses();
       }
 
-      filterStudentsByClass(Number(classFilter))
+      filterStudentsByClass(Number(classFilter));
     }, [classFilter]);
   }
 
-  if (route == "turmas" || route == "teachers" || route == "esportes" || route == "responsibles") {
+  if (
+    route == "turmas" ||
+    route == "teachers" ||
+    route == "esportes" ||
+    route == "responsibles"
+  ) {
     React.useEffect(() => {
       getUnits();
     }, []);
   }
 
-  if (route == "call") {   
+  if (route == "call") {
     React.useEffect(() => {
       const getTeamsFilter = async () => {
         const response = await api.get(`/sports`);
 
-        response.data.unshift({id: 999, description: 'Todos', status: 1});
+        response.data.unshift({ id: 999, description: "Todos", status: 1 });
         setClassesDisp(response.data);
-      }
+      };
 
       getTeamsFilter();
     }, []);
@@ -315,7 +342,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: link,
       name: name,
       phone: phone,
-      unit: units,
       status: status,
     };
 
@@ -333,11 +359,53 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
   };
 
+  const getResponsibleWithIdUser = async (id: number) => {
+    try {
+      const response = await api.get(`/responsibles/user/${id}`);
+
+      return response.data.user_id;
+    } catch {
+        toast.error("Ocorreu um erro ao buscar os dados do responsável!")
+    }
+  }
+
+  const createResponsiblesReleaseds = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
+
+    const respId = await getResponsibleWithIdUser((user as unknown as UserProps).id);
+
+    const data = {
+      image: link,
+      name: name,
+      phone: phone,
+      degree_kinship: degreeKinship,
+      id_responsible: respId,
+      status: status,
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/responsibles/releaseds", data);
+      toast.success(`${name} cadastrada com sucesso!`);
+      closeModal();
+      reloadPage();
+      handlePhoneChange("");
+    } catch {
+      toast.error("Ocorreu um erro ao cadastrar o responsável!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getUnits = async () => {
     try {
       const response = await api.get("/units");
 
-      response.data.unshift({id: 999, description: 'Todos', status: 1});
+      response.data.unshift({ id: 999, description: "Todos", status: 1 });
       setUnitsDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
@@ -348,14 +416,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const response = await api.get("/classes");
 
-      response.data.unshift({id: 999, description: 'Todos', status: 1});
+      response.data.unshift({ id: 999, description: "Todos", status: 1 });
 
       if (route == "students") {
-        response.data.map((s: { id: number; description: string; desc_unit: string }) => {
-          if (s.id != 999) {
-            s.description += ' - ' + s.desc_unit;
+        response.data.map(
+          (s: { id: number; description: string; desc_unit: string }) => {
+            if (s.id != 999) {
+              s.description += " - " + s.desc_unit;
+            }
           }
-        });
+        );
       }
 
       setClassesDispFilter(response.data);
@@ -371,16 +441,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setTeamsDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
-    }
-  };
-
-  const getUsers = async () => {
-    try {
-      const response = await api.get("/users/level/2");
-
-      setUsers(response.data);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar os usuários disponíveis!");
     }
   };
 
@@ -406,10 +466,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         presence: student.presence,
         edit_by: username,
         id_call: student.id_call,
-        ...((student.presence == null || student.date == null) && { made_by: username })
-      }));      
+        ...((student.presence == null || student.date == null) && {
+          made_by: username,
+        }),
+      }));
 
-      const filterTransformedStudents = transformedStudents.filter(t => t.presence != null);
+      const filterTransformedStudents = transformedStudents.filter(
+        (t) => t.presence != null
+      );
 
       await api.post("/call", filterTransformedStudents);
       toast.success("Chamada realizada com sucesso!");
@@ -425,17 +489,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       // await getResponsibles();
       await getTeams();
     }
-    
+
     if (route == "esportes") {
       await getClasses();
     }
 
-    if (route == "teachers") {
-      await getUsers();
-    }
+    route != "call" && (await getUnits());
 
-    route != "call" && await getUnits();
-    
     if (route == "call") {
       makeCall(table.getRowModel().rows);
     }
@@ -449,7 +509,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setUnits("");
     setClasses("");
     setTeam("");
+    setLink("");
     setShow(false);
+    setDaysTraining("");
     setPhone("");
     setIsStudent("");
   };
@@ -469,10 +531,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       resp_phone: phone,
       resp_name: nameResp,
       status: status,
+      days_training: daysTraining,
       class: classes,
-      unit: units
+      unit: units,
     };
-    
+
     if (!link) {
       toast("É necessário que o aluno possua uma foto cadastrada!", {
         position: "top-right",
@@ -542,11 +605,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     <main className="w-full">
       <section
         className={`${
-          route == "studentsClass" || route == "teacherClass" || route == "responsibleRealeaseds"
-          ? "hidden"
-          : openFilter
-          ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10 xl:py-0"
-          : "bg-white p-5 xl:p-0 xl:bg-gray-50"
+          route == "studentsClass" ||
+          route == "teacherClass" ||
+          route == "responsibleRealeaseds"
+            ? "hidden"
+            : openFilter
+            ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10 xl:py-0"
+            : "bg-white p-5 xl:p-0 xl:bg-gray-50"
         } pt-5 mb-10 border xl:border-0 rounded-lg transition-all`}
       >
         <div
@@ -572,18 +637,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           {route == "teachers" && (
             <>
               <Input
-                  placeholder="Pesquise pelo nome do professor..."
-                  value={
-                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
-                  }
-                  onChange={(event) =>
-                    table.getColumn("name")?.setFilterValue(event.target.value)
-                  }
-                  className="max-w-80"
+                placeholder="Pesquise pelo nome do professor..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="max-w-80"
               />
 
               <Modal show={openModal} onClose={() => closeModal()}>
-                <Modal.Header>Cadastro de <span className="text-primary-color">professor</span></Modal.Header>
+                <Modal.Header>
+                  Cadastro de 
+                  <span className="text-primary-color"> professor</span>
+                </Modal.Header>
                 <form onSubmit={createTeacher}>
                   <Modal.Body
                     className="relative"
@@ -646,31 +714,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="user">Usuário:</label>
-                        <Select
-                          required
-                          onValueChange={(e) => setUserSelected(e)}
-                        >
-                          <SelectTrigger id="user" className="w-full">
-                            <SelectValue placeholder="Selecione o usuário para vincular" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map((u) => {
-                              return (
-                                <SelectItem
-                                  key={String(u.id)}
-                                  value={String(u.id)}
-                                >
-                                  {u.name}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="status">Status: <span className="text-red-500">*</span></label>
+                        <label htmlFor="status">
+                          Status: <span className="text-red-500">*</span>
+                        </label>
                         <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger className="w-full" id="status">
                             <SelectValue placeholder="Selecione o status" />
@@ -683,9 +729,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
                     </div>
                   </Modal.Body>
-                  <Modal.Footer  className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button type="submit" className="bg-primary-color hover:bg-secondary-color">Salvar</Button>
-                    <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      type="submit"
+                      className="bg-primary-color hover:bg-secondary-color"
+                    >
+                      Salvar
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => closeModal()}
+                    >
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -706,7 +760,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 }
               />
 
-              <Select value={String(teamId)} onValueChange={(e) => filterStudentsByTeam(idClass, Number(e), Number(unitId))}>
+              <Select
+                value={String(teamId)}
+                onValueChange={(e) =>
+                  filterStudentsByTeam(idClass, Number(e), Number(unitId))
+                }
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Esportes" />
                 </SelectTrigger>
@@ -739,11 +798,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select onValueChange={(e) => setClassFilter(e)} value={classFilter}>
+                <Select
+                  onValueChange={(e) => setClassFilter(e)}
+                  value={classFilter}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Turma" />
                   </SelectTrigger>
-                  
+
                   <SelectContent>
                     {classesDispFilter.map((c) => {
                       if (c.status == 1) {
@@ -759,8 +821,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </div>
 
               <Modal show={openModal} onClose={() => closeModal()}>
-                <Modal.Header>Cadastro de <span className="text-primary-color">aluno</span></Modal.Header>
-                <form onSubmit={createStudent} >
+                <Modal.Header>
+                  Cadastro de <span className="text-primary-color">aluno</span>
+                </Modal.Header>
+                <form onSubmit={createStudent}>
                   <Modal.Body
                     className="relative"
                     style={{ maxHeight: "500px" }}
@@ -814,7 +878,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           Nome: <span className="text-red-500">*</span>
                         </label>
 
-                        
                         <Input
                           id="nome"
                           required
@@ -825,32 +888,44 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="dateBirth">
-                          Data de nascimento: <span className="text-red-500">*</span>
+                          Data de nascimento:{" "}
+                          <span className="text-red-500">*</span>
                         </label>
 
-                        {/* @ts-ignore */}
-                        <Datepicker options={optionsDate} onChange={handleChange} show={show} setShow={handleClose}>
-                            <div className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
-                                <input type="text" placeholder="Selecione a data de nascimento" className=" placeholder:text-gray-600 cursor-pointer w-full" value={date} readOnly />
-                            </div>
+                        <Datepicker
+                          //@ts-ignore 
+                          options={optionsDate}
+                          onChange={handleChange}
+                          show={show}
+                          setShow={handleClose}
+                        >
+                          <div
+                            className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
+                            onClick={() => setShow(!show)}
+                          >
+                            <input
+                              type="text"
+                              placeholder="Selecione a data de nascimento"
+                              className=" placeholder:text-gray-600 cursor-pointer w-full"
+                              value={date}
+                              readOnly
+                            />
+                          </div>
                         </Datepicker>
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="class">
-                          É um aluno do colégio ? <span className="text-red-500">*</span>
+                          É um aluno do colégio ?{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <Select onValueChange={(e) => changeIsStudent(e)}>
                           <SelectTrigger className="w-full" id="class">
                             <SelectValue placeholder="Selecione sim ou não" />
                           </SelectTrigger>
                           <SelectContent>
-                              <SelectItem value={"1"}>
-                                Sim
-                              </SelectItem>
-                              <SelectItem value={"0"}>
-                                Não
-                              </SelectItem>
+                            <SelectItem value={"1"}>Sim</SelectItem>
+                            <SelectItem value={"0"}>Não</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -861,11 +936,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             Unidade: <span className="text-red-500">*</span>
                           </div>
 
-                          <div className={`${(unitsDisp.length == 1 && unitsDisp[0]?.id == 999) ? "block" : "hidden"}`}>
+                          <div
+                            className={`${
+                              unitsDisp.length == 1 && unitsDisp[0]?.id == 999
+                                ? "block"
+                                : "hidden"
+                            }`}
+                          >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                                  <FiAlertOctagon
+                                    fontSize={19}
+                                    className="text-yellow-800  "
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
 
@@ -873,14 +957,24 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                                 <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div className="py-2 p-3 text-sm">
-                                  Nenhuma unidade encontrada, cadastre novas unidades e tente novamente!
+                                  Nenhuma unidade encontrada, cadastre novas
+                                  unidades e tente novamente!
                                 </div>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </label>
 
-                        <Select defaultValue={units} onValueChange={(e) => filterUnitWithClass(e, isStudent)} disabled={isStudent == "" || (unitsDisp.length == 1 && unitsDisp[0]?.id == 999)}>
+                        <Select
+                          defaultValue={units}
+                          onValueChange={(e) =>
+                            filterUnitWithClass(e, isStudent)
+                          }
+                          disabled={
+                            isStudent == "" ||
+                            (unitsDisp.length == 1 && unitsDisp[0]?.id == 999)
+                          }
+                        >
                           <SelectTrigger className="w-full" id="units">
                             <SelectValue placeholder="Selecione a unidade" />
                           </SelectTrigger>
@@ -890,7 +984,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               if (c.id == 999) {
                                 return;
                               }
-                              
+
                               return (
                                 <SelectItem key={c.id} value={String(c.id)}>
                                   {c.description}
@@ -907,11 +1001,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             Turma: <span className="text-red-500">*</span>
                           </div>
 
-                          <div className={(classesDisp.length == 1 && classesDisp[0]?.id == 999) ? "flex" : "hidden"}>
+                          <div
+                            className={
+                              classesDisp.length == 1 &&
+                              classesDisp[0]?.id == 999
+                                ? "flex"
+                                : "hidden"
+                            }
+                          >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                                  <FiAlertOctagon
+                                    fontSize={19}
+                                    className="text-yellow-800  "
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
 
@@ -919,14 +1023,24 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                                 <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div className="py-2 p-3 text-sm">
-                                  Nenhuma turma encontrada, cadastre novas turmas e tente novamente!
+                                  Nenhuma turma encontrada, cadastre novas
+                                  turmas e tente novamente!
                                 </div>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </label>
 
-                        <Select value={classes != "" ? classes : ""} defaultValue={classes != "" ? classes : ""} onValueChange={(e) => setClasses(e)} disabled={units == "" || (classesDisp.length == 1 && classesDisp[0]?.id == 999)}>
+                        <Select
+                          value={classes != "" ? classes : ""}
+                          defaultValue={classes != "" ? classes : ""}
+                          onValueChange={(e) => setClasses(e)}
+                          disabled={
+                            units == "" ||
+                            (classesDisp.length == 1 &&
+                              classesDisp[0]?.id == 999)
+                          }
+                        >
                           <SelectTrigger className="w-full" id="class">
                             <SelectValue placeholder="Selecione a turma" />
                           </SelectTrigger>
@@ -953,11 +1067,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             Esporte: <span className="text-red-500">*</span>
                           </div>
 
-                          <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
+                          <div
+                            className={
+                              teamsDisp.length <= 0 ? "flex" : "hidden"
+                            }
+                          >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                                  <FiAlertOctagon
+                                    fontSize={19}
+                                    className="text-yellow-800  "
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
 
@@ -965,14 +1086,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                                 <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div className="py-2 p-3 text-sm">
-                                  Nenhum esporte encontrado, cadastre novos esportes e tente novamente!
+                                  Nenhum esporte encontrado, cadastre novos
+                                  esportes e tente novamente!
                                 </div>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </label>
 
-                        <Select onValueChange={(e) => setTeam(e)} disabled={teamsDisp.length <= 0}>
+                        <Select
+                          onValueChange={(e) => setTeam(e)}
+                          disabled={teamsDisp.length <= 0}
+                        >
                           <SelectTrigger className="w-full" id="sport">
                             <SelectValue placeholder="Selecione o esporte" />
                           </SelectTrigger>
@@ -989,10 +1114,29 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="days_training">Dias de treino:</label>
+
+                        <Select onValueChange={(e) => setDaysTraining(e)}>
+                          <SelectTrigger className="w-full" id="days_training">
+                            <SelectValue placeholder="Selecione os dias de treino" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Segunda e Quarta">
+                              Segunda e Quarta
+                            </SelectItem>
+                            <SelectItem value="Terça e Quinta">
+                              Terça e Quinta
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label>
-                          Telefone do responsável: <span className="text-red-500">*</span>
+                          Telefone do responsável:{" "}
+                          <span className="text-red-500">*</span>
                         </label>
-                        
+
                         <MaskedInput
                           value={phone}
                           onChange={handlePhoneChange}
@@ -1001,10 +1145,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label id="nome_resp">
-                          Nome do responsável: <span className="text-red-500">*</span>
+                          Nome do responsável:{" "}
+                          <span className="text-red-500">*</span>
                         </label>
-                        
-                        
+
                         <Input
                           id="nome_resp"
                           required
@@ -1014,7 +1158,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="status">Status:  <span className="text-red-500">*</span></label>
+                        <label htmlFor="status">
+                          Status: <span className="text-red-500">*</span>
+                        </label>
                         <Select required onValueChange={(e) => setStatus(e)}>
                           <SelectTrigger className="w-full" id="status">
                             <SelectValue placeholder="Selecione o status" />
@@ -1029,8 +1175,166 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button type="submit" className="bg-primary-color hover:bg-secondary-color">Salvar</Button>
-                    <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
+                    <Button
+                      type="submit"
+                      className="bg-primary-color hover:bg-secondary-color"
+                    >
+                      Salvar
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => closeModal()}
+                    >
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
+          )}
+
+          {route == "responsibles_released" && (
+            <>
+              <Input
+                placeholder="Pesquise pelo nome do responsável liberado..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="max-w-96"
+              />
+
+              <Modal show={openModal} onClose={() => setOpenModal(false)}>
+                <Modal.Header>
+                  Cadastro de{" "}
+                  <span className="text-primary-color">responsável</span>
+                </Modal.Header>
+
+                <form onSubmit={(e) => createResponsiblesReleaseds(e)}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <UploadButton
+                        uploader={uploader}
+                        options={options}
+                        onComplete={(files) =>
+                          files.length > 0 &&
+                          setLink(files.map((x) => x.fileUrl).join("\n"))
+                        }
+                      >
+                        {({ onClick }) => (
+                          <button
+                            onClick={onClick}
+                            className={`h-48 w-full border-dashed ${
+                              error && !link && "border-red-500"
+                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                          >
+                            {link ? (
+                              <div className="flex justify-center">
+                                <img
+                                  src={link}
+                                  className="w-32"
+                                  alt="foto_aluno"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2 items-center justify-center ">
+                                <IoIosImages fontSize={40} />
+                                <p className="w-full text-sm md:text-lg">
+                                  Clique aqui para selecionar uma imagem.
+                                </p>
+                              </div>
+                            )}
+                          </button>
+                        )}
+                      </UploadButton>
+
+                      <FaTrash
+                        fontSize={22}
+                        onClick={() => setLink("")}
+                        className={`${
+                          link ? "block" : "hidden"
+                        } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
+                      />
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="name">
+                          Nome: <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          placeholder="Digite o nome do responsável..."
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="phone">
+                          Telefone: <span className="text-red-500">*</span>
+                        </label>
+                        <MaskedInput
+                          value={phone}
+                          onChange={handlePhoneChange}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">
+                          Grau de parentesco: <span className="text-red-500">*</span>
+                        </label>
+                        <Select required onValueChange={(e) => setDegreeKinship(e)}>
+                          <SelectTrigger className="w-full" id="status" name="status">
+                            <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pais">Pai ou Mãe</SelectItem>
+                            <SelectItem value="Avós">Avô ou Avó</SelectItem>
+                            <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
+                            <SelectItem value="Tios">Tio ou Tia</SelectItem>
+                            <SelectItem value="Babá">Babá</SelectItem>
+                            <SelectItem value="Escolar">
+                              Escolar (transporte)
+                            </SelectItem>
+                            <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                            <SelectItem value="Primos">Primo ou Prima</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">
+                          Status: <span className="text-red-500">*</span>
+                        </label>
+                        <Select required onValueChange={(e) => setStatus(e)}>
+                          <SelectTrigger
+                            className="w-full"
+                            id="status"
+                            name="status"
+                          >
+                            <SelectValue placeholder="Selecione o status do responsável" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
+                      {loading ? <TbLoader3 /> : "Salvar"}
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => setOpenModal(false)}
+                    >
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -1053,11 +1357,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de <span className="text-primary-color">responsável</span></Modal.Header>
+                <Modal.Header>
+                  Cadastro de{" "}
+                  <span className="text-primary-color">responsável</span>
+                </Modal.Header>
                 <form onSubmit={(e) => createResponsibles(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
-                    <UploadButton
+                      <UploadButton
                         uploader={uploader}
                         options={options}
                         onComplete={(files) =>
@@ -1144,10 +1451,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
-                    <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => setOpenModal(false)}
+                    >
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -1174,7 +1487,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   className="w-full"
                 />
 
-                <Select onValueChange={(e) => filterByUnit("classes", Number(e))}>
+                <Select
+                  onValueChange={(e) => filterByUnit("classes", Number(e))}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Unidade" />
                   </SelectTrigger>
@@ -1194,7 +1509,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de <span className="text-primary-color">turma</span></Modal.Header>
+                <Modal.Header>
+                  Cadastro de <span className="text-primary-color">turma</span>
+                </Modal.Header>
                 <form onSubmit={(e) => createClasses(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
@@ -1257,10 +1574,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
-                    <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => setOpenModal(false)}
+                    >
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -1271,7 +1594,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
           {route == "esportes" && (
             <>
-             <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4">
                 <Input
                   placeholder="Pesquise pela descrição do esporte..."
                   value={
@@ -1286,7 +1609,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   }
                 />
 
-                <Select onValueChange={(e) => filterByUnit("sports", Number(e))}>
+                <Select
+                  onValueChange={(e) => filterByUnit("sports", Number(e))}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Unidade" />
                   </SelectTrigger>
@@ -1303,10 +1628,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     })}
                   </SelectContent>
                 </Select>
-             </div>
+              </div>
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
-                <Modal.Header>Cadastro de <span className="text-primary-color">esporte</span></Modal.Header>
+                <Modal.Header>
+                  Cadastro de{" "}
+                  <span className="text-primary-color">esporte</span>
+                </Modal.Header>
                 <form onSubmit={(e) => createSports(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
@@ -1407,10 +1735,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
                       {loading ? <TbLoader3 /> : "Salvar"}
                     </Button>
-                    <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => setOpenModal(false)}>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => setOpenModal(false)}
+                    >
                       Fechar
                     </Button>
                   </Modal.Footer>
@@ -1483,7 +1817,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 route != "students" ? "hidden" : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              <MdPersonAdd fontSize={23} className="hidden md:flex"/>
+              <MdPersonAdd fontSize={23} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">aluno</span>
             </Button>
 
@@ -1493,7 +1827,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 route != "turmas" ? "hidden" : "flex"
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              <MdGroupAdd fontSize={22} className="hidden md:flex"/>
+              <MdGroupAdd fontSize={22} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">turma</span>
             </Button>
 
@@ -1503,7 +1837,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 route != "esportes" ? "hidden" : "flex"
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              <FaPlus fontSize={15} className="hidden md:flex"/>
+              <FaPlus fontSize={15} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">esporte</span>
             </Button>
 
@@ -1514,7 +1848,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
-              Cadastrar <span className="hidden md:block">professor</span> 
+              Cadastrar <span className="hidden md:block">professor</span>
             </Button>
 
             <Button
@@ -1523,8 +1857,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 route != "responsibles" ? "hidden" : "flex"
               } w-full xl:max-w-56 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              <MdPersonAdd fontSize={20} className="hidden md:flex"/>
+              <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">responsável</span>
+            </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
+                route != "responsibles_released" ? "hidden" : "flex"
+              } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <MdPersonAdd fontSize={20} className="hidden md:flex" />
+              Cadastrar <span className="hidden md:block">novo</span>
             </Button>
 
             <Button
@@ -1533,7 +1877,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 route != "call" ? "hidden" : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
-              <MdFormatListBulletedAdd fontSize={23} className="hidden md:flex"/>
+              <MdFormatListBulletedAdd
+                fontSize={23}
+                className="hidden md:flex"
+              />
               Chamada
             </Button>
           </div>

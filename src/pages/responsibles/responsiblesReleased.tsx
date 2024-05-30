@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
-
+import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -61,11 +61,9 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">
-      {
-        row.getValue("degree_kinship") ? row.getValue("degree_kinship") : "-"
-      }
-    </div>,
+    cell: ({ row }) => (
+      <div className="lowercase">{row.getValue("degree_kinship")}</div>
+    ),
   },
   {
     accessorKey: "phone",
@@ -87,14 +85,14 @@ export const columns: ColumnDef<RowProps>[] = [
     header: ({ column }) => {
       return (
         <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    )
-  },
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
       <div className="capitalize">
         {row.getValue("status") == 0 && "Inativo"}
@@ -110,46 +108,51 @@ export const columns: ColumnDef<RowProps>[] = [
       const { open } = useContext(modalContext);
 
       const openModals = (data: RowProps[]) => {
-        open(data, "Editar responsável", "responsibles");
-      }
+        open(data, "Editar responsável", "responsibles_released");
+      };
 
       return (
         <div>
           <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => openModals([row.original])}>Editar</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => openModals([row.original])}>
+                Editar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },
   },
 ];
 
-const Responsibles = () => {
+const ResponsiblesReleased = () => {
+  const { user } = useContext(AuthContext);
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const { reloadPage } = useContext(ReloadContext);
 
   useEffect(() => {
     const getResponsibles = async () => {
-       try {
-        const response = await api.get("/responsibles");
+      try {
+        const response = await api.get(
+          `/responsibles/releaseds/${(user as unknown as UserProps).id}`
+        );
 
         setData(response.data);
-       }
-
-       catch {
-        toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
-       }
-    }
+      } catch {
+        toast.error(
+          "Ocorreu um erro ao buscar os responsáveis liberados disponíveis!"
+        );
+      }
+    };
 
     getResponsibles();
   }, [reloadPage]);
@@ -158,16 +161,22 @@ const Responsibles = () => {
     <main className="w-full">
       <section className="mt-10">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
-          Responsáveis <span className="text-sm mt-1">({data.length})</span>
+          Responsáveis Liberados{" "}
+          <span className="text-sm mt-1">({data.length})</span>
         </h1>
       </section>
 
       <section className="w-full mx-auto mt-10">
-        {/* @ts-ignore */}
-        <DataTable columns={columns} data={data} route={"responsibles"} />
+        <DataTable
+          //@ts-ignore
+          columns={columns}
+          //@ts-ignore
+          data={data}
+          route={"responsibles_released"}
+        />
       </section>
     </main>
   );
 };
 
-export default Responsibles;
+export default ResponsiblesReleased;

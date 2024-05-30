@@ -65,6 +65,7 @@ export interface RowProps {
   date_of_birth: string;
   unit: number;
   desc_unit: string;
+  degree_kinship: string;
 }
 
 const uploader = Uploader({
@@ -201,6 +202,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [type, setType] = useState("");
   const [link, setLink] = useState("");
   const [status, setStatus] = useState("");
+  const [degreeKinship, setDegreeKinship] = useState("");
   const [classesDisp, setClassesDisp] = useState<ClassesProps[]>([]);
   const [units, setUnits] = useState("");
   const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
@@ -222,7 +224,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [user, setUser] = useState("");
   const [date, setDate] = useState("");
   const [users, setUsers] = useState<UserProps[]>([]);
-  const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<ResponsibleProps[]>([]);
+  const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<
+    ResponsibleProps[]
+  >([]);
   const [show, setShow] = useState<boolean>(false);
 
   const optionsDate = {
@@ -233,19 +237,27 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     maxDate: new Date("2030-01-01"),
     minDate: new Date("1950-01-01"),
     theme: {
-        background: "bg-white",
-        todayBtn: "bg-primary-color",
-        clearBtn: "",
-        icons: "",
-        text: "",
-        disabledText: "bg-gray-100",
-        input: "",
-        inputIcon: "",
-        selected: "bg-primary-color",
+      background: "bg-white",
+      todayBtn: "bg-primary-color",
+      clearBtn: "",
+      icons: "",
+      text: "",
+      disabledText: "bg-gray-100",
+      input: "",
+      inputIcon: "",
+      selected: "bg-primary-color",
     },
     icons: {
-        prev: () => <span><IoChevronBackOutline/></span>,
-        next: () => <span><IoChevronForward/></span>,
+      prev: () => (
+        <span>
+          <IoChevronBackOutline />
+        </span>
+      ),
+      next: () => (
+        <span>
+          <IoChevronForward />
+        </span>
+      ),
     },
     datepickerClassNames: "top-12",
     defaultDate: new Date("2022-01-01"),
@@ -255,19 +267,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     inputNameProp: "date",
     inputIdProp: "date",
     inputDateFormatProp: {
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-    }
-}
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  };
 
   const handleChange = (selectedDate: Date) => {
-      setDate(selectedDate.toLocaleDateString('pt-BR'));
-  }
+    setDate(selectedDate.toLocaleDateString("pt-BR"));
+  };
 
   const handleClose = (state: boolean) => {
-      setShow(state)
-  }
+    setShow(state);
+  };
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -282,17 +294,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
       setDate(String(row[0].date_of_birth));
-      setDaysTraining(row[0].days_training != null ? String(row[0].days_training) : "");
+      setDaysTraining(
+        row[0].days_training != null ? String(row[0].days_training) : ""
+      );
       setUnits(String(row[0].unit));
       setResponsible(String(row[0].responsible));
       await getClasses(row[0].class);
     }
-    
+
     if (type == "classes") {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
     }
-    
+
     if (type == "esportes") {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
@@ -301,17 +315,18 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setClasses(String(row[0].class));
       setId(String(row[0].id));
     }
-    
-    if (type == "responsibles") {
+
+    if (type == "responsibles" || type == "responsibles_released") {
       setName(String(row[0].name));
       setUnits(String(row[0].unit));
       setPhone(String(row[0].phone));
+      setDegreeKinship(String(row[0].degree_kinship));
     }
-    
+
     if (type == "call") {
       setId(String(row[0].id_responsible));
     }
-    
+
     if (type == "teacher") {
       setUnits(String(row[0].unit));
       setName(row[0].name);
@@ -335,7 +350,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "call") {
       try {
-        const response = await api.get(`/responsibles/releaseds/${row[0].responsible}`);
+        const response = await api.get(
+          `/responsibles/releaseds/${row[0].responsible}`
+        );
 
         setResponsibleRealeaseds(response.data);
       } catch {
@@ -372,24 +389,30 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       const response = await api.get("/classes");
 
       if (classId != 999) {
-        const classSelected = response.data.filter((s: {id: number}) => s.id == classId); 
+        const classSelected = response.data.filter(
+          (s: { id: number }) => s.id == classId
+        );
         const className = classSelected[0].description.toLowerCase();
         const isStudentValue = className.split(" ")[0] == "não" ? "0" : "1";
-        
-        setIsStudent(isStudentValue);
-        
-        const newClassDips = response.data.filter((r: {unit: number, description: string}) => {
-          const classNameFilter = r.description.toLowerCase();
-          const isStudentFilter = classNameFilter.split(" ")[0] == "não" ? "0" : "1";
 
-          return (
-            (r.unit == classSelected[0].unit && isStudentFilter == isStudentValue) 
-          )
-        }); 
+        setIsStudent(isStudentValue);
+
+        const newClassDips = response.data.filter(
+          (r: { unit: number; description: string }) => {
+            const classNameFilter = r.description.toLowerCase();
+            const isStudentFilter =
+              classNameFilter.split(" ")[0] == "não" ? "0" : "1";
+
+            return (
+              r.unit == classSelected[0].unit &&
+              isStudentFilter == isStudentValue
+            );
+          }
+        );
 
         return setClassesDisp(newClassDips);
       }
-      
+
       setClassesDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -398,19 +421,18 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
   const changeIsStudent = (e: string) => {
     setIsStudent(e);
-    
-    if (units != "") {
-      filterUnitWithClass(units, e)
-    }
-  }
 
+    if (units != "") {
+      filterUnitWithClass(units, e);
+    }
+  };
 
   const filterUnitWithClass = async (e: string, isStudent: string) => {
     setClasses("");
     setUnits(e);
-    
+
     const response = await api.get(`/classes/filter/${e}`);
-    
+
     if (isStudent == "0") {
       const newData = response.data.filter((d: { description: string }) => {
         const description = d.description.toLocaleLowerCase();
@@ -418,7 +440,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       });
 
       return setClassesDisp(newData);
-      
     } else {
       const newData = response.data.filter((d: { description: string }) => {
         const description = d.description.toLocaleLowerCase();
@@ -427,7 +448,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
       return setClassesDisp(newData);
     }
-  }
+  };
 
   const getTeams = async () => {
     try {
@@ -460,17 +481,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       await getTeams();
       setLoading(false);
     }
-  
-    
+
     if (type == "esportes") {
       await getClasses(999);
     }
-    
+
     if (type == "teacher") {
       await getUsers();
     }
-    
-    type != "call" && await getUnits();
+
+    type != "call" && (await getUnits());
   };
 
   const closeModal = () => {
@@ -508,19 +528,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         unit: units,
         status: status,
       };
-      
+
       if (!link) {
         toast("É necessário que o aluno possua uma foto cadastrada!", {
           position: "top-right",
           icon: "⚠️",
         });
-        
+
         setError(true);
-        
+
         return;
       }
     }
-    
+
     if (type == "teacher") {
       data = {
         image: link,
@@ -528,15 +548,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         userId: user,
         status: status,
       };
-      
+
       if (!link) {
         toast("É necessário que o professor possua uma foto cadastrada!", {
           position: "top-right",
           icon: "⚠️",
         });
-        
+
         setError(true);
-        
+
         return;
       }
     }
@@ -559,12 +579,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         status: status,
       };
     }
-    
-    if (type == "responsibles") {
+
+    if (type == "responsibles" || type == "responsibles_released") {
       data = {
         image: link,
         name: name,
         phone: phone,
+        degree_kinship: degreeKinship,
         status: status,
       };
 
@@ -587,6 +608,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "esportes" && (await api.put(`/sports/${id}`, data));
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
+      type == "responsibles_released" && (await api.put(`/responsibles/releaseds/${id}`, data));
 
       toast.success(
         `${(data && data.name) || data?.description} editado com sucesso!`
@@ -605,7 +627,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
   // const filterTeams = async (idClass: any) => {
   //   setClasses(idClass);
-    
+
   //   try {
   //     const response = await api.get(`/sports/class/${idClass}`);
 
@@ -633,7 +655,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 type != "studentsClass" && type != "teacherClass" && "space-y-6"
               }`}
             >
-              {(type == "students" || type == "teacher" || type == "responsibles") && (
+              {(type == "students" ||
+                type == "teacher" ||
+                type == "responsibles_released" ||
+                type == "responsibles") && (
                 <UploadButton
                   uploader={uploader}
                   options={options}
@@ -691,6 +716,55 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </>
               )}
 
+              {type == "responsibles_released" && (
+                <>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="name">
+                      Nome: <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="Digite o nome do responsável..."
+                      onChange={(e) => setName(e.target.value)}
+                      value={name}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="phone">
+                      Telefone: <span className="text-red-500">*</span>
+                    </label>
+                    <MaskedInput value={phone} onChange={handlePhoneChange} />
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="status">
+                      Grau de parentesco: <span className="text-red-500">*</span>
+                    </label>
+
+                    <Select value={degreeKinship != "" ? degreeKinship : ""} defaultValue={degreeKinship} required onValueChange={(e) => setDegreeKinship(e)}>
+                      <SelectTrigger className="w-full" id="status" name="status">
+                        <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Pais">Pai ou Mãe</SelectItem>
+                        <SelectItem value="Avós">Avô ou Avó</SelectItem>
+                        <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
+                        <SelectItem value="Tios">Tio ou Tia</SelectItem>
+                        <SelectItem value="Babá">Babá</SelectItem>
+                        <SelectItem value="Escolar">
+                          Escolar (transporte)
+                        </SelectItem>
+                        <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                        <SelectItem value="Primos">Primo ou Prima</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
               {type == "classes" && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -713,11 +787,20 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         Unidade: <span className="text-red-500">*</span>
                       </div>
 
-                      <div className={`${(unitsDisp.length == 1 && unitsDisp[0]?.id == 999) ? "block" : "hidden"}`}>
+                      <div
+                        className={`${
+                          unitsDisp.length == 1 && unitsDisp[0]?.id == 999
+                            ? "block"
+                            : "hidden"
+                        }`}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              <FiAlertOctagon
+                                fontSize={19}
+                                className="text-yellow-800  "
+                              />
                             </Button>
                           </DropdownMenuTrigger>
 
@@ -725,14 +808,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <div className="py-2 p-3 text-sm">
-                              Nenhuma unidade encontrada, cadastre novas unidades e tente novamente!
+                              Nenhuma unidade encontrada, cadastre novas
+                              unidades e tente novamente!
                             </div>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </label>
 
-                    <Select defaultValue={units} onValueChange={(e) => setUnits(e)} disabled={(unitsDisp.length <= 0)}>
+                    <Select
+                      defaultValue={units}
+                      onValueChange={(e) => setUnits(e)}
+                      disabled={unitsDisp.length <= 0}
+                    >
                       <SelectTrigger className="w-full" id="units">
                         <SelectValue placeholder="Selecione a unidade" />
                       </SelectTrigger>
@@ -742,7 +830,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           if (c.id == 999) {
                             return;
                           }
-                          
+
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
@@ -846,48 +934,71 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                   <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="dateBirth">
-                      Data de nascimento: <span className="text-red-500">*</span>
+                      Data de nascimento:{" "}
+                      <span className="text-red-500">*</span>
                     </label>
 
-                     {/* @ts-ignore */}
-                     <Datepicker options={optionsDate} onChange={handleChange} show={show} setShow={handleClose}>
-                          <div className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer" onClick={() => setShow(!show)}>
-                              <input type="text" placeholder="Selecione a data de nascimento" className=" placeholder:text-gray-600 cursor-pointer w-full" value={date} readOnly />
-                          </div>
-                      </Datepicker>
+                    <Datepicker
+                      //@ts-ignore 
+                      options={optionsDate}
+                      onChange={handleChange}
+                      show={show}
+                      setShow={handleClose}
+                    >
+                      <div
+                        className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
+                        onClick={() => setShow(!show)}
+                      >
+                        <input
+                          type="text"
+                          placeholder="Selecione a data de nascimento"
+                          className=" placeholder:text-gray-600 cursor-pointer w-full"
+                          value={date}
+                          readOnly
+                        />
+                      </div>
+                    </Datepicker>
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="class">
-                      É um aluno do colégio ? <span className="text-red-500">*</span>
+                      É um aluno do colégio ?{" "}
+                      <span className="text-red-500">*</span>
                     </label>
 
-                    <Select value={isStudent != "" ? isStudent : ""} defaultValue={isStudent} onValueChange={(e) => changeIsStudent(e)}>
+                    <Select
+                      value={isStudent != "" ? isStudent : ""}
+                      defaultValue={isStudent}
+                      onValueChange={(e) => changeIsStudent(e)}
+                    >
                       <SelectTrigger className="w-full" id="class">
                         <SelectValue placeholder="Selecione sim ou não" />
                       </SelectTrigger>
                       <SelectContent>
-                          <SelectItem value={"1"}>
-                            Sim
-                          </SelectItem>
-                          <SelectItem value={"0"}>
-                            Não
-                          </SelectItem>
+                        <SelectItem value={"1"}>Sim</SelectItem>
+                        <SelectItem value={"0"}>Não</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label className="flex justify-between items-center cursor-pointer">
                       <div>
                         Unidade: <span className="text-red-500">*</span>
                       </div>
 
-                      <div className={`${(unitsDisp.length <= 0) ? "block" : "hidden"}`}>
+                      <div
+                        className={`${
+                          unitsDisp.length <= 0 ? "block" : "hidden"
+                        }`}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              <FiAlertOctagon
+                                fontSize={19}
+                                className="text-yellow-800  "
+                              />
                             </Button>
                           </DropdownMenuTrigger>
 
@@ -895,14 +1006,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <div className="py-2 p-3 text-sm">
-                              Nenhuma unidade encontrada, cadastre novas unidades e tente novamente!
+                              Nenhuma unidade encontrada, cadastre novas
+                              unidades e tente novamente!
                             </div>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </label>
 
-                    <Select defaultValue={unitsDisp.length <= 0 ? "" : units} onValueChange={(e) => filterUnitWithClass(e, isStudent)} disabled={(unitsDisp.length <= 0)}>
+                    <Select
+                      defaultValue={unitsDisp.length <= 0 ? "" : units}
+                      onValueChange={(e) => filterUnitWithClass(e, isStudent)}
+                      disabled={unitsDisp.length <= 0}
+                    >
                       <SelectTrigger className="w-full" id="units">
                         <SelectValue placeholder="Selecione a unidade" />
                       </SelectTrigger>
@@ -912,7 +1028,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           if (c.id == 999) {
                             return;
                           }
-                          
+
                           return (
                             <SelectItem key={c.id} value={String(c.id)}>
                               {c.description}
@@ -929,11 +1045,20 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         Turma: <span className="text-red-500">*</span>
                       </div>
 
-                      <div className={(classesDisp.length == 1 && classesDisp[0]?.id == 999) ? "flex" : "hidden"}>
+                      <div
+                        className={
+                          classesDisp.length == 1 && classesDisp[0]?.id == 999
+                            ? "flex"
+                            : "hidden"
+                        }
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              <FiAlertOctagon
+                                fontSize={19}
+                                className="text-yellow-800  "
+                              />
                             </Button>
                           </DropdownMenuTrigger>
 
@@ -941,14 +1066,23 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <div className="py-2 p-3 text-sm">
-                              Nenhuma turma encontrada, cadastre novas turmas e tente novamente!
+                              Nenhuma turma encontrada, cadastre novas turmas e
+                              tente novamente!
                             </div>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </label>
 
-                    <Select value={classes != "" ? classes : ""} defaultValue={classes} onValueChange={(e) => setClasses(e)} disabled={units == ""|| (classesDisp.length == 1 && classesDisp[0]?.id == 999)}>
+                    <Select
+                      value={classes != "" ? classes : ""}
+                      defaultValue={classes}
+                      onValueChange={(e) => setClasses(e)}
+                      disabled={
+                        units == "" ||
+                        (classesDisp.length == 1 && classesDisp[0]?.id == 999)
+                      }
+                    >
                       <SelectTrigger className="w-full" id="class">
                         <SelectValue placeholder="Selecione a turma" />
                       </SelectTrigger>
@@ -975,11 +1109,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         Esporte: <span className="text-red-500">*</span>
                       </div>
 
-                      <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
+                      <div
+                        className={teamsDisp.length <= 0 ? "flex" : "hidden"}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                              <FiAlertOctagon
+                                fontSize={19}
+                                className="text-yellow-800  "
+                              />
                             </Button>
                           </DropdownMenuTrigger>
 
@@ -987,14 +1126,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <div className="py-2 p-3 text-sm">
-                              Nenhum esporte encontrado, cadastre novos esportes e tente novamente!
+                              Nenhum esporte encontrado, cadastre novos esportes
+                              e tente novamente!
                             </div>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </label>
 
-                    <Select defaultValue={teamsDisp.length <= 0 ? "" : team} onValueChange={(e) => setTeam(e)} disabled={teamsDisp.length <= 0}>
+                    <Select
+                      defaultValue={teamsDisp.length <= 0 ? "" : team}
+                      onValueChange={(e) => setTeam(e)}
+                      disabled={teamsDisp.length <= 0}
+                    >
                       <SelectTrigger className="w-full" id="sport">
                         <SelectValue placeholder="Selecione o esporte" />
                       </SelectTrigger>
@@ -1011,22 +1155,24 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </Select>
                   </div>
 
-                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label htmlFor="days_training">
-                        Dias de treino:
-                      </label>
-                      
-                    <Select value={daysTraining != "" ? daysTraining.trim() : ""} onValueChange={(e) => setDaysTraining(e)} defaultValue={daysTraining.trim()}>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="days_training">Dias de treino:</label>
+
+                    <Select
+                      value={daysTraining != "" ? daysTraining.trim() : ""}
+                      onValueChange={(e) => setDaysTraining(e)}
+                      defaultValue={daysTraining.trim()}
+                    >
                       <SelectTrigger className="w-full" id="days_training">
                         <SelectValue placeholder="Selecione os dias de treino" />
                       </SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="Segunda e Quarta">
-                            Segunda e Quarta
-                          </SelectItem>
-                          <SelectItem value="Terça e Quinta">
-                            Terça e Quinta
-                          </SelectItem>
+                        <SelectItem value="Segunda e Quarta">
+                          Segunda e Quarta
+                        </SelectItem>
+                        <SelectItem value="Terça e Quinta">
+                          Terça e Quinta
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1068,7 +1214,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </p>
                   </div>
                 ))}
-
 
               {type == "call" &&
                 (responsibleRealeaseds.length > 0 ? (
@@ -1133,56 +1278,73 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "studentsClass" && type != "teacherClass" && type != "call" && (
-                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                  <label htmlFor="status">
-                    Status: <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    required
-                    onValueChange={(e) => setStatus(e)}
-                    defaultValue={status}
-                  >
-                    <SelectTrigger className="w-full" id="status">
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {type == "students" && (
-                        <>
-                          <SelectItem value="1">Ativo</SelectItem>
-                          <SelectItem value="2">Experimental</SelectItem>
-                          <SelectItem value="0">Inativo</SelectItem>
-                        </>
-                      )}
+              {type != "studentsClass" &&
+                type != "teacherClass" &&
+                type != "call" && (
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="status">
+                      Status: <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      required
+                      onValueChange={(e) => setStatus(e)}
+                      defaultValue={status}
+                    >
+                      <SelectTrigger className="w-full" id="status">
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {type == "students" && (
+                          <>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="2">Experimental</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </>
+                        )}
 
-                      {(type == "classes" ||
-                        type == "teacher" ||
-                        type == "esportes") && (
-                        <>
-                          <SelectItem value="1">Ativo</SelectItem>
-                          <SelectItem value="0">Inativo</SelectItem>
-                        </>
-                      )}
+                        {(type == "classes" ||
+                          type == "teacher" ||
+                          type == "esportes") && (
+                          <>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </>
+                        )}
 
-                      {type == "responsibles" && (
-                        <>
-                          <SelectItem value="1">Ativo</SelectItem>
-                          <SelectItem value="0">Inativo</SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                        {type == "responsibles" && (
+                          <>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </>
+                        )}
+
+                        {type == "responsibles_released" && (
+                          <>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
             </div>
           </Modal.Body>
           <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-            {type != "studentsClass" && type != "teacherClass" && type != "call" && (
-              <Button className="text-center bg-primary-color hover:bg-secondary-color" type="submit">
-                {loading ? <TbLoader3 /> : "Salvar"}
-              </Button>
-            )}
-            <Button className="bg-white text-black border border-gray-100 hover:bg-gray-100" onClick={() => closeModal()}>
+            {type != "studentsClass" &&
+              type != "teacherClass" &&
+              type != "call" && (
+                <Button
+                  className="text-center bg-primary-color hover:bg-secondary-color"
+                  type="submit"
+                >
+                  {loading ? <TbLoader3 /> : "Salvar"}
+                </Button>
+              )}
+            <Button
+              className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+              onClick={() => closeModal()}
+            >
               Fechar
             </Button>
           </Modal.Footer>
