@@ -119,7 +119,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [classes, setClasses] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
-  const [userSelected, setUserSelected] = React.useState("");
   const [daysTraining, setDaysTraining] = React.useState("");
   const [date, setDate] = React.useState("");
   const {
@@ -573,7 +572,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       image: link,
       name: name,
-      userId: userSelected,
       status: status,
     };
 
