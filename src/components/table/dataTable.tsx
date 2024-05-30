@@ -116,7 +116,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [userSelected, setUserSelected] = React.useState("");
   const [users, setUsers] = React.useState<UserProps[]>([]);
   const [date, setDate] = React.useState("");
-  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit, reloadPage, unitId } = React.useContext(ReloadContext);
+  const { filterStudentsByClass, filterStudentsByTeam, idClass, teamId, filterByUnit, reloadPage, verifyUserCreate, unitId } = React.useContext(ReloadContext);
 
   const optionsDate = {
     title: "",
@@ -490,7 +490,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
       setPhone("");
       toast.success("Aluno cadastrado com sucesso!");
-      setOpenModal(false);
+      closeModal();
+      verifyUserCreate(true);
       reloadPage();
       setLink("");
       setDate("");

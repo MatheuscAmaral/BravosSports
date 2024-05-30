@@ -186,12 +186,16 @@ export const columns: ColumnDef<RowProps>[] = [
 ];
 
 const Students = () => {
-  const { reloadPage, newStudents } = useContext(ReloadContext);
+  const { reloadPage, newStudents, createdUser, filterStudentsByClass } = useContext(ReloadContext);
   const [data, setData] = useState<StudentsProps[]>([]);
 
   useEffect(() => {
     const getStudents = async () => {
       try {  
+        if (createdUser) {
+          filterStudentsByClass(999);
+        }
+
         setData(newStudents);
       } catch {
         toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");

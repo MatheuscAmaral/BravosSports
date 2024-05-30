@@ -218,7 +218,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
-  // const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
   const [date, setDate] = useState("");
@@ -286,6 +285,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setDaysTraining(row[0].days_training != null ? String(row[0].days_training) : "");
       setUnits(String(row[0].unit));
       setResponsible(String(row[0].responsible));
+      await getClasses(row[0].class);
     }
     
     if (type == "classes") {
@@ -367,18 +367,29 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const getClasses = async () => {
+  const getClasses = async (classId: number) => {
     try {
       const response = await api.get("/classes");
 
-      if (type == "students") {
-        response.data.map((s: { id: number; description: string; desc_unit: string }) => {
-          if (s.id != 999) {
-            s.description += ' - ' + s.desc_unit;
-          }
-        });
-      }
+      if (classId != 999) {
+        const classSelected = response.data.filter((s: {id: number}) => s.id == classId); 
+        const className = classSelected[0].description.toLowerCase();
+        const isStudentValue = className.split(" ")[0] == "não" ? "0" : "1";
+        
+        setIsStudent(isStudentValue);
+        
+        const newClassDips = response.data.filter((r: {unit: number, description: string}) => {
+          const classNameFilter = r.description.toLowerCase();
+          const isStudentFilter = classNameFilter.split(" ")[0] == "não" ? "0" : "1";
 
+          return (
+            (r.unit == classSelected[0].unit && isStudentFilter == isStudentValue) 
+          )
+        }); 
+
+        return setClassesDisp(newClassDips);
+      }
+      
       setClassesDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -446,14 +457,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "students") {
       setLoading(true);
-      await getClasses();
       await getTeams();
       setLoading(false);
     }
   
     
     if (type == "esportes") {
-      await getClasses();
+      await getClasses(999);
     }
     
     if (type == "teacher") {
@@ -593,20 +603,20 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const filterTeams = async (idClass: any) => {
-    setClasses(idClass);
+  // const filterTeams = async (idClass: any) => {
+  //   setClasses(idClass);
     
-    try {
-      const response = await api.get(`/sports/class/${idClass}`);
+  //   try {
+  //     const response = await api.get(`/sports/class/${idClass}`);
 
-      setTeamsDisp(response.data);
-      setTeam("");
-    }
+  //     setTeamsDisp(response.data);
+  //     setTeam("");
+  //   }
 
-    catch {
-      toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
-    }
-  }
+  //   catch {
+  //     toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
+  //   }
+  // }
 
   return (
     <modalContext.Provider value={{ getData, open }}>
@@ -851,7 +861,8 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     <label htmlFor="class">
                       É um aluno do colégio ? <span className="text-red-500">*</span>
                     </label>
-                    <Select onValueChange={(e) => changeIsStudent(e)}>
+
+                    <Select value={isStudent != "" ? isStudent : ""} defaultValue={isStudent} onValueChange={(e) => changeIsStudent(e)}>
                       <SelectTrigger className="w-full" id="class">
                         <SelectValue placeholder="Selecione sim ou não" />
                       </SelectTrigger>
@@ -912,13 +923,100 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </Select>
                   </div>
 
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label className="flex justify-between items-center cursor-pointer">
+                      <div>
+                        Turma: <span className="text-red-500">*</span>
+                      </div>
+
+                      <div className={(classesDisp.length == 1 && classesDisp[0]?.id == 999) ? "flex" : "hidden"}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <div className="py-2 p-3 text-sm">
+                              Nenhuma turma encontrada, cadastre novas turmas e tente novamente!
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </label>
+
+                    <Select value={classes != "" ? classes : ""} defaultValue={classes} onValueChange={(e) => setClasses(e)} disabled={units == ""|| (classesDisp.length == 1 && classesDisp[0]?.id == 999)}>
+                      <SelectTrigger className="w-full" id="class">
+                        <SelectValue placeholder="Selecione a turma" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {classesDisp.map((c) => {
+                          if (c.id == 999) {
+                            return;
+                          }
+
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.description.split("-")[0]}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="days_training">
-                      Dias de treino:
+                    <label className="flex justify-between items-center cursor-pointer">
+                      <div>
+                        Esporte: <span className="text-red-500">*</span>
+                      </div>
+
+                      <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                              <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <div className="py-2 p-3 text-sm">
+                              Nenhum esporte encontrado, cadastre novos esportes e tente novamente!
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </label>
-                    
-                    <Select onValueChange={(e) => setDaysTraining(e)} defaultValue={daysTraining.trim()}>
+
+                    <Select defaultValue={teamsDisp.length <= 0 ? "" : team} onValueChange={(e) => setTeam(e)} disabled={teamsDisp.length <= 0}>
+                      <SelectTrigger className="w-full" id="sport">
+                        <SelectValue placeholder="Selecione o esporte" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {teamsDisp.map((t) => {
+                          return (
+                            <SelectItem key={t.id} value={String(t.id)}>
+                              {t.description}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                    <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                      <label htmlFor="days_training">
+                        Dias de treino:
+                      </label>
+                      
+                    <Select value={daysTraining != "" ? daysTraining.trim() : ""} onValueChange={(e) => setDaysTraining(e)} defaultValue={daysTraining.trim()}>
                       <SelectTrigger className="w-full" id="days_training">
                         <SelectValue placeholder="Selecione os dias de treino" />
                       </SelectTrigger>
@@ -932,94 +1030,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label className="flex justify-between items-center cursor-pointer">
-                        <div>
-                          Turma: <span className="text-red-500">*</span>
-                        </div>
-
-                        <div className={(classesDisp.length == 1 && classesDisp[0]?.id == 999) ? "flex" : "hidden"}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
-                              </Button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent className="w-56">
-                              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <div className="py-2 p-3 text-sm">
-                                Nenhuma turma encontrada, cadastre novas turmas e tente novamente!
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </label>
-
-                      <Select defaultValue={classes} onValueChange={(e) => setClasses(e)} disabled={units == ""|| (classesDisp.length == 1 && classesDisp[0]?.id == 999)}>
-                        <SelectTrigger className="w-full" id="class">
-                          <SelectValue placeholder="Selecione a turma" />
-                        </SelectTrigger>
-
-                        <SelectContent>
-                          {classesDisp.map((c) => {
-                            if (c.id == 999) {
-                              return;
-                            }
-
-                            return (
-                              <SelectItem key={c.id} value={String(c.id)}>
-                                {c.description.split("-")[0]}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                      <label className="flex justify-between items-center cursor-pointer">
-                        <div>
-                          Esporte: <span className="text-red-500">*</span>
-                        </div>
-
-                        <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                <FiAlertOctagon fontSize={19} className="text-yellow-800  "/>
-                              </Button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent className="w-56">
-                              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <div className="py-2 p-3 text-sm">
-                                Nenhum esporte encontrado, cadastre novos esportes e tente novamente!
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </label>
-
-                      <Select defaultValue={teamsDisp.length <= 0 ? "" : team} onValueChange={(e) => setTeam(e)} disabled={teamsDisp.length <= 0}>
-                        <SelectTrigger className="w-full" id="sport">
-                          <SelectValue placeholder="Selecione o esporte" />
-                        </SelectTrigger>
-
-                        <SelectContent>
-                          {teamsDisp.map((t) => {
-                            return (
-                              <SelectItem key={t.id} value={String(t.id)}>
-                                {t.description}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
                 </div>
               )}
 
