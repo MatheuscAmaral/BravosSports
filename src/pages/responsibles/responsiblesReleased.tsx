@@ -16,6 +16,7 @@ import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
+import { TbLoader3 } from "react-icons/tb";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -138,10 +139,13 @@ const ResponsiblesReleased = () => {
   const { user } = useContext(AuthContext);
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const { reloadPage } = useContext(ReloadContext);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getResponsibles = async () => {
       try {
+        setLoading(true);
+        
         const response = await api.get(
           `/responsibles/releaseds/${(user as unknown as UserProps).id}`
         );
@@ -151,6 +155,8 @@ const ResponsiblesReleased = () => {
         toast.error(
           "Ocorreu um erro ao buscar os responsáveis liberados disponíveis!"
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -166,15 +172,23 @@ const ResponsiblesReleased = () => {
         </h1>
       </section>
 
-      <section className="w-full mx-auto mt-10">
-        <DataTable
-          //@ts-ignore
-          columns={columns}
-          //@ts-ignore
-          data={data}
-          route={"responsibles_released"}
-        />
-      </section>
+      {
+         loading ? (
+          <div className="mx-auto max-w-5 mt-40 mb-10">
+            <TbLoader3 fontSize={25} className="w-12" style={{ animation: "spin 1s linear infinite" }}/>
+          </div>
+        ) : (
+          <section className="w-full mx-auto mt-10">
+            <DataTable
+              //@ts-ignore
+              columns={columns}
+              //@ts-ignore
+              data={data}
+              route={"responsibles_released"}
+            />
+          </section>
+        )
+      }
     </main>
   );
 };

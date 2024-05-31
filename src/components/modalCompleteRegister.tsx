@@ -24,7 +24,7 @@ import { UploadButton } from "react-uploader";
 import { IoIosImages } from "react-icons/io";
 import api from "@/api";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
-import { TbEyeClosed } from "react-icons/tb";
+import { TbEyeClosed, TbLoader3 } from "react-icons/tb";
 import { MdErrorOutline } from "react-icons/md";
 
 const uploader = Uploader({
@@ -33,7 +33,7 @@ const uploader = Uploader({
 
 const options = { multi: true };
 
-const ModalResponsible = () => {
+const ModalCompleteRegister = () => {
   const { user } = useContext(AuthContext);
   const [openModal, setOpenModal] = useState(true);
   const [link, setLink] = useState("");
@@ -45,6 +45,7 @@ const ModalResponsible = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const closeModal = () => {
     toast(
@@ -56,29 +57,43 @@ const ModalResponsible = () => {
     );
   };
 
-  const updateDataResponsible = async (e: FormEvent) => {
+  const updateData = async (e: FormEvent, level: number) => {
     e.preventDefault();
 
-    if (!link) {
-      toast("É obrigatório cadastrar uma foto!", {
-        position: "top-right",
-        icon: "⚠️",
-      });
+    let data = {}
 
-      setError(true);
-      return;
+    if (level == 3) {
+      if (!link) {
+        toast("É obrigatório cadastrar uma foto!", {
+          position: "top-right",
+          icon: "⚠️",
+        });
+  
+        setError(true);
+        return;
+      }
+  
+      data = {
+        image: link,
+        degree_kinship: degreeKinship,
+        email: email,
+        password: password,
+      };
+    } else {
+      data = {
+        email: email,
+        password: password,
+      };
     }
 
-    const data = {
-      image: link,
-      degree_kinship: degreeKinship,
-      email: email,
-      password: password,
-    };
-
     try {
-      const response = await api.put(
+      setLoading(true);
+
+      const response = level == 3 ? await api.put(
         `/responsibles/complete/${(user as unknown as UserProps).id}`,
+        data
+      ) : await api.put(
+        `/teachers/complete/${(user as unknown as UserProps).id}`,
         data
       );
 
@@ -87,7 +102,9 @@ const ModalResponsible = () => {
       });
       setOpenModal(false);
     } catch {
-      toast.success("Ocorreu um erro ao atualizar os dados do responsável!");
+      toast.error("Ocorreu um erro ao atualizar os dados do responsável!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -260,51 +277,81 @@ const ModalResponsible = () => {
           </Modal.Footer>
         </TabsContent>
         <TabsContent value="data">
-          <form onSubmit={updateDataResponsible}>
+          <form onSubmit={(e) => updateData(e, (user as unknown as UserProps).level)}>
             <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
               <div className="space-y-6 mb-5">
-                <UploadButton
-                  uploader={uploader}
-                  options={options}
-                  onComplete={(files) =>
-                    files.length > 0 &&
-                    setLink(files.map((x) => x.fileUrl).join("\n"))
-                  }
-                >
-                  {({ onClick }) => (
-                    <button
-                      onClick={onClick}
-                      className={`h-48 w-full border-dashed ${
-                        error && !link && "border-red-500"
-                      } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                    >
-                      {link ? (
-                        <div className="flex justify-center">
-                          <img
-                            src={link}
-                            className="w-32"
-                            alt="foto_professor"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2 items-center justify-center ">
-                          <IoIosImages fontSize={40} />
-                          <p className="w-full text-sm md:text-lg">
-                            Clique aqui para selecionar uma imagem.
-                          </p>
-                        </div>
-                      )}
-                    </button>
-                  )}
-                </UploadButton>
+                {
+                  (user as unknown as UserProps).level == 3 && (
+                    <>
+                      <UploadButton
+                        uploader={uploader}
+                        options={options}
+                        onComplete={(files) =>
+                          files.length > 0 &&
+                          setLink(files.map((x) => x.fileUrl).join("\n"))
+                        }
+                      >
+                        {({ onClick }) => (
+                          <button
+                            onClick={onClick}
+                            className={`h-48 w-full border-dashed ${
+                              error && !link && "border-red-500"
+                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                          >
+                            {link ? (
+                              <div className="flex justify-center">
+                                <img
+                                  src={link}
+                                  className="w-32"
+                                  alt="foto_professor"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2 items-center justify-center ">
+                                <IoIosImages fontSize={40} />
+                                <p className="w-full text-sm md:text-lg">
+                                  Clique aqui para selecionar uma imagem.
+                                </p>
+                              </div>
+                            )}
+                          </button>
+                        )}
+                      </UploadButton>
+      
+                      <FaTrash
+                        fontSize={22}
+                        onClick={() => setLink("")}
+                        className={`${
+                          link ? "block" : "hidden"
+                        } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
+                      />
+                      
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">
+                          Grau de parentesco: <span className="text-red-500">*</span>
+                        </label>
+                        <Select required onValueChange={(e) => setDegreeKinship(e)}>
+                          <SelectTrigger className="w-full" id="status" name="status">
+                            <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="Pais">Pai ou Mãe</SelectItem>
+                              <SelectItem value="Avós">Avô ou Avó</SelectItem>
+                              <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
+                              <SelectItem value="Tios">Tio ou Tia</SelectItem>
+                              <SelectItem value="Babá">Babá</SelectItem>
+                              <SelectItem value="Escolar">
+                                  Escolar (transporte)
+                              </SelectItem>
+                              <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                              <SelectItem value="Primos">Primo ou Prima</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
 
-                <FaTrash
-                  fontSize={22}
-                  onClick={() => setLink("")}
-                  className={`${
-                    link ? "block" : "hidden"
-                  } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
-                />
+                  )
+                }
 
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                   <label htmlFor="email">
@@ -319,28 +366,6 @@ const ModalResponsible = () => {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                  <label htmlFor="status">
-                    Grau de parentesco: <span className="text-red-500">*</span>
-                  </label>
-                  <Select required onValueChange={(e) => setDegreeKinship(e)}>
-                    <SelectTrigger className="w-full" id="status" name="status">
-                      <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Pais">Pai ou Mãe</SelectItem>
-                        <SelectItem value="Avós">Avô ou Avó</SelectItem>
-                        <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
-                        <SelectItem value="Tios">Tio ou Tia</SelectItem>
-                        <SelectItem value="Babá">Babá</SelectItem>
-                        <SelectItem value="Escolar">
-                            Escolar (transporte)
-                        </SelectItem>
-                        <SelectItem value="Acompanhante">Acompanhante</SelectItem>
-                        <SelectItem value="Primos">Primo ou Prima</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </Modal.Body>
             <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
@@ -348,7 +373,11 @@ const ModalResponsible = () => {
                 type="submit"
                 className="bg-primary-color hover:bg-secondary-color"
               >
-                Salvar
+                {loading ? (
+                  <div className="flex justify-center">
+                    <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                  </div>
+                ) : "Salvar"}
               </Button>
 
               <Button
@@ -365,4 +394,4 @@ const ModalResponsible = () => {
   );
 };
 
-export default ModalResponsible;
+export default ModalCompleteRegister;

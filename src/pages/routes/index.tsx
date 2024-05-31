@@ -2,10 +2,7 @@ import Layout from "@/components/layout";
 import { createBrowserRouter } from "react-router-dom";
 import Home from "../home";
 import Students from "../students";
-import GetClass from "../getClass";
 import Call from "../call";
-import ControllCall from "../portaria/call";
-import ControllStudents from "../portaria/students";
 import Settings from "../settings";
 import Classes from "../classes";
 import Teachers from "../teachers";
@@ -32,14 +29,6 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Students />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/buscar",
-        element: (
-          <PrivateRoute>
-            <GetClass />
           </PrivateRoute>
         ),
       },
@@ -72,22 +61,6 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Call />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/controle/alunos",
-        element: (
-          <PrivateRoute>
-            <ControllStudents />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/controle/chamada",
-        element: (
-          <PrivateRoute>
-            <ControllCall />
           </PrivateRoute>
         ),
       },

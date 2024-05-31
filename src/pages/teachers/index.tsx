@@ -15,6 +15,7 @@ import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import toast from "react-hot-toast";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg"; 
+import { TbLoader3 } from "react-icons/tb";
 
 export interface TeachersProps {
   id: number;
@@ -122,15 +123,19 @@ export const columnsProf: ColumnDef<RowProps>[] = [
 const Teachers = () => {
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const { reloadPage } = useContext(ReloadContext);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getTeachers = async () => {
       try {
+        setLoading(true);
         const response = await api.get("/teachers");
 
         setTeachers(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os professores disponíveis!");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -145,10 +150,19 @@ const Teachers = () => {
         </h1>
       </section>
 
-      <div className="w-full mx-auto mt-10">
-        {/*@ts-ignore*/}
-        <DataTable columns={columnsProf} data={teachers} route="teachers" />
-      </div>
+      {
+        loading ? (
+          <div className="mx-auto max-w-5 mt-40 mb-10">
+            <TbLoader3 fontSize={25} className="w-12" style={{ animation: "spin 1s linear infinite" }}/>
+          </div>
+        ) : (
+          <div className="w-full mx-auto mt-10">
+            {/*@ts-ignore*/}
+            <DataTable columns={columnsProf} data={teachers} route="teachers" />
+          </div>
+        )
+      }
+
     </main>
   );
 };

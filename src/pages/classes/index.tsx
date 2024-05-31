@@ -16,6 +16,7 @@ import api from "@/api";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
+import { TbLoader3 } from "react-icons/tb";
 
 export interface ClassesProps {
   id: number;
@@ -108,20 +109,23 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 const Classes = () => {
   const { reloadPage, newData } = useContext(ReloadContext);
   const [data, setData] = useState<ClassesProps[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getClasses = async () => {
       try {
+        setLoading(true);
+
         if (newData.length > 0) {      
           return setData(newData);
         }
 
         const response = await api.get("/classes");
         setData(response.data);
-      }
-
-      catch {
+      } catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
+      } finally {
+        setLoading(false);
       }
     }
   
@@ -135,12 +139,24 @@ const Classes = () => {
         <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Turmas<span className="text-sm mt-1">({data.length})</span></h1>
       </section>
 
-      <div className="w-full mx-auto mt-10">
-        {
-          //@ts-ignore       
-          <DataTable columns={columnsClass} data={data} route={"turmas"} />
-        }
-      </div>
+      {
+        loading ? (
+          <div className="mx-auto max-w-5 mt-40 mb-10">
+            <TbLoader3
+              fontSize={25}
+              className="w-12"
+              style={{ animation: "spin 1s linear infinite" }}
+            />
+          </div>
+        ) : (
+          <div className="w-full mx-auto mt-10">
+            {
+              //@ts-ignore       
+              <DataTable columns={columnsClass} data={data} route={"turmas"} />
+            }
+          </div>
+        )
+      }
     </main>
   );
 };

@@ -1338,7 +1338,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   className="text-center bg-primary-color hover:bg-secondary-color"
                   type="submit"
                 >
-                  {loading ? <TbLoader3 /> : "Salvar"}
+                  {loading ? (
+                      <div className="flex justify-center">
+                        <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                      </div>
+                    ) : "Salvar"}
                 </Button>
               )}
             <Button

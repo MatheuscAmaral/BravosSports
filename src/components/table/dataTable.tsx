@@ -374,6 +374,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "studentsClass") {
       return;
     }
+    
+    if (!link) {
+      toast("É necessário que o aluno possua uma foto cadastrada!", {
+        position: "top-right",
+        icon: "⚠️",
+      });
+
+      setError(true);
+      return;
+    }
 
     const respId = await getResponsibleWithIdUser((user as unknown as UserProps).id);
 
@@ -559,6 +569,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setDate("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o aluno!");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -567,11 +579,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     if (route == "studentsClass") {
       return;
-    }
+    } 
 
     const data = {
       image: link,
       name: name,
+      phone: phone,
       status: status,
     };
 
@@ -596,6 +609,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLink("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o professor!");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -712,6 +727,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label>
+                          Telefone: 
+                          <span className="text-red-500"> * </span>
+                        </label>
+
+                        <MaskedInput
+                          value={phone}
+                          onChange={handlePhoneChange}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
                           Status: <span className="text-red-500">*</span>
                         </label>
@@ -732,7 +759,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       type="submit"
                       className="bg-primary-color hover:bg-secondary-color"
                     >
-                      Salvar
+                       {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1177,7 +1208,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       type="submit"
                       className="bg-primary-color hover:bg-secondary-color"
                     >
-                      Salvar
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1327,7 +1362,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       className="text-center bg-primary-color hover:bg-secondary-color"
                       type="submit"
                     >
-                      {loading ? <TbLoader3 /> : "Salvar"}
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1453,7 +1492,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       className="text-center bg-primary-color hover:bg-secondary-color"
                       type="submit"
                     >
-                      {loading ? <TbLoader3 /> : "Salvar"}
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1576,7 +1619,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       className="text-center bg-primary-color hover:bg-secondary-color"
                       type="submit"
                     >
-                      {loading ? <TbLoader3 /> : "Salvar"}
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1737,7 +1784,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       className="text-center bg-primary-color hover:bg-secondary-color"
                       type="submit"
                     >
-                      {loading ? <TbLoader3 /> : "Salvar"}
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                        </div>
+                      ) : "Salvar"}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"

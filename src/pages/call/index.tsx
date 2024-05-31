@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
-import { TbArrowsExchange } from "react-icons/tb";
+import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
@@ -165,6 +165,7 @@ const Call = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [load, setLoad] = useState(false);
   const [data, setData] = useState<StudentsProps[]>([]);
   const [unitId, setUnitId] = useState("");
   const [units, setUnits] = useState<ClassesProps[]>([]);
@@ -176,8 +177,6 @@ const Call = () => {
     const getUnits = async () => {
       try {
         const response = await api.get("/units");
-
-        // response.data.unshift({id: -99, description: 'Todos', status: 1});
         
         setUnits(response.data);
       } catch {
@@ -215,6 +214,7 @@ const Call = () => {
     e.preventDefault();
 
     try {
+      setLoading(true)
       setClassId("");
       resetSelect();
       saveClassId(Number(classId));
@@ -222,10 +222,12 @@ const Call = () => {
       const response = await api.get(`/students/class/${classId}/unit/${unitId}`);
 
       setData(response.data);
-      setLoading(true);
+      setLoad(true);
       setOpenModal(false);
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -304,11 +306,21 @@ const Call = () => {
       </Modal>
 
       {
-        loading && (
-          <section className="w-full mx-auto mt-10">
-              {/* @ts-ignore */}
-              <DataTable columns={columns} data={data} route={"call"} /> 
-          </section>
+        loading ? (
+          <div className="mx-auto max-w-5 mt-40 mb-10">
+            <TbLoader3
+              fontSize={25}
+              className="w-12"
+              style={{ animation: "spin 1s linear infinite" }}
+            />
+          </div>
+        ) : (
+          load && (
+            <section className="w-full mx-auto mt-10">
+                {/* @ts-ignore */}
+                <DataTable columns={columns} data={data} route={"call"} /> 
+            </section>
+          )
         )
       } 
     </main>

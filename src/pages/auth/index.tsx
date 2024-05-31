@@ -115,7 +115,11 @@ function Auth() {
             style={{backgroundColor: "#F43806"}}
           >
             {
-              loading ? <TbLoader3 /> : "Entrar"
+              loading ? (
+                <div className="flex justify-center">
+                  <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                </div>
+              ) : "Entrar"
             }
           </button>
         </form>

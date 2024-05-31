@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
+import { TbLoader3 } from "react-icons/tb";
 
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -137,17 +138,19 @@ export const columns: ColumnDef<RowProps>[] = [
 const Responsibles = () => {
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const { reloadPage } = useContext(ReloadContext);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getResponsibles = async () => {
        try {
+        setLoading(true);
+
         const response = await api.get("/responsibles");
-
         setData(response.data);
-       }
-
-       catch {
+       } catch {
         toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+       } finally {
+        setLoading(false);
        }
     }
 
@@ -162,10 +165,19 @@ const Responsibles = () => {
         </h1>
       </section>
 
-      <section className="w-full mx-auto mt-10">
-        {/* @ts-ignore */}
-        <DataTable columns={columns} data={data} route={"responsibles"} />
-      </section>
+      {
+         loading ? (
+          <div className="mx-auto max-w-5 mt-40 mb-10">
+            <TbLoader3 fontSize={25} className="w-12" style={{ animation: "spin 1s linear infinite" }}/>
+          </div>
+        ) : (
+          <section className="w-full mx-auto mt-10">
+            {/* @ts-ignore */}
+            <DataTable columns={columns} data={data} route={"responsibles"} />
+          </section>
+        )
+      }
+
     </main>
   );
 };
