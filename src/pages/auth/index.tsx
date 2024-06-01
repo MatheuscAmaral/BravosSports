@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import wallpaper from "../../assets/walpp.jpg";
-import logo from "../../assets/logo-bravos-laranja.png";
+import logoMobile from "../../assets/logo-bravos-laranja.png";
+import logo from "../../assets/logoEditada.png";
 import api from "@/api";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -79,7 +80,7 @@ function Auth() {
           </h3>
 
           <div className="flex justify-center lg:hidden">
-            <img src={logo} className="w-72" />
+            <img src={logoMobile} className="w-72" />
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-gray-600 relative">
@@ -132,7 +133,7 @@ function Auth() {
           className="absolute inset-0 flex justify-center items-center"
           style={{ backgroundColor: "rgba(233, 54, 0, 0.493)" }}
         >
-          <img src={logo} className="w-80" />
+          <img src={logo} style={{ width: "320px" }} />
         </div>
       </section>
     </main>
