@@ -67,6 +67,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import MaskedInput from "../InputMask";
 // import { TeachersProps } from "@/pages/teachers";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
+import { RowProps } from "@/contexts/ModalsContext";
 
 interface DataTableProps {
   data: [];
@@ -364,9 +365,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
       return response.data.user_id;
     } catch {
-        toast.error("Ocorreu um erro ao buscar os dados do responsável!")
+      toast.error("Ocorreu um erro ao buscar os dados do responsável!");
     }
-  }
+  };
 
   const createResponsiblesReleaseds = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,7 +375,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "studentsClass") {
       return;
     }
-    
+
     if (!link) {
       toast("É necessário que o aluno possua uma foto cadastrada!", {
         position: "top-right",
@@ -385,7 +386,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
-    const respId = await getResponsibleWithIdUser((user as unknown as UserProps).id);
+    const respId = await getResponsibleWithIdUser(
+      (user as unknown as UserProps).id
+    );
 
     const data = {
       image: link,
@@ -570,7 +573,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o aluno!");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -579,7 +582,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     if (route == "studentsClass") {
       return;
-    } 
+    }
 
     const data = {
       image: link,
@@ -610,7 +613,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o professor!");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -662,7 +665,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
               <Modal show={openModal} onClose={() => closeModal()}>
                 <Modal.Header>
-                  Cadastro de 
+                  Cadastro de
                   <span className="text-primary-color"> professor</span>
                 </Modal.Header>
                 <form onSubmit={createTeacher}>
@@ -728,7 +731,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label>
-                          Telefone: 
+                          Telefone:
                           <span className="text-red-500"> * </span>
                         </label>
 
@@ -759,11 +762,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       type="submit"
                       className="bg-primary-color hover:bg-secondary-color"
                     >
-                       {loading ? (
+                      {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -922,7 +930,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         </label>
 
                         <Datepicker
-                          //@ts-ignore 
+                          //@ts-ignore
                           options={optionsDate}
                           onChange={handleChange}
                           show={show}
@@ -1186,6 +1194,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         />
                       </div>
 
+
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
                           Status: <span className="text-red-500">*</span>
@@ -1196,7 +1205,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">Ativo</SelectItem>
-                            <SelectItem value="3">Experimental</SelectItem>
+                            <SelectItem value="2">Experimental</SelectItem>
+                            <SelectItem value="3">Pendente</SelectItem>
                             <SelectItem value="0">Inativo</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1210,9 +1220,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     >
                       {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1316,23 +1331,37 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
-                          Grau de parentesco: <span className="text-red-500">*</span>
+                          Grau de parentesco:{" "}
+                          <span className="text-red-500">*</span>
                         </label>
-                        <Select required onValueChange={(e) => setDegreeKinship(e)}>
-                          <SelectTrigger className="w-full" id="status" name="status">
+                        <Select
+                          required
+                          onValueChange={(e) => setDegreeKinship(e)}
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            id="status"
+                            name="status"
+                          >
                             <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Pais">Pai ou Mãe</SelectItem>
                             <SelectItem value="Avós">Avô ou Avó</SelectItem>
-                            <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
+                            <SelectItem value="Irmãos">
+                              Irmão ou Irmã
+                            </SelectItem>
                             <SelectItem value="Tios">Tio ou Tia</SelectItem>
                             <SelectItem value="Babá">Babá</SelectItem>
                             <SelectItem value="Escolar">
                               Escolar (transporte)
                             </SelectItem>
-                            <SelectItem value="Acompanhante">Acompanhante</SelectItem>
-                            <SelectItem value="Primos">Primo ou Prima</SelectItem>
+                            <SelectItem value="Acompanhante">
+                              Acompanhante
+                            </SelectItem>
+                            <SelectItem value="Primos">
+                              Primo ou Prima
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1364,9 +1393,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     >
                       {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1494,9 +1528,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     >
                       {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1536,11 +1575,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </SelectTrigger>
 
                   <SelectContent>
-                    {unitsDisp.map((c) => {
-                      if (c.status == 1) {
+                    {unitsDisp.map((u) => {
+                      if (u.status == 1) {
                         return (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.description}
+                          <SelectItem key={u.id} value={String(u.id)}>
+                            {u.description}
                           </SelectItem>
                         );
                       }
@@ -1579,14 +1618,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           </SelectTrigger>
 
                           <SelectContent>
-                            {unitsDisp.map((c) => {
-                              if (c.id == 999) {
+                            {unitsDisp.map((u) => {
+                              if (u.id == 999) {
                                 return;
                               }
 
                               return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description}
+                                <SelectItem key={u.id} value={String(u.id)}>
+                                  {u.description}
                                 </SelectItem>
                               );
                             })}
@@ -1621,9 +1660,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     >
                       {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1662,11 +1706,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </SelectTrigger>
 
                   <SelectContent>
-                    {unitsDisp.map((c) => {
-                      if (c.status == 1) {
+                    {unitsDisp.map((u) => {
+                      if (u.status == 1) {
                         return (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.description}
+                          <SelectItem key={u.id} value={String(u.id)}>
+                            {u.description}
                           </SelectItem>
                         );
                       }
@@ -1726,38 +1770,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           </SelectTrigger>
 
                           <SelectContent>
-                            {unitsDisp.map((c) => {
+                            {unitsDisp.map((u) => {
+                              if (u.id == 999) {
+                                return;
+                              }
+
                               return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description}
+                                <SelectItem key={u.id} value={String(u.id)}>
+                                  {u.description}
                                 </SelectItem>
                               );
                             })}
                           </SelectContent>
                         </Select>
                       </div>
-
-                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="class">Turma:</label>
-                        <Select onValueChange={(e) => setClasses(e)}>
-                          <SelectTrigger
-                            className="w-full"
-                            id="class"
-                            name="class"
-                          >
-                            <SelectValue placeholder="Selecione a turma" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {classesDisp.map((c) => {
-                              return (
-                                <SelectItem value={String(c.id)}>
-                                  {c.description}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
@@ -1786,9 +1812,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     >
                       {loading ? (
                         <div className="flex justify-center">
-                          <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
                         </div>
-                      ) : "Salvar"}
+                      ) : (
+                        "Salvar"
+                      )}
                     </Button>
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
@@ -1978,7 +2009,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`${"text-center"}`}
+                  className={`
+                  ${
+                    location.pathname == "/chamada" &&
+                    (row.original as RowProps).status == 2
+                      ? "bg-yellow-400"
+                      : ""
+                  } 
+                  ${
+                    location.pathname == "/chamada" &&
+                    (row.original as RowProps).status == 3
+                      ? " bg-red-500"
+                      : ""
+                  } text-center`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="whitespace-nowrap">

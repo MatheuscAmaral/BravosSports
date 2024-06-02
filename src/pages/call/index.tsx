@@ -42,7 +42,7 @@ export const columns: ColumnDef<RowProps>[] = [
       };
 
       return (
-        <div className="flex justify-center items-center gap-3 text-2xl">
+        <div className="flex justify-center items-center gap-3 text-2xl bg-gray-50 p-2 w-20 mx-auto rounded-lg">
           <button onClick={() => changePresence(1)}>
              <IoIosCheckmarkCircle
               className={`${row.original.presence != null && presence != null && row.original.presence == 1 ? "text-green-500" : "text-gray-300"} cursor-pointer`} 
@@ -107,6 +107,25 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("date_of_birth")}</div>,
   },
   {
+    accessorKey: "comments",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Observações
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>
+      {
+        row.getValue("comments") != null ? row.getValue("comments") : "-"
+      }
+    </div>,
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => {
         return (
@@ -123,9 +142,11 @@ export const columns: ColumnDef<RowProps>[] = [
       <div className="capitalize">
         {row.getValue("status") == 0 && "Inativo"}
 
-        {row.getValue("status") == 1 && "Pendente"}
+        {row.getValue("status") == 1 && "Ativo"}
 
-        {row.getValue("status") == 2 && "Ativo"}
+        {row.getValue("status") == 2 && "Experimental"}
+
+        {row.getValue("status") == 3 && "Pendente"}
       </div>
     ),
   },
@@ -234,7 +255,7 @@ const Call = () => {
   const closeModal = () => {
     setOpenModal(false);
 
-    if (!loading) {
+    if (!load) {
       navigate("/");
     }
   }
@@ -246,7 +267,7 @@ const Call = () => {
           Chamada <span className="text-sm mt-1">({data.length})</span>
         </h1>
 
-        <button className={`${loading ? "flex" : "hidden"} rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
+        <button className={`${load ? "flex" : "hidden"} rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
           <TbArrowsExchange className="text-white" fontSize={20}/>
         </button>
       </section>

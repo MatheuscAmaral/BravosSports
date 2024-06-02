@@ -140,7 +140,7 @@ function Home() {
                   </p>
 
                   <div className="flex justify-between w-full">
-                    <FaUserTie fontSize={34} />
+                    <FaUserTie fontSize={30} />
                     <p className="text-3xl font-bold">
                       {s.responsibles_released}
                     </p>

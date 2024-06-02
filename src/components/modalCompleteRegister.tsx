@@ -43,6 +43,7 @@ const ModalCompleteRegister = () => {
   const [degreeKinship, setDegreeKinship] = useState("");
   const [tabsValue, setTabsValue] = useState("password");
   const [email, setEmail] = useState("");
+  const [comments, setComments] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -78,11 +79,12 @@ const ModalCompleteRegister = () => {
         degree_kinship: degreeKinship,
         email: email,
         password: password,
+        ...(comments != "" && { comments: comments })
       };
     } else {
       data = {
         email: email,
-        password: password,
+        password: password, 
       };
     }
 
@@ -348,8 +350,19 @@ const ModalCompleteRegister = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                    </>
 
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="comments">
+                          Possui orientação médica, judicial ou esportiva que julga necessário informar:
+                        </label>
+
+                        <Input
+                          id="comments"
+                          placeholder="Digite a observação do aluno..."
+                          onChange={(e) => setComments(e.target.value)}
+                        />
+                      </div>
+                    </>
                   )
                 }
 

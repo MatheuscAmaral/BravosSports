@@ -573,8 +573,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       data = {
         description: description,
         modality: modality,
-        class: classes,
-        teacher_id: teacher,
         unit: units,
         status: status,
       };
@@ -625,20 +623,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  // const filterTeams = async (idClass: any) => {
-  //   setClasses(idClass);
-
-  //   try {
-  //     const response = await api.get(`/sports/class/${idClass}`);
-
-  //     setTeamsDisp(response.data);
-  //     setTeam("");
-  //   }
-
-  //   catch {
-  //     toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
-  //   }
-  // }
 
   return (
     <modalContext.Provider value={{ getData, open }}>
@@ -1298,6 +1282,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           <>
                             <SelectItem value="1">Ativo</SelectItem>
                             <SelectItem value="2">Experimental</SelectItem>
+                            <SelectItem value="3">Pendente</SelectItem>
                             <SelectItem value="0">Inativo</SelectItem>
                           </>
                         )}

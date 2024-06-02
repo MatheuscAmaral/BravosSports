@@ -151,6 +151,7 @@ export const columns: ColumnDef<RowProps>[] = [
 
         {row.getValue("status") == 2 && "Experimental"}
 
+        {row.getValue("status") == 3 && "Pendente"}
       </div>
     ),
   },
