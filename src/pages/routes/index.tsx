@@ -11,6 +11,7 @@ import PrivateRoute from "./PrivateRoute";
 import Responsibles from "../responsibles";
 import Sports from "../sports";
 import ResponsiblesReleased from "../responsibles/responsiblesReleased";
+import ScheduleAbsence from "../responsibles/scheduleAbsence";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Responsibles />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/agendar",
+        element: (
+          <PrivateRoute>
+            <ScheduleAbsence />
           </PrivateRoute>
         ),
       },

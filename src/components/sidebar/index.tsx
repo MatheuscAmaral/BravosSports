@@ -10,10 +10,10 @@ import {
   Input,
 } from "@material-tailwind/react";
 
-import { PiChalkboardTeacherBold } from "react-icons/pi";
+import { PiChalkboardTeacherBold, PiUserFocusBold } from "react-icons/pi";
 import { FaUsers } from "react-icons/fa6";
 import { FaUserAlt, FaHome, FaClipboardList, FaUserTie } from "react-icons/fa";
-import { MdSportsHandball } from "react-icons/md";
+import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { To, useNavigate } from "react-router-dom";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
@@ -53,7 +53,8 @@ const Sidebar = () => {
     } else if ((user as unknown as UserProps).level === 3) {
       items = [
         { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
-        { label: "Liberados", icon: <FaUserTie fontSize={24} />, path: "/responsaveis/liberados" }
+        { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
+        { label: "Agendar falta", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendar" }
       ];
     }
     

@@ -108,6 +108,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
   const [degreeKinship, setDegreeKinship] = React.useState("");
+  const [classTime, setClassTime] = React.useState("");
   const [classesDispFilter, setClassesDispFilter] = React.useState<
     ClassesProps[]
   >([]);
@@ -524,6 +525,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setLink("");
     setShow(false);
     setDaysTraining("");
+    setClassTime("");
     setPhone("");
     setIsStudent("");
   };
@@ -543,7 +545,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       resp_phone: phone,
       resp_name: nameResp,
       status: status,
-      days_training: daysTraining,
+      ...(daysTraining != "" && { days_training: daysTraining }),
+      ...(classTime != "" && { class_time: classTime }),
       class: classes,
       unit: units,
     };
@@ -822,6 +825,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </div>
           )}
 
+          {route == "agendarFalta" && (
+            <Input
+              placeholder="Nome do aluno..."
+              value={
+                (table.getColumn("name")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("name")?.setFilterValue(event.target.value)
+              }
+              className="max-w-80"
+            />
+          )}
+
           {route == "students" && (
             <>
               <div className={`flex justify-center w-full gap-4`}>
@@ -956,7 +972,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           É um aluno do colégio ?{" "}
                           <span className="text-red-500">*</span>
                         </label>
-                        <Select onValueChange={(e) => changeIsStudent(e)}>
+                        <Select
+                          required
+                          onValueChange={(e) => changeIsStudent(e)}
+                        >
                           <SelectTrigger className="w-full" id="class">
                             <SelectValue placeholder="Selecione sim ou não" />
                           </SelectTrigger>
@@ -1011,6 +1030,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             isStudent == "" ||
                             (unitsDisp.length == 1 && unitsDisp[0]?.id == 999)
                           }
+                          required
                         >
                           <SelectTrigger className="w-full" id="units">
                             <SelectValue placeholder="Selecione a unidade" />
@@ -1077,6 +1097,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             (classesDisp.length == 1 &&
                               classesDisp[0]?.id == 999)
                           }
+                          required
                         >
                           <SelectTrigger className="w-full" id="class">
                             <SelectValue placeholder="Selecione a turma" />
@@ -1134,6 +1155,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         <Select
                           onValueChange={(e) => setTeam(e)}
                           disabled={teamsDisp.length <= 0}
+                          required
                         >
                           <SelectTrigger className="w-full" id="sport">
                             <SelectValue placeholder="Selecione o esporte" />
@@ -1169,6 +1191,36 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       </div>
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="class_time">Horário de treino:</label>
+
+                        <Select
+                          disabled={daysTraining == ""}
+                          onValueChange={(e) => setClassTime(e)}
+                        >
+                          <SelectTrigger className="w-full" id="class_time">
+                            <SelectValue placeholder="Selecione os dias de treino" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="13:15">
+                              13:15 às 15:00
+                            </SelectItem>
+
+                            <SelectItem value="17:30">
+                              17:30 às 18:20
+                            </SelectItem>
+
+                            <SelectItem value="18:20">
+                              18:20 às 19:20
+                            </SelectItem>
+
+                            <SelectItem value="18:30">
+                              18:30 às 19:30
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label>
                           Telefone do responsável:{" "}
                           <span className="text-red-500">*</span>
@@ -1193,7 +1245,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           onChange={(e) => setNameResp(e.target.value)}
                         />
                       </div>
-
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="status">
@@ -1867,6 +1918,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "desc_unit" && "Unidade"}
 
+                          {route == "agendarFalta"
+                            ? column.id == "comments" && "Motivo"
+                            : column.id == "comments" && "Observações"}
+
+                          {column.id == "date" && "Data agendada"}
+
                           {column.id == "date_of_birth" && "Data de nascimento"}
 
                           {column.id == "category" && "Categoria"}
@@ -1939,6 +1996,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">responsável</span>
+            </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
+                route != "agendarFalta" ? "hidden" : "flex"
+              } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <MdPersonAdd fontSize={20} className="hidden md:flex" />
+              Agendar <span className="hidden md:block"></span>
             </Button>
 
             <Button

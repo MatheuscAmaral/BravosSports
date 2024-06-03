@@ -2,13 +2,13 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo-bravos-laranja.png";
 import { FaClipboardList, FaHome, FaUserAlt, FaUserTie } from "react-icons/fa";
-import { PiChalkboardTeacherBold } from "react-icons/pi";
+import { PiChalkboardTeacherBold, PiUserFocusBold } from "react-icons/pi";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { FaUsers } from "react-icons/fa6";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { IoClose, IoLogOutOutline } from "react-icons/io5";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
-import { MdSportsHandball } from "react-icons/md";
+import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
 
 const Header = () => {
   const [mobile, setMobile] = useState(false);
@@ -116,6 +116,26 @@ const Header = () => {
               >
                 <FaUserTie fontSize={25} />
                 <p className="text-lg">Responsáveis</p>
+              </li>
+          )}
+
+          {((user as unknown as UserProps).level == 3) &&  (
+              <li
+                onClick={() => navigateToRoute("/responsaveis/liberados")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <PiUserFocusBold fontSize={26} />
+                <p className="text-lg">Responsáveis liberados</p>
+              </li>
+          )}
+
+          {((user as unknown as UserProps).level == 3) &&  (
+              <li
+                onClick={() => navigateToRoute("/agendar")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <MdFormatListBulletedAdd fontSize={25} />
+                <p className="text-lg">Agendar falta</p>
               </li>
           )}
 

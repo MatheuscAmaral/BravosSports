@@ -10,6 +10,7 @@ import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { StudentsProps } from "../students";
 import { Modal } from "flowbite-react";
 import noFoto from "../../assets/noFoto.jpg";
+import { GoAlertFill } from "react-icons/go";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { ClassesProps } from "../classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -108,20 +110,31 @@ export const columns: ColumnDef<RowProps>[] = [
   },
   {
     accessorKey: "comments",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Observações
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: "Observações",
     cell: ({ row }) => <div>
       {
-        row.getValue("comments") != null ? row.getValue("comments") : "-"
+        row.getValue("comments") != null ? (
+          <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                <GoAlertFill
+                  fontSize={19}
+                  className="text-yellow-800  "
+                />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="py-2 p-3 text-sm">
+                {row.getValue("comments")}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          </div>
+        ) : "-"
       }
     </div>,
   },

@@ -65,6 +65,7 @@ export interface RowProps {
   date_of_birth: string;
   unit: number;
   desc_unit: string;
+  class_time: Date;
   degree_kinship: string;
 }
 
@@ -206,7 +207,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [classesDisp, setClassesDisp] = useState<ClassesProps[]>([]);
   const [units, setUnits] = useState("");
   const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
-  const [responsible, setResponsible] = useState("");
+  const [classTime, setClassTime] = useState("");
   const [classes, setClasses] = useState("");
   const [id, setId] = useState("");
   const [description, setDescription] = useState("");
@@ -218,7 +219,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [team, setTeam] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
-  const [teacher, setTeacher] = useState("");
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
@@ -294,11 +294,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
       setDate(String(row[0].date_of_birth));
+      setClassTime(
+        row[0].class_time != null ? String(row[0].class_time).split(":")[0] + ":" +  String(row[0].class_time).split(":")[1] : ""
+      );
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );
       setUnits(String(row[0].unit));
-      setResponsible(String(row[0].responsible));
       await getClasses(row[0].class);
     }
 
@@ -311,7 +313,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
       setModality(String(row[0].modality));
-      setTeacher(String(row[0].teacher_id));
       setClasses(String(row[0].class));
       setId(String(row[0].id));
     }
@@ -497,7 +498,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setError(false);
     setOpenModal(false);
     setName("");
-    setResponsible("");
     setClasses("");
     setPhone("");
     setId("");
@@ -506,6 +506,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setId("");
     setUser("");
     setDate("");
+    setClassTime("");
     setUnits("");
     setDaysTraining("");
     handlePhoneChange("");
@@ -520,13 +521,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       data = {
         image: link,
         name: name,
-        responsible: responsible,
-        class: classes,
         team: team,
-        days_training: daysTraining,
         date_of_birth: date,
-        unit: units,
         status: status,
+        ...( daysTraining != "" && { days_training: daysTraining }),
+        ...( classTime != "" && { class_time: classTime }),
+        class: classes,
+        unit: units,
       };
 
       if (!link) {
@@ -608,9 +609,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
       type == "responsibles_released" && (await api.put(`/responsibles/releaseds/${id}`, data));
 
-      toast.success(
-        `${(data && data.name) || data?.description} editado com sucesso!`
-      );
+      let message = "";
+      if (type === "students" || type === "teacher" || type === "responsibles" || type === "responsibles_released") {
+        message = (data && data.name) + " editado com sucesso!";
+      } else if (data && "description" in data) {
+        message = (data.description) + " editado com sucesso!";
+      }
+    
+      toast.success(message);
 
       filterStudentsByClass(filterId);
       reloadPage();
@@ -1156,6 +1162,33 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         </SelectItem>
                         <SelectItem value="Terça e Quinta">
                           Terça e Quinta
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="class_time">Horário de treino:</label>
+
+                    <Select value={classTime != "" ? classTime : ""} defaultValue={classTime != "" ? classTime : ""} disabled={daysTraining == ""} onValueChange={(e) => setClassTime(e)}>
+                      <SelectTrigger className="w-full" id="class_time">
+                        <SelectValue placeholder="Selecione os dias de treino" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="13:15">
+                          13:15 às 15:00
+                        </SelectItem>
+
+                        <SelectItem value="17:30">
+                          17:30 às 18:20
+                        </SelectItem>
+
+                        <SelectItem value="18:20">
+                          18:20 às 19:20
+                        </SelectItem>
+
+                        <SelectItem value="18:30">
+                          18:30 às 19:30
                         </SelectItem>
                       </SelectContent>
                     </Select>
