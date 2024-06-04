@@ -1,6 +1,6 @@
 import api from "@/api";
 import { useContext, useState } from "react";
-import { PiStudentBold, PiChalkboardTeacherBold } from "react-icons/pi";
+import { PiStudentBold, PiChalkboardTeacherBold, PiUserFocusBold } from "react-icons/pi";
 import { FaUserTie } from "react-icons/fa";
 import { SiGoogleclassroom } from "react-icons/si";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import ModalCompleteRegister from "@/components/modalCompleteRegister";
 import toast from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
+import { MdFormatListBulletedAdd } from "react-icons/md";
 
 interface StatisticsProps {
   students: number;
@@ -15,6 +16,7 @@ interface StatisticsProps {
   responsibles: number;
   classes: number;
   responsibles_released: number;
+  schedule_absence: number;
 }
 
 function Home() {
@@ -131,21 +133,39 @@ function Home() {
                   </div>
                 </>
               ) : (
-                <div
-                  onClick={() => navigate("/responsaveis/liberados")}
-                  className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
-                >
-                  <p className="text-lg md:text-xl xl:text-2xl font-bold">
-                    Responsáveis liberados
-                  </p>
-
-                  <div className="flex justify-between w-full">
-                    <FaUserTie fontSize={30} />
-                    <p className="text-3xl font-bold">
-                      {s.responsibles_released}
+                <>
+                  <div
+                    onClick={() => navigate("/responsaveis/liberados")}
+                    className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
+                  >
+                    <p className="text-lg md:text-xl xl:text-2xl font-bold">
+                      Responsáveis liberados
                     </p>
+
+                    <div className="flex justify-between w-full">
+                      <PiUserFocusBold fontSize={30} />
+                      <p className="text-3xl font-bold">
+                        {s.responsibles_released}
+                      </p>
+                    </div>
                   </div>
-                </div>
+
+                  <div
+                    onClick={() => navigate("/agendamentos")}
+                    className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
+                  >
+                    <p className="text-lg md:text-xl xl:text-2xl font-bold">
+                      Agendamentos
+                    </p>
+
+                    <div className="flex justify-between w-full">
+                      <MdFormatListBulletedAdd fontSize={30} />
+                      <p className="text-3xl font-bold">
+                        {s.schedule_absence}
+                      </p>
+                    </div>
+                  </div>
+                </>
               )}
             </section>
           );

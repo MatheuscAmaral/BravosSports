@@ -95,7 +95,21 @@ const PrivateRoute = ({ children }: any) => {
         const storedUser = localStorage.getItem("@bravosSports:user");
 
         if (storedUser) {
-            if (location.pathname == "/responsaveis/liberados" && JSON.parse(storedUser).level == 2) {
+            if (location.pathname == "/responsaveis/liberados" && JSON.parse(storedUser).level != 3) {
+                toast('Você não tem permissão para acessar essa tela!', {
+                    icon: '⚠️',
+                });
+
+                return <Navigate to={"/"} />
+            }
+        }
+    }
+
+    if (location.pathname == "/agendamentos") {
+        const storedUser = localStorage.getItem("@bravosSports:user");
+
+        if (storedUser) {
+            if (location.pathname == "/agendamentos" && JSON.parse(storedUser).level != 3) {
                 toast('Você não tem permissão para acessar essa tela!', {
                     icon: '⚠️',
                 });

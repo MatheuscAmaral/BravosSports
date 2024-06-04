@@ -24,7 +24,6 @@ import { IoIosArrowDown } from "react-icons/io";
 import { FiAlertOctagon } from "react-icons/fi";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { Modal } from "flowbite-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -52,6 +51,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
 import { Uploader } from "uploader";
 import { UploadButton } from "react-uploader";
 
@@ -68,6 +80,7 @@ import MaskedInput from "../InputMask";
 // import { TeachersProps } from "@/pages/teachers";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { RowProps } from "@/contexts/ModalsContext";
+import { StudentsProps } from "@/pages/students";
 
 interface DataTableProps {
   data: [];
@@ -103,6 +116,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
+  const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>([]);
   const [description, setDescription] = React.useState("");
   const [nameResp, setNameResp] = React.useState("");
   const [name, setName] = React.useState("");
@@ -123,6 +137,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [status, setStatus] = React.useState("1");
   const [daysTraining, setDaysTraining] = React.useState("");
   const [date, setDate] = React.useState("");
+  const [dateSelectAbsence, setDateSelectAbsence] = React.useState<Date | string>();
+  const [dateAbsence, setDateAbsence] = React.useState("");
+  const [comments, setComments] = React.useState("");
   const {
     filterStudentsByClass,
     filterStudentsByTeam,
@@ -191,6 +208,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
+  };
+
+  const changeDateAbsence = (e: Date) => {
+    setDateSelectAbsence(e);
+    setDateAbsence(e.toLocaleDateString("pt-BR").replace(/\//g, '-'));
   };
 
   const changeIsStudent = (e: string) => {
@@ -274,6 +296,18 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       };
 
       getTeamsFilter();
+    }, []);
+  }
+
+  if (route == "agendarFalta") {
+    React.useEffect(() => {
+      const getStudentOfResponsibleData = async () => {
+        const response = await api.get(`/call/student/responsible/${(user as unknown as UserProps).id}`);
+
+        setStudentRespData(response.data);
+      };
+
+      getStudentOfResponsibleData();
     }, []);
   }
 
@@ -499,7 +533,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setOpenModal(true);
 
     if (route == "students") {
-      // await getResponsibles();
       await getTeams();
     }
 
@@ -528,6 +561,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setClassTime("");
     setPhone("");
     setIsStudent("");
+    setComments("");
+    setDateSelectAbsence("");
+    setDateAbsence("");
   };
 
   const createStudent = async (e: React.FormEvent) => {
@@ -578,6 +614,50 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  function convertDateFormat(dateStr: string) {
+    const [dd, mm, yyyy] = dateStr.split('-');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const createScheduleAbsence = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
+
+    const data = [{
+      registration: studentRespData[0].id,
+      class: studentRespData[0].class,
+      name: studentRespData[0].name,
+      presence: 0,
+      edit_by: username,
+      made_by: username,
+      date: convertDateFormat(dateAbsence),
+      schedule_by_responsible: 1,
+      comments: comments
+    }]
+
+    try {
+      setLoading(true);
+      await api.post("/call", data);
+      
+      toast.success("Falta agendada com sucesso!");
+      verifyUserCreate(true);
+      reloadPage();
+      setComments("");
+      setDateSelectAbsence("");
+      setDateAbsence("");
+    } catch (error: any) {
+      toast.error(error.response.data.error, {
+        position: "top-right"
+      });
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   const createTeacher = async (e: React.FormEvent) => {
@@ -826,16 +906,101 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           {route == "agendarFalta" && (
-            <Input
-              placeholder="Nome do aluno..."
-              value={
-                (table.getColumn("name")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("name")?.setFilterValue(event.target.value)
-              }
-              className="max-w-80"
-            />
+            <>
+              <Input
+                placeholder="Nome do aluno..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="xl:max-w-80"
+              />
+
+              <Modal show={openModal} onClose={() => closeModal()}>
+                <Modal.Header>
+                  Agendamento de
+                  <span className="text-primary-color"> falta</span>
+                </Modal.Header>
+                <form onSubmit={createScheduleAbsence}>
+                  <Modal.Body
+                    className="relative"
+                    style={{ maxHeight: "500px" }}
+                  >
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">
+                          Selecione o dia desejado: <span className="text-red-500"> *</span>
+                        </label>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !dateSelectAbsence && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {dateSelectAbsence ? format(dateSelectAbsence, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              // @ts-ignore
+                              selected={dateSelectAbsence}
+                              // @ts-ignore
+                              onSelect={changeDateAbsence}
+                              initialFocus
+                              locale={ptBR}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="comments">
+                          Informe o motivo: <span className="text-red-500"> *</span>
+                        </label>
+
+                        <Input
+                          id="comments"
+                          placeholder="Digite o motivo da falta agendada para o aluno..."
+                          onChange={(e) => setComments(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      type="submit"
+                      className="bg-primary-color hover:bg-secondary-color"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
+                        </div>
+                      ) : (
+                        "Salvar"
+                      )}
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => closeModal()}
+                    >
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
           )}
 
           {route == "students" && (
@@ -2005,7 +2170,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
-              Agendar <span className="hidden md:block"></span>
+              Agendar falta <span className="hidden md:block"></span>
             </Button>
 
             <Button

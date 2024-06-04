@@ -40,16 +40,27 @@ export const columns: ColumnDef<RowProps>[] = [
     accessorKey: "date",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Data agendada
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Data agendada
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+    cell: ({ row }) => {
+      function convertDateFormat(dateStr: string) {
+        const [dd, mm, yyyy] = dateStr.split('-');
+        return `${yyyy}/${mm}/${dd  }`;
+      }
+
+      return (
+        convertDateFormat(row.getValue("date"))
+      )
+    },
   },
   {
     accessorKey: "comments",
@@ -169,7 +180,7 @@ const ScheduleAbsence = () => {
     <main className="w-full">
       <section className="mt-10 flex justify-between items-center w-full">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
-          Agendar falta <span className="text-sm mt-1">({data.length})</span>
+          Agendamentos <span className="text-sm mt-1">({data.length})</span>
         </h1>
       </section>
 

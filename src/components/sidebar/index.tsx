@@ -54,7 +54,7 @@ const Sidebar = () => {
       items = [
         { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
         { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
-        { label: "Agendar falta", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendar" }
+        { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" }
       ];
     }
     

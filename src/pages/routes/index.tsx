@@ -50,7 +50,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/agendar",
+        path: "/agendamentos",
         element: (
           <PrivateRoute>
             <ScheduleAbsence />
