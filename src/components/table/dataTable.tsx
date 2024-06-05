@@ -621,11 +621,43 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  function parseDate(dateString: string) {
+      let [day, month, year] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+  }
+
+  function parseTime(timeString: string) {
+      let [hours, minutes, seconds] = timeString.split(':').map(Number);
+      let date = new Date();
+      date.setHours(hours, minutes, seconds, 0);
+      return date;
+  }
+
   const createScheduleAbsence = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (route == "studentsClass") {
       return;
+    }
+
+    const dateToday = new Date();
+    const formatedDateToday = parseDate(dateToday.toLocaleDateString().replace(/\//g, "-"));
+    const formatedDateSelect = parseDate(dateAbsence);
+    
+    if (formatedDateToday.getTime() == formatedDateSelect.getTime()) {
+      const hour = dateToday.toLocaleTimeString().split(":")[0];
+      const minute = dateToday.toLocaleTimeString().split(":")[1];
+      const formattedTime = parseTime(hour + ":" + minute + ":00");
+      const formattedTimeClass = parseTime(studentRespData[0].class_time);
+
+      let differenceInMillis =  formattedTimeClass.getTime() - formattedTime.getTime(); ;
+      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60); 
+
+      if (differenceInMinutes <= 30) {
+        return toast.error("Só é permitido agendar uma falta até 30 minutos antes do início da aula!", {
+          position: "top-right"
+        });
+      }
     }
 
     const data = [{
@@ -637,7 +669,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       made_by: username,
       date: convertDateFormat(dateAbsence),
       schedule_by_responsible: 1,
-      comments: comments
+      comments: comments,
+      status: true
     }]
 
     try {

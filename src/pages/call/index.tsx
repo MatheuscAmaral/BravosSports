@@ -30,6 +30,7 @@ import { ClassesProps } from "../classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
+import { FaCircleQuestion } from "react-icons/fa6";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -120,7 +121,7 @@ export const columns: ColumnDef<RowProps>[] = [
               <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
                 <GoAlertFill
                   fontSize={19}
-                  className="text-yellow-800  "
+                  className="text-yellow-800"
                 />
               </Button>
             </DropdownMenuTrigger>
@@ -129,7 +130,41 @@ export const columns: ColumnDef<RowProps>[] = [
               <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="py-2 p-3 text-sm">
-                {row.getValue("comments")}
+                {
+                  row.getValue("comments")
+                }
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          </div>
+        ) : "-"
+      }
+    </div>,
+  },
+  {
+    accessorKey: "comments_call",
+    header: "Motivo",
+    cell: ({ row }) => <div>
+      {
+        row.getValue("comments_call") != null ? (
+          <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                <FaCircleQuestion
+                  fontSize={19}
+                  className="text-red-600"
+                />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="py-2 p-3 text-sm">
+                {
+                  row.getValue("comments_call")
+                }
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

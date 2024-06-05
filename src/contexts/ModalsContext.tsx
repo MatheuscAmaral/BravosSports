@@ -43,6 +43,17 @@ import { UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
 import { FiAlertOctagon } from "react-icons/fi";
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export interface RowProps {
   id: number;
@@ -53,6 +64,7 @@ export interface RowProps {
   class: number;
   phone: string;
   status: number;
+  status_call: number;
   description: string;
   modality: string;
   category: string;
@@ -64,6 +76,9 @@ export interface RowProps {
   days_training: string;
   date_of_birth: string;
   unit: number;
+  id_call: number;
+  date: string;
+  comments: string;
   desc_unit: string;
   class_time: Date;
   degree_kinship: string;
@@ -208,8 +223,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [units, setUnits] = useState("");
   const [unitsDisp, setUnitsDisp] = useState<UnitsProps[]>([]);
   const [classTime, setClassTime] = useState("");
+  const [classTimeCall, setClassTimeCall] = useState("");
   const [classes, setClasses] = useState("");
   const [id, setId] = useState("");
+  const [idCall, setIdCall] = useState("");
   const [description, setDescription] = useState("");
   const [modality, setModality] = useState("");
   const [isStudent, setIsStudent] = useState("");
@@ -223,6 +240,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [user, setUser] = useState("");
   const [date, setDate] = useState("");
+  const [comments, setComments] = useState("");
+  const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
+  const [dateAbsence, setDateAbsence] = useState("");
   const [users, setUsers] = useState<UserProps[]>([]);
   const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<
     ResponsibleProps[]
@@ -285,6 +305,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setPhone(value);
   };
 
+  const changeDateAbsence = (e: Date) => {
+    setDateSelectAbsence(e);
+    setDateAbsence(convertDateFormat(e.toLocaleDateString("pt-BR").replace(/\//g, '-')));
+  };
+
+  function convertDateFormat(dateStr: string) {
+    const [dd, mm, yyyy] = dateStr.split('-');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
 
@@ -307,6 +337,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "classes") {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
+    }
+
+    if (type == "agendarFalta") {
+      setDateSelectAbsence(String(row[0].date));
+      setDateAbsence(String(row[0].date));
+      setComments(String(row[0].comments));
+      setIdCall(String(row[0].id_call));
+      setId(String(row[0].id));
+      console.log(String(row[0].class_time))
+      setClassTimeCall(String(row[0].class_time));
     }
 
     if (type == "esportes") {
@@ -361,7 +401,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
-    setStatus(String(row[0].status));
+    type != "agendarFalta" ? setStatus(String(row[0].status)) : setStatus(String(row[0].status_call));
     setId(String(row[0].id));
   };
 
@@ -507,11 +547,48 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setUser("");
     setDate("");
     setClassTime("");
+    setClassTimeCall("");
     setUnits("");
     setDaysTraining("");
     handlePhoneChange("");
+    setDateAbsence("");
+    setDateSelectAbsence("");
+    setComments("");
     setShow(false);
   };
+
+  function parseTime(timeString: string) {
+      let [hours, minutes, seconds] = timeString.split(':').map(Number);
+      let date = new Date();
+      date.setHours(hours, minutes, seconds, 0);
+      return date;
+  }
+
+  const validationTimeClass = () => {
+    const dateToday = new Date();
+    const formatedDateToday = convertDateFormat(dateToday.toLocaleDateString().replace(/\//g, "-"));
+    const formatedDateSelect = dateAbsence;
+    
+    if (formatedDateToday == formatedDateSelect) {
+      const hour = dateToday.toLocaleTimeString().split(":")[0];
+      const minute = dateToday.toLocaleTimeString().split(":")[1];
+      const formattedTime = parseTime(hour + ":" + minute + ":00");
+      const formattedTimeClass = parseTime(classTimeCall);
+
+      let differenceInMillis =  formattedTimeClass.getTime() - formattedTime.getTime(); ;
+      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60); 
+
+      if (differenceInMinutes <= 30) {
+        toast.error("Só é permitido agendar uma falta até 30 minutos antes do início da aula!", {
+          position: "top-right"
+        });
+
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   const editData = async (e: FormEvent) => {
     e.preventDefault();
@@ -579,6 +656,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       };
     }
 
+    if (type == "agendarFalta") {
+      data = {
+        date: dateAbsence,
+        comments: comments,
+        status: status
+      };
+    }
+
     if (type == "responsibles" || type == "responsibles_released") {
       data = {
         image: link,
@@ -600,6 +685,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
+    if (type === "agendarFalta" && validationTimeClass()) {
+      return;
+    }
+    
     try {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
@@ -608,12 +697,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
       type == "responsibles_released" && (await api.put(`/responsibles/releaseds/${id}`, data));
+      type == "agendarFalta" && (await api.put(`/call/${idCall}`, data));
 
       let message = "";
       if (type === "students" || type === "teacher" || type === "responsibles" || type === "responsibles_released") {
         message = (data && data.name) + " editado com sucesso!";
       } else if (data && "description" in data) {
         message = (data.description) + " editado com sucesso!";
+      } else {
+        message = "Chamada editada com sucesso!";
       }
     
       toast.success(message);
@@ -622,8 +714,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       reloadPage();
       setError(false);
       setOpenModal(false);
-    } catch {
-      toast.error(`Ocorreu um erro ao editar os dados de ${data && data.name}`);
+    } catch (error: any) {
+      type == "agendarFalta" ? toast.error(error.response.data.error, {
+        position: "top-right"
+      }) : 
+      toast.error(`Ocorreu um erro ao editar os dados de ${data && (data && "description" in data ? data.description : data.name)}`);
     } finally {
       setLoading(false);
     }
@@ -754,6 +849,58 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   </div>
                 </>
               )}
+
+              {
+                type == "agendarFalta" && (
+                  <>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="nome">
+                          Selecione o dia desejado: <span className="text-red-500"> *</span>
+                        </label>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !dateSelectAbsence && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {dateSelectAbsence ? format(dateSelectAbsence, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              // @ts-ignore
+                              selected={dateSelectAbsence}
+                              // @ts-ignore
+                              onSelect={changeDateAbsence}
+                              initialFocus
+                              locale={ptBR}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="comments">
+                          Informe o motivo: <span className="text-red-500"> *</span>
+                        </label>
+
+                        <Input
+                          id="comments"
+                          placeholder="Digite o motivo da falta agendada para o aluno..."
+                          onChange={(e) => setComments(e.target.value)}
+                          value={comments}
+                          required
+                        />
+                      </div>
+                  </>
+                )
+              }
 
               {type == "classes" && (
                 <div className="space-y-6">
@@ -1322,21 +1469,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                         {(type == "classes" ||
                           type == "teacher" ||
-                          type == "esportes") && (
-                          <>
-                            <SelectItem value="1">Ativo</SelectItem>
-                            <SelectItem value="0">Inativo</SelectItem>
-                          </>
-                        )}
-
-                        {type == "responsibles" && (
-                          <>
-                            <SelectItem value="1">Ativo</SelectItem>
-                            <SelectItem value="0">Inativo</SelectItem>
-                          </>
-                        )}
-
-                        {type == "responsibles_released" && (
+                          type == "esportes" ||
+                          type == "responsibles" || 
+                          type == "responsibles_released" ||
+                          type == "agendarFalta") && (
                           <>
                             <SelectItem value="1">Ativo</SelectItem>
                             <SelectItem value="0">Inativo</SelectItem>

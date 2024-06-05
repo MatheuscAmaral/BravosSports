@@ -27,6 +27,7 @@ export interface StudentsProps {
   team: string;
   phone: string;
   status: number;
+  class_time: string;
 }
 
 export const columns: ColumnDef<RowProps>[] = [

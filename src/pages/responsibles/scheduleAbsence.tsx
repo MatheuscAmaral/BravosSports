@@ -7,18 +7,17 @@ import { TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
-import { AiFillAlert } from "react-icons/ai";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { useNavigate } from "react-router-dom";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
+import { FaCircleQuestion } from "react-icons/fa6";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -72,9 +71,9 @@ export const columns: ColumnDef<RowProps>[] = [
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                <AiFillAlert
+              <FaCircleQuestion
                   fontSize={19}
-                  className="text-gray-700  "
+                  className="text-red-600"
                 />
               </Button>
             </DropdownMenuTrigger>
@@ -93,7 +92,7 @@ export const columns: ColumnDef<RowProps>[] = [
     </div>,
   },
   {
-    accessorKey: "status",
+    accessorKey: "status_call",
     header: ({ column }) => {
         return (
           <Button
@@ -107,13 +106,9 @@ export const columns: ColumnDef<RowProps>[] = [
     },
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("status") == 0 && "Inativo"}
+        {row.getValue("status_call") == 0 && "Inativo"}
 
-        {row.getValue("status") == 1 && "Ativo"}
-
-        {row.getValue("status") == 2 && "Experimental"}
-
-        {row.getValue("status") == 3 && "Pendente"}
+        {row.getValue("status_call") == 1 && "Ativo"}
       </div>
     ),
   },
@@ -125,7 +120,7 @@ export const columns: ColumnDef<RowProps>[] = [
       const { open } = useContext(modalContext);
 
       const openModals = (data: RowProps[]) => {
-        open(data, "Responsáveis cadastrados", "call");
+        open(data, "Editar agendamento", "agendarFalta");
       }
 
       return (
@@ -140,7 +135,7 @@ export const columns: ColumnDef<RowProps>[] = [
 
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            {/* <DropdownMenuItem onClick={() => openModals([row.original])}>Ver responsáveis</DropdownMenuItem> */}
+            <DropdownMenuItem onClick={() => openModals([row.original])}>Editar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         </div>
@@ -150,8 +145,6 @@ export const columns: ColumnDef<RowProps>[] = [
 ];
 
 const ScheduleAbsence = () => {
-  const navigate = useNavigate();
-  const [openModal, setOpenModal] = useState(true);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const { user } = useContext(AuthContext);
