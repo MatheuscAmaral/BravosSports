@@ -78,7 +78,7 @@ function Home() {
           return (
             <section
               key={s.classes}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-10"
+              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10"
             >
               {(user as unknown as UserProps).level != 3 ? (
                 <>
@@ -138,7 +138,7 @@ function Home() {
                     onClick={() => navigate("/responsaveis/liberados")}
                     className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
                   >
-                    <p className="text-lg md:text-xl xl:text-2xl font-bold">
+                    <p className="text-lg md:text-xl font-bold">
                       Responsáveis liberados
                     </p>
 
@@ -154,7 +154,7 @@ function Home() {
                     onClick={() => navigate("/agendamentos")}
                     className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
                   >
-                    <p className="text-lg md:text-xl xl:text-2xl font-bold">
+                    <p className="text-lg md:text-xl font-bold">
                       Agendamentos
                     </p>
 

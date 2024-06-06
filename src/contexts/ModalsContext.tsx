@@ -39,11 +39,11 @@ import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
-import { UserProps } from "./AuthContext";
+import { AuthContext, UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
 import { FiAlertOctagon } from "react-icons/fi";
-import { format } from "date-fns"
+import { format, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react"
 
@@ -75,6 +75,7 @@ export interface RowProps {
   id_responsible: number;
   days_training: string;
   date_of_birth: string;
+  schedule_by_responsible: number;
   unit: number;
   id_call: number;
   date: string;
@@ -210,6 +211,7 @@ const columnsClass: ColumnDef<RowProps>[] = [
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
+  const { username } = useContext(AuthContext);
   const { filterStudentsByClass, reloadPage, filterId } =
     useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
@@ -333,19 +335,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setUnits(String(row[0].unit));
       await getClasses(row[0].class);
     }
-
+    
     if (type == "classes") {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
     }
-
+    
     if (type == "agendarFalta") {
-      setDateSelectAbsence(String(row[0].date));
+      const adjustedDate = row[0].date ? addDays(new Date(String(row[0].date)), 1) : undefined;
+      
+      setDateSelectAbsence(adjustedDate);
       setDateAbsence(String(row[0].date));
       setComments(String(row[0].comments));
       setIdCall(String(row[0].id_call));
+      setName(String(row[0].name));
       setId(String(row[0].id));
-      console.log(String(row[0].class_time))
       setClassTimeCall(String(row[0].class_time));
     }
 
@@ -657,9 +661,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
 
     if (type == "agendarFalta") {
+      console.log(username)
       data = {
+        registration: id,
         date: dateAbsence,
         comments: comments,
+        edit_by: username,
+        student_name: name,
         status: status
       };
     }
@@ -859,7 +867,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         </label>
 
                         <Popover>
-                          <PopoverTrigger asChild>
+                          <PopoverTrigger asChild >
                             <Button
                               variant={"outline"}
                               className={cn(
@@ -875,7 +883,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <Calendar
                               mode="single"
                               // @ts-ignore
-                              selected={dateSelectAbsence}
+                              selected={dateSelectAbsence || null}
                               // @ts-ignore
                               onSelect={changeDateAbsence}
                               initialFocus

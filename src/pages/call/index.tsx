@@ -38,7 +38,9 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Presença",
     cell: ({ row }) => {
       const [presence, setPresence] = useState(row.original.presence);
-      
+      const statusCall = row.original.status_call;
+      const schedule = row.original.schedule_by_responsible;
+
       const changePresence = (presence: number) => {
         setPresence(presence);
         row.original.presence = presence;
@@ -46,20 +48,47 @@ export const columns: ColumnDef<RowProps>[] = [
 
       return (
         <div className="flex justify-center items-center gap-3 text-2xl bg-gray-50 p-2 w-20 mx-auto rounded-lg">
-          <button onClick={() => changePresence(1)}>
-             <IoIosCheckmarkCircle
-              className={`${row.original.presence != null && presence != null && row.original.presence == 1 ? "text-green-500" : "text-gray-300"} cursor-pointer`} 
+          <button
+            disabled={(schedule != null && statusCall != 0)}
+            className={(schedule != null && statusCall != 0) ? "cursor-not-allowed" : ""}
+            onClick={() => changePresence(1)}
+            title={
+              (schedule != null && statusCall != 0)
+                ? "Não é possível alterar uma falta agendada"
+                : ""
+            }
+          >
+            <IoIosCheckmarkCircle
+              className={`${
+                row.original.presence != null &&
+                presence != null &&
+                row.original.presence == 1
+                  ? "text-green-500"
+                  : "text-gray-300"
+              }
+
+              ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
           </button>
 
-          <button onClick={() => changePresence(0)}>
-            <IoMdCloseCircle  
-              className={`${row.original.presence != null && presence != null && row.original.presence == 0 ? "text-red-500" : "text-gray-300"} cursor-pointer`} 
+          <button 
+            disabled={(schedule != null && statusCall != 0)} 
+            onClick={() => changePresence(0)}
+            title={(schedule != null && statusCall != 0) ? "Não é possível alterar uma falta agendada" : ""}
+          >
+            <IoMdCloseCircle
+              className={`${
+                row.original.presence != null &&
+                presence != null &&
+                row.original.presence == 0 
+                  ? "text-red-500"
+                  : "text-gray-300"
+              } 
+              ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
           </button>
         </div>
       );
-
     },
     enableSorting: false,
     enableHiding: false,
@@ -112,79 +141,73 @@ export const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "comments",
     header: "Observações",
-    cell: ({ row }) => <div>
-      {
-        row.getValue("comments") != null ? (
+    cell: ({ row }) => (
+      <div>
+        {row.getValue("comments") != null ? (
           <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                <GoAlertFill
-                  fontSize={19}
-                  className="text-yellow-800"
-                />
-              </Button>
-            </DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
+                <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                  <GoAlertFill fontSize={19} className="text-yellow-800" />
+                </Button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="py-2 p-3 text-sm">
-                {
-                  row.getValue("comments")
-                }
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="py-2 p-3 text-sm">
+                  {row.getValue("comments")}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        ) : "-"
-      }
-    </div>,
+        ) : (
+          "-"
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: "comments_call",
     header: "Motivo",
-    cell: ({ row }) => <div>
-      {
-        row.getValue("comments_call") != null ? (
+    cell: ({ row }) => (
+      <div>
+        {(row.getValue("comments_call") != null && row.original.status_call != 0) ? (
           <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                <FaCircleQuestion
-                  fontSize={19}
-                  className="text-red-600"
-                />
-              </Button>
-            </DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
+                <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                  <FaCircleQuestion fontSize={19} className="text-red-600" />
+                </Button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="py-2 p-3 text-sm">
-                {
-                  row.getValue("comments_call")
-                }
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="py-2 p-3 text-sm">
+                  {row.getValue("comments_call")}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        ) : "-"
-      }
-    </div>,
+        ) : (
+          "-"
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: "status",
     header: ({ column }) => {
-        return (
-          <Button
+      return (
+        <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => (
       <div className="capitalize">
@@ -207,23 +230,25 @@ export const columns: ColumnDef<RowProps>[] = [
 
       const openModals = (data: RowProps[]) => {
         open(data, "Responsáveis cadastrados", "call");
-      }
+      };
 
       return (
         <div>
           <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => openModals([row.original])}>Ver responsáveis</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => openModals([row.original])}>
+                Ver responsáveis
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },
@@ -240,13 +265,14 @@ const Call = () => {
   const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
-  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId } = useContext(ReloadContext);
+  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId } =
+    useContext(ReloadContext);
 
   useEffect(() => {
     const getUnits = async () => {
       try {
         const response = await api.get("/units");
-        
+
         setUnits(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
@@ -257,7 +283,7 @@ const Call = () => {
       getUnits();
       setData([]);
     } else {
-      setData(newStudentsCall)
+      setData(newStudentsCall);
     }
   }, [reloadPage]);
 
@@ -265,8 +291,8 @@ const Call = () => {
     try {
       const response = await api.get(`/classes/call/${idUnit}`);
 
-      response.data.unshift({id: -99, description: 'Todos', status: 1});
-      
+      response.data.unshift({ id: -99, description: "Todos", status: 1 });
+
       setClasses(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -277,18 +303,20 @@ const Call = () => {
     setUnitId(e);
 
     getClasses(Number(e));
-  }
+  };
 
   const getStudents = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
-      setLoading(true)
+      setLoading(true);
       setClassId("");
       resetSelect();
       saveClassId(Number(classId));
       saveUnitId(Number(unitId));
-      const response = await api.get(`/students/class/${classId}/unit/${unitId}`);
+      const response = await api.get(
+        `/students/class/${classId}/unit/${unitId}`
+      );
 
       setData(response.data);
       setLoad(true);
@@ -298,7 +326,7 @@ const Call = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const closeModal = () => {
     setOpenModal(false);
@@ -306,7 +334,7 @@ const Call = () => {
     if (!load) {
       navigate("/");
     }
-  }
+  };
 
   return (
     <main className="w-full">
@@ -315,13 +343,21 @@ const Call = () => {
           Chamada <span className="text-sm mt-1">({data.length})</span>
         </h1>
 
-        <button className={`${load ? "flex" : "hidden"} rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`} onClick={() => setOpenModal(true)} title="Trocar turma">
-          <TbArrowsExchange className="text-white" fontSize={20}/>
+        <button
+          className={`${
+            load ? "flex" : "hidden"
+          } rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`}
+          onClick={() => setOpenModal(true)}
+          title="Trocar turma"
+        >
+          <TbArrowsExchange className="text-white" fontSize={20} />
         </button>
       </section>
 
       <Modal show={openModal} onClose={() => closeModal()}>
-        <Modal.Header>Selecione uma <span className="text-primary-color">turma</span></Modal.Header>
+        <Modal.Header>
+          Selecione uma <span className="text-primary-color">turma</span>
+        </Modal.Header>
         <form onSubmit={getStudents}>
           <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
             <div className="space-y-6">
@@ -330,19 +366,23 @@ const Call = () => {
                   Unidade: <span className="text-red-500">*</span>
                 </label>
 
-                <Select onValueChange={(e) => filterAndSetUnitId(e)} required defaultValue={unitId}>
+                <Select
+                  onValueChange={(e) => filterAndSetUnitId(e)}
+                  required
+                  defaultValue={unitId}
+                >
                   <SelectTrigger id="unit" className="w-full">
                     <SelectValue placeholder="Selecione uma unidade" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    {
-                      units.map(c => {
-                        return (
-                          <SelectItem key={String(c.id)} value={String(c.id)}>{c.description}</SelectItem>
-                        )
-                      })
-                    }
+                    {units.map((c) => {
+                      return (
+                        <SelectItem key={String(c.id)} value={String(c.id)}>
+                          {c.description}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -351,47 +391,56 @@ const Call = () => {
                 <label htmlFor="class">
                   Turma: <span className="text-red-500">*</span>
                 </label>
-                <Select onValueChange={(e) => setClassId(e)} required disabled={unitId == ""} defaultValue={String(classId)}>
+                <Select
+                  onValueChange={(e) => setClassId(e)}
+                  required
+                  disabled={unitId == ""}
+                  defaultValue={String(classId)}
+                >
                   <SelectTrigger id="class" className="w-full">
                     <SelectValue placeholder="Selecione uma turma" />
                   </SelectTrigger>
                   <SelectContent>
-                    {
-                      classes.map(c => {
-                        return (
-                          <SelectItem key={String(c.id)} value={String(c.id)}>{c.description}</SelectItem>
-                        )
-                      })
-                    }
+                    {classes.map((c) => {
+                      return (
+                        <SelectItem key={String(c.id)} value={String(c.id)}>
+                          {c.description}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </Modal.Body>
           <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-            <Button type="submit" className="bg-primary-color hover:bg-secondary-color" disabled={!classId} >Selecionar</Button>
+            <Button
+              type="submit"
+              className="bg-primary-color hover:bg-secondary-color"
+              disabled={!classId}
+            >
+              Selecionar
+            </Button>
           </Modal.Footer>
         </form>
       </Modal>
 
-      {
-        loading ? (
-          <div className="mx-auto max-w-5 mt-40 mb-10">
-            <TbLoader3
-              fontSize={25}
-              className="w-12"
-              style={{ animation: "spin 1s linear infinite" }}
-            />
-          </div>
-        ) : (
-          load && (
-            <section className="w-full mx-auto mt-10">
-                {/* @ts-ignore */}
-                <DataTable columns={columns} data={data} route={"call"} /> 
-            </section>
-          )
+      {loading ? (
+        <div className="mx-auto max-w-5 mt-40 mb-10">
+          <TbLoader3
+            fontSize={25}
+            className="w-12"
+            style={{ animation: "spin 1s linear infinite" }}
+          />
+        </div>
+      ) : (
+        load && (
+          <section className="w-full mx-auto mt-10">
+            {/* @ts-ignore */}
+            <DataTable columns={columns} data={data} route={"call"} />
+          </section>
         )
-      } 
+      )}
     </main>
   );
 };

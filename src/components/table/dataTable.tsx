@@ -51,18 +51,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { format } from "date-fns"
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 import { Uploader } from "uploader";
 import { UploadButton } from "react-uploader";
@@ -116,7 +116,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
-  const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>([]);
+  const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>(
+    []
+  );
   const [description, setDescription] = React.useState("");
   const [nameResp, setNameResp] = React.useState("");
   const [name, setName] = React.useState("");
@@ -137,7 +139,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [status, setStatus] = React.useState("1");
   const [daysTraining, setDaysTraining] = React.useState("");
   const [date, setDate] = React.useState("");
-  const [dateSelectAbsence, setDateSelectAbsence] = React.useState<Date | string>();
+  const [dateSelectAbsence, setDateSelectAbsence] = React.useState<
+    Date | string
+  >();
   const [dateAbsence, setDateAbsence] = React.useState("");
   const [comments, setComments] = React.useState("");
   const {
@@ -212,7 +216,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const changeDateAbsence = (e: Date) => {
     setDateSelectAbsence(e);
-    setDateAbsence(e.toLocaleDateString("pt-BR").replace(/\//g, '-'));
+    setDateAbsence(e.toLocaleDateString("pt-BR").replace(/\//g, "-"));
   };
 
   const changeIsStudent = (e: string) => {
@@ -302,7 +306,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   if (route == "agendarFalta") {
     React.useEffect(() => {
       const getStudentOfResponsibleData = async () => {
-        const response = await api.get(`/call/student/responsible/${(user as unknown as UserProps).id}`);
+        const response = await api.get(
+          `/call/student/responsible/${(user as unknown as UserProps).id}`
+        );
 
         setStudentRespData(response.data);
       };
@@ -499,6 +505,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       name: string;
       presence: number | null;
       date: string | null;
+      schedule_by_responsible: number;
+      status_call: number;
     };
   };
 
@@ -506,17 +514,29 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const studentsMap = students.map((s) => s.original);
 
-      const transformedStudents = studentsMap.map((student) => ({
-        registration: student.id,
-        class: student.class,
-        name: student.name,
-        presence: student.presence,
-        edit_by: username,
-        id_call: student.id_call,
-        ...((student.presence == null || student.date == null) && {
-          made_by: username,
-        }),
-      }));
+      const transformedStudents = studentsMap
+        .filter((student) => {
+          return !(
+            student.schedule_by_responsible == 1 && student.status_call != 0
+          );
+        })
+        .map((student) => {
+          return {
+            registration: student.id,
+            class: student.class,
+            name: student.name,
+            presence: student.presence,
+            edit_by: username,
+            id_call: student.id_call,
+            ...(((student.presence == null || student.date == null)) && {
+              made_by: username,
+            }),
+            ...(student.schedule_by_responsible == 1 && student.status_call == 0 && {
+              schedule_by_responsible: 1,
+              status_call: student.status_call,
+            })
+          };
+        });
 
       const filterTransformedStudents = transformedStudents.filter(
         (t) => t.presence != null
@@ -617,20 +637,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   };
 
   function convertDateFormat(dateStr: string) {
-    const [dd, mm, yyyy] = dateStr.split('-');
+    const [dd, mm, yyyy] = dateStr.split("-");
     return `${yyyy}-${mm}-${dd}`;
   }
 
   function parseDate(dateString: string) {
-      let [day, month, year] = dateString.split('-').map(Number);
-      return new Date(year, month - 1, day);
+    let [day, month, year] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
   }
 
   function parseTime(timeString: string) {
-      let [hours, minutes, seconds] = timeString.split(':').map(Number);
-      let date = new Date();
-      date.setHours(hours, minutes, seconds, 0);
-      return date;
+    let [hours, minutes, seconds] = timeString.split(":").map(Number);
+    let date = new Date();
+    date.setHours(hours, minutes, seconds, 0);
+    return date;
   }
 
   const createScheduleAbsence = async (e: React.FormEvent) => {
@@ -641,42 +661,50 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
 
     const dateToday = new Date();
-    const formatedDateToday = parseDate(dateToday.toLocaleDateString().replace(/\//g, "-"));
+    const formatedDateToday = parseDate(
+      dateToday.toLocaleDateString().replace(/\//g, "-")
+    );
     const formatedDateSelect = parseDate(dateAbsence);
-    
+
     if (formatedDateToday.getTime() == formatedDateSelect.getTime()) {
       const hour = dateToday.toLocaleTimeString().split(":")[0];
       const minute = dateToday.toLocaleTimeString().split(":")[1];
       const formattedTime = parseTime(hour + ":" + minute + ":00");
       const formattedTimeClass = parseTime(studentRespData[0].class_time);
 
-      let differenceInMillis =  formattedTimeClass.getTime() - formattedTime.getTime(); ;
-      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60); 
+      let differenceInMillis =
+        formattedTimeClass.getTime() - formattedTime.getTime();
+      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60);
 
       if (differenceInMinutes <= 30) {
-        return toast.error("Só é permitido agendar uma falta até 30 minutos antes do início da aula!", {
-          position: "top-right"
-        });
+        return toast.error(
+          "Só é permitido agendar uma falta até 30 minutos antes do início da aula!",
+          {
+            position: "top-right",
+          }
+        );
       }
     }
 
-    const data = [{
-      registration: studentRespData[0].id,
-      class: studentRespData[0].class,
-      name: studentRespData[0].name,
-      presence: 0,
-      edit_by: username,
-      made_by: username,
-      date: convertDateFormat(dateAbsence),
-      schedule_by_responsible: 1,
-      comments: comments,
-      status: true
-    }]
+    const data = [
+      {
+        registration: studentRespData[0].id,
+        class: studentRespData[0].class,
+        name: studentRespData[0].name,
+        presence: 0,
+        edit_by: username,
+        made_by: username,
+        date: convertDateFormat(dateAbsence),
+        schedule_by_responsible: 1,
+        comments: comments,
+        status: true,
+      },
+    ];
 
     try {
       setLoading(true);
       await api.post("/call", data);
-      
+
       toast.success("Falta agendada com sucesso!");
       verifyUserCreate(true);
       reloadPage();
@@ -685,12 +713,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setDateAbsence("");
     } catch (error: any) {
       toast.error(error.response.data.error, {
-        position: "top-right"
+        position: "top-right",
       });
     } finally {
       setLoading(false);
     }
-
   };
 
   const createTeacher = async (e: React.FormEvent) => {
@@ -964,7 +991,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <div className="space-y-6">
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="nome">
-                          Selecione o dia desejado: <span className="text-red-500"> *</span>
+                          Selecione o dia desejado:{" "}
+                          <span className="text-red-500"> *</span>
                         </label>
 
                         <Popover>
@@ -977,7 +1005,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {dateSelectAbsence ? format(dateSelectAbsence, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                              {dateSelectAbsence ? (
+                                format(dateSelectAbsence, "dd/MM/yyyy", {
+                                  locale: ptBR,
+                                })
+                              ) : (
+                                <span>Escolha uma data</span>
+                              )}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -996,7 +1030,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="comments">
-                          Informe o motivo: <span className="text-red-500"> *</span>
+                          Informe o motivo:{" "}
+                          <span className="text-red-500"> *</span>
                         </label>
 
                         <Input
