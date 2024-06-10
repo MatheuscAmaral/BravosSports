@@ -9,14 +9,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useContext, useEffect, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
-import { TbLoader3 } from "react-icons/tb";
+import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
+import { Modal } from "flowbite-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -138,44 +146,155 @@ export const columns: ColumnDef<RowProps>[] = [
 const ResponsiblesReleased = () => {
   const { user } = useContext(AuthContext);
   const [data, setData] = useState<ResponsibleProps[]>([]);
-  const { reloadPage } = useContext(ReloadContext);
+  const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
+  const [responsibleId, setResponsibleId] = useState("");
+  const { reloadPage, saveResponsibleId, createdUser } =
+    useContext(ReloadContext);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [openModal, setOpenModal] = useState(
+    (user as unknown as UserProps).level != 3 ? true : false
+  );
+
+  const getResponsiblesReleased = async (e?: FormEvent) => {
+    if (e) {
+      e.preventDefault();
+
+      saveResponsibleId(Number(responsibleId));
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await api.get(
+        `/responsibles/releaseds/${
+          (user as unknown as UserProps).level != 3
+            ? responsibleId
+            : (user as unknown as UserProps).id
+        }`
+      );
+
+      setReady(true);
+      setOpenModal(false);
+      setData(response.data);
+    } catch {
+      toast.error(
+        "Ocorreu um erro ao buscar os responsáveis liberados disponíveis!"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getResponsibles = async () => {
+    try {
+      const response = await api.get(`/responsibles/`);
+
+      setResponsibles(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    if (!ready) {
+      return;
+    }
+
+    setOpenModal(false);
+  };
 
   useEffect(() => {
-    const getResponsibles = async () => {
-      try {
-        setLoading(true);
-        
-        const response = await api.get(
-          `/responsibles/releaseds/${(user as unknown as UserProps).id}`
-        );
+    if ((user as unknown as UserProps).level == 3) {
+      getResponsiblesReleased();
+    }
 
-        setData(response.data);
-      } catch {
-        toast.error(
-          "Ocorreu um erro ao buscar os responsáveis liberados disponíveis!"
-        );
-      } finally {
-        setLoading(false);
+    if (
+      (user as unknown as UserProps).level == 0 ||
+      (user as unknown as UserProps).level == 1
+    ) {
+      if (createdUser) {
+        getResponsiblesReleased();
+        return;
       }
-    };
 
-    getResponsibles();
+      getResponsibles();
+    }
   }, [reloadPage]);
 
   return (
     <main className="w-full">
-      <section className="mt-10">
+      <section className="mt-10 flex justify-between items-center w-full">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
           Responsáveis Liberados{" "}
           <span className="text-sm mt-1">({data.length})</span>
         </h1>
+
+        <button
+          className={`${
+            ready && (user as unknown as UserProps).level != 3
+              ? "flex"
+              : "hidden"
+          } rounded-lg p-2 bg-gray-700 hover:bg-gray-800 transition-all`}
+          onClick={() => setOpenModal(true)}
+          title="Trocar turma"
+        >
+          <TbArrowsExchange className="text-white" fontSize={20} />
+        </button>
       </section>
 
-      {
-         loading ? (
+      <Modal show={openModal} onClose={() => closeModal()}>
+        <Modal.Header>
+          Selecione um <span className="text-primary-color">responsável</span>
+        </Modal.Header>
+
+        <form onSubmit={(e) => getResponsiblesReleased(e)}>
+          <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
+            <div className="space-y-6">
+              <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                <label htmlFor="unit">
+                  Responsável: <span className="text-red-500">*</span>
+                </label>
+
+                <Select onValueChange={(e) => setResponsibleId(e)}>
+                  <SelectTrigger className="w-full" id="responsible">
+                    <SelectValue placeholder="Selecione o responsável desejado" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {responsibles.map((r) => {
+                      return (
+                        <SelectItem key={r.user_id} value={r.user_id}>
+                          {r.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+            <Button
+              type="submit"
+              className="bg-primary-color hover:bg-secondary-color"
+            >
+              Selecionar
+            </Button>
+          </Modal.Footer>
+        </form>
+      </Modal>
+
+      {ready &&
+        (loading ? (
           <div className="mx-auto max-w-5 mt-40 mb-10">
-            <TbLoader3 fontSize={25} className="w-12" style={{ animation: "spin 1s linear infinite" }}/>
+            <TbLoader3
+              fontSize={25}
+              className="w-12"
+              style={{ animation: "spin 1s linear infinite" }}
+            />
           </div>
         ) : (
           <section className="w-full mx-auto mt-10">
@@ -187,8 +306,7 @@ const ResponsiblesReleased = () => {
               route={"responsibles_released"}
             />
           </section>
-        )
-      }
+        ))}
     </main>
   );
 };

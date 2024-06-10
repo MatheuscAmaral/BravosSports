@@ -93,6 +93,7 @@ export interface ResponsibleProps {
   name: string;
   phone: string;
   status: number;
+  user_id: string;
 }
 
 export interface UnitsProps {
@@ -153,6 +154,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     reloadPage,
     verifyUserCreate,
     unitId,
+    daySaved,
+    respId
   } = React.useContext(ReloadContext);
 
   const optionsDate = {
@@ -427,8 +430,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
-    const respId = await getResponsibleWithIdUser(
-      (user as unknown as UserProps).id
+    const responsibleId = await getResponsibleWithIdUser(
+      (user as unknown as UserProps).level != 3 ? respId : (user as unknown as UserProps).id
     );
 
     const data = {
@@ -436,7 +439,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       name: name,
       phone: phone,
       degree_kinship: degreeKinship,
-      id_responsible: respId,
+      id_responsible: responsibleId,
       status: status,
     };
 
@@ -446,6 +449,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.success(`${name} cadastrada com sucesso!`);
       closeModal();
       reloadPage();
+      verifyUserCreate(true);
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o responsável!");
@@ -828,7 +832,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         {({ onClick }) => (
                           <button
                             onClick={onClick}
-                            className={`h-48 w-full border-dashed ${
+                            className={`h-48 w-full border-dashed  overflow-hidden ${
                               error && !link && "border-red-500"
                             } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                           >
@@ -836,7 +840,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               <div className="flex justify-center">
                                 <img
                                   src={link}
-                                  className="w-32"
+                                  className="w-full h-full object-cover"
                                   alt="foto_professor"
                                 />
                               </div>
@@ -943,7 +947,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               <Select
                 value={String(teamId)}
                 onValueChange={(e) =>
-                  filterStudentsByTeam(idClass, Number(e), Number(unitId))
+                  filterStudentsByTeam(idClass, Number(e), Number(unitId), (daySaved != "" ? daySaved : "-99"))
                 }
               >
                 <SelectTrigger className="w-full">
@@ -2160,6 +2164,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           {column.id == "date_of_birth" && "Data de nascimento"}
 
                           {column.id == "category" && "Categoria"}
+
+                          {column.id == "degree_kinship" && "Grau de parentesco"}
 
                           {column.id == "modality" && "Modalidade"}
 

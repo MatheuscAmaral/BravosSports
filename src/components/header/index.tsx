@@ -119,7 +119,7 @@ const Header = () => {
               </li>
           )}
 
-          {((user as unknown as UserProps).level == 3) &&  (
+          {((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 1 || (user as unknown as UserProps).level == 0) &&  (
               <li
                 onClick={() => navigateToRoute("/responsaveis/liberados")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
@@ -129,7 +129,7 @@ const Header = () => {
               </li>
           )}
 
-          {((user as unknown as UserProps).level == 3) &&  (
+          {((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 1 || (user as unknown as UserProps).level == 0) &&  (
               <li
                 onClick={() => navigateToRoute("/agendamentos")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"

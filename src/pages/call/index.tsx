@@ -265,7 +265,8 @@ const Call = () => {
   const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
-  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId } =
+  const [daysTraining, setDaysTraining] = useState("");
+  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
     useContext(ReloadContext);
 
   useEffect(() => {
@@ -299,6 +300,13 @@ const Call = () => {
     }
   };
 
+  
+  const saveAndFilterClassTime = (e: string) => {
+    setDaysTraining(e);
+
+    saveDayTraining(e);
+  };
+
   const filterAndSetUnitId = (e: string) => {
     setUnitId(e);
 
@@ -314,12 +322,18 @@ const Call = () => {
       resetSelect();
       saveClassId(Number(classId));
       saveUnitId(Number(unitId));
+
+      if (daysTraining == "") {
+        saveDayTraining("-99")
+      }
+      
       const response = await api.get(
-        `/students/class/${classId}/unit/${unitId}`
+        `/students/class/${classId}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`
       );
 
       setData(response.data);
       setLoad(true);
+      setDaysTraining("");
       setOpenModal(false);
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
@@ -391,6 +405,7 @@ const Call = () => {
                 <label htmlFor="class">
                   Turma: <span className="text-red-500">*</span>
                 </label>
+
                 <Select
                   onValueChange={(e) => setClassId(e)}
                   required
@@ -408,6 +423,29 @@ const Call = () => {
                         </SelectItem>
                       );
                     })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                <label htmlFor="class">
+                  Dia de treino: 
+                </label>
+
+                <Select
+                  onValueChange={(e) => saveAndFilterClassTime(e)}
+                  disabled={classId == ""}
+                >
+                  <SelectTrigger id="class" className="w-full">
+                    <SelectValue placeholder="Selecione um dia de treino" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="Segunda e Quarta">
+                        Segunda e Quarta
+                      </SelectItem>
+                      <SelectItem value="Terça e Quinta">
+                        Terça e Quinta
+                      </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

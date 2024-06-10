@@ -7,7 +7,7 @@ import { RowProps } from "./ModalsContext";
 interface ReloadDataProps {
     reloadPage: () => void;
     filterStudentsByClass: (id: number) => void;
-    filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number) => void;
+    filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number, time: string) => void;
     filterByUnit: (route: string, idUnit: number) => void;
     newStudents: StudentsProps[];
     newStudentsCall: StudentsProps[];
@@ -22,7 +22,11 @@ interface ReloadDataProps {
     resetNewStudents: () => void
     resetSelect: () => void;
     unitId: number;
+    daySaved: string;
+    respId: number;
     saveUnitId: (id: number) => void;
+    saveDayTraining: (time: string) => void;
+    saveResponsibleId: (respId: number) => void;
 }
 
 interface ChildrenProps {
@@ -41,6 +45,8 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [idClass, setIdClass] = useState(0);
     const [createdUser, setCreatedUser] = useState(false);
     const [unitId, setUnitId] = useState(0);
+    const [respId, setRespId] = useState(0);
+    const [daySaved, setDaySaved] = useState("");
 
     const reloadPage = () => {
         setReload(!reload);
@@ -48,6 +54,14 @@ const ReloadProvider = ({children}: ChildrenProps) => {
 
     const saveUnitId = (id: number) => {
         setUnitId(id);
+    }
+
+    const saveResponsibleId = (respId: number) => {
+        setRespId(respId);
+    }
+
+    const saveDayTraining = (day: string) => {
+        setDaySaved(day);
     }
 
     const verifyUserCreate = (response: boolean) => {
@@ -66,13 +80,13 @@ const ReloadProvider = ({children}: ChildrenProps) => {
         }
     }
 
-    const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number) => {
+    const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number, day: string) => {
         setFilterId(idClass);
         setTeamId(idTeam);
         
         try {
            if (idClass != 0) {
-                const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}`);
+                const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}/day/${day}`);
 
                 setNewStudentsCall(response.data); 
             } else {
@@ -115,7 +129,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     return (
-        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitId, filterStudentsByClass, filterStudentsByTeam, filterByUnit, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
+        <ReloadContext.Provider value={{reloadPage, resetData, unitId, respId, saveResponsibleId, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

@@ -43,7 +43,9 @@ const Sidebar = () => {
         { label: "Professores", icon: <PiChalkboardTeacherBold fontSize={25} />, path: "/professores" },
         { label: "Esportes", icon: <MdSportsHandball fontSize={25} />, path: "/esportes" },
         { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
-        { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" }
+        { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
+      { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
+      { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" }
       ];
     } else if ((user as unknown as UserProps).level === 2) {
       items = [
