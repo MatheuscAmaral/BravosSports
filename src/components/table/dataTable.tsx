@@ -42,7 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { IoIosImages } from "react-icons/io";
-
+import SelectReact from "react-select";
 import {
   Select,
   SelectContent,
@@ -50,7 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -117,15 +117,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
+  const [optionTabs, setOptionTabs] = React.useState("selectStudent");
   const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>(
     []
   );
+  const [students, setStudents] = React.useState<
+    { value: number; label: string; class: number }[]
+  >([]);
+  const [studentsSelect, setStudentsSelect] = React.useState<
+    { value: number; label: string; class: number }[]
+  >([]);
   const [description, setDescription] = React.useState("");
   const [nameResp, setNameResp] = React.useState("");
   const [name, setName] = React.useState("");
   const [classesDisp, setClassesDisp] = React.useState<ClassesProps[]>([]);
   const [degreeKinship, setDegreeKinship] = React.useState("");
   const [classTime, setClassTime] = React.useState("");
+  const [isOpen, setIsOpen] = React.useState(false);
   const [classesDispFilter, setClassesDispFilter] = React.useState<
     ClassesProps[]
   >([]);
@@ -155,7 +163,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     verifyUserCreate,
     unitId,
     daySaved,
-    respId
+    respId,
   } = React.useContext(ReloadContext);
 
   const optionsDate = {
@@ -306,6 +314,24 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }, []);
   }
 
+  const getStudents = async () => {
+    try {
+      const response = await api.get("/students");
+
+      const formatedData = response.data.map((d: StudentsProps) => ({
+        value: d.id,
+        label: d.name,
+        class: d.class,
+      }));
+
+      setStudents(formatedData);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (route == "agendarFalta") {
     React.useEffect(() => {
       const getStudentOfResponsibleData = async () => {
@@ -431,7 +457,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
 
     const responsibleId = await getResponsibleWithIdUser(
-      (user as unknown as UserProps).level != 3 ? respId : (user as unknown as UserProps).id
+      (user as unknown as UserProps).level != 3
+        ? respId
+        : (user as unknown as UserProps).id
     );
 
     const data = {
@@ -532,13 +560,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             presence: student.presence,
             edit_by: username,
             id_call: student.id_call,
-            ...(((student.presence == null || student.date == null)) && {
+            ...((student.presence == null || student.date == null) && {
               made_by: username,
             }),
-            ...(student.schedule_by_responsible == 1 && student.status_call == 0 && {
-              schedule_by_responsible: 1,
-              status_call: student.status_call,
-            })
+            ...(student.schedule_by_responsible == 1 &&
+              student.status_call == 0 && {
+                schedule_by_responsible: 1,
+                status_call: student.status_call,
+              }),
           };
         });
 
@@ -569,6 +598,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "call") {
       makeCall(table.getRowModel().rows);
     }
+
+    if (route == "agendarFalta") {
+      getStudents();
+    }
   };
 
   const closeModal = () => {
@@ -582,8 +615,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setLink("");
     setShow(false);
     setDaysTraining("");
+    setStudentsSelect([]);
     setClassTime("");
     setPhone("");
+    setOptionTabs("selectStudent");
     setIsStudent("");
     setComments("");
     setDateSelectAbsence("");
@@ -690,20 +725,42 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       }
     }
 
-    const data = [
-      {
-        registration: studentRespData[0].id,
-        class: studentRespData[0].class,
-        name: studentRespData[0].name,
-        presence: 0,
-        edit_by: username,
-        made_by: username,
-        date: convertDateFormat(dateAbsence),
-        schedule_by_responsible: 1,
-        comments: comments,
-        status: true,
-      },
-    ];
+    let data: any[] = [];
+
+    if (
+      studentsSelect.length >= 0 &&
+      (user as unknown as UserProps).level != 3
+    ) {
+      studentsSelect.map((s) =>
+        data.push({
+          registration: s.value,
+          class: s.class,
+          name: s.label,
+          presence: 0,
+          edit_by: username,
+          made_by: username,
+          date: convertDateFormat(dateAbsence),
+          schedule_by_responsible: 1,
+          comments: comments,
+          status: true,
+        })
+      );
+    } else {
+      data = [
+        {
+          registration: studentRespData[0].id,
+          class: studentRespData[0].class,
+          name: studentRespData[0].name,
+          presence: 0,
+          edit_by: username,
+          made_by: username,
+          date: convertDateFormat(dateAbsence),
+          schedule_by_responsible: 1,
+          comments: comments,
+          status: true,
+        },
+      ];
+    }
 
     try {
       setLoading(true);
@@ -947,7 +1004,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               <Select
                 value={String(teamId)}
                 onValueChange={(e) =>
-                  filterStudentsByTeam(idClass, Number(e), Number(unitId), (daySaved != "" ? daySaved : "-99"))
+                  filterStudentsByTeam(
+                    idClass,
+                    Number(e),
+                    Number(unitId),
+                    daySaved != "" ? daySaved : "-99"
+                  )
                 }
               >
                 <SelectTrigger className="w-full">
@@ -987,88 +1049,276 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   Agendamento de
                   <span className="text-primary-color"> falta</span>
                 </Modal.Header>
+
                 <form onSubmit={createScheduleAbsence}>
                   <Modal.Body
                     className="relative"
                     style={{ maxHeight: "500px" }}
                   >
-                    <div className="space-y-6">
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">
-                          Selecione o dia desejado:{" "}
-                          <span className="text-red-500"> *</span>
-                        </label>
+                    {(user as unknown as UserProps).level != 3 ? (
+                      <Tabs
+                        defaultValue={optionTabs}
+                        value={optionTabs != "" ? optionTabs : ""}
+                      >
+                        <TabsList className="flex justify-center w-full mx-auto mb-7">
+                          <TabsTrigger value="selectStudent">
+                            Selecione o aluno
+                          </TabsTrigger>
+                          <TabsTrigger value="schedule">
+                            Agendamento
+                          </TabsTrigger>
+                        </TabsList>
 
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !dateSelectAbsence && "text-muted-foreground"
-                              )}
+                        <TabsContent
+                          value="selectStudent"
+                          className={`${isOpen ? "mb-52" : ""} transition-all`}
+                        >
+                          <div className="flex flex-col gap-2 my-3 mb-10">
+                            <label
+                              htmlFor="nome"
+                              className="text-sm font-medium text-gray-700"
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {dateSelectAbsence ? (
-                                format(dateSelectAbsence, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              ) : (
-                                <span>Escolha uma data</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
+                              Selecione o(s) aluno(s) desejado:
+                              <span className="text-red-500"> *</span>
+                            </label>
+
+                            <SelectReact
+                              defaultValue={[]}
+                              isMulti
+                              name="students"
+                              value={studentsSelect}
                               // @ts-ignore
-                              selected={dateSelectAbsence}
+                              onChange={(e) => setStudentsSelect(e)}
+                              noOptionsMessage={() =>
+                                "Nenhum resultado encontrado"
+                              }
                               // @ts-ignore
-                              onSelect={changeDateAbsence}
-                              initialFocus
-                              locale={ptBR}
+                              options={students}
+                              className="basic-multi-select text-sm"
+                              onMenuOpen={() => setIsOpen(true)}
+                              onMenuClose={() => setIsOpen(false)}
+                              maxMenuHeight={200}
+                              placeholder="Selecione o(s) aluno(s)"
                             />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                          </div>
+                        </TabsContent>
 
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="comments">
-                          Informe o motivo:{" "}
-                          <span className="text-red-500"> *</span>
-                        </label>
+                        <TabsContent value="schedule">
+                          <div className="space-y-6 mb-5">
+                            <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                              <label htmlFor="nome">
+                                Selecione o dia desejado:{" "}
+                                <span className="text-red-500"> *</span>
+                              </label>
 
-                        <Input
-                          id="comments"
-                          placeholder="Digite o motivo da falta agendada para o aluno..."
-                          onChange={(e) => setComments(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </Modal.Body>
-                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button
-                      type="submit"
-                      className="bg-primary-color hover:bg-secondary-color"
-                    >
-                      {loading ? (
-                        <div className="flex justify-center">
-                          <TbLoader3
-                            fontSize={23}
-                            style={{ animation: "spin 1s linear infinite" }}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !dateSelectAbsence &&
+                                        "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateSelectAbsence ? (
+                                      format(dateSelectAbsence, "dd/MM/yyyy", {
+                                        locale: ptBR,
+                                      })
+                                    ) : (
+                                      <span>Escolha uma data</span>
+                                    )}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    // @ts-ignore
+                                    selected={dateSelectAbsence}
+                                    // @ts-ignore
+                                    onSelect={changeDateAbsence}
+                                    initialFocus
+                                    locale={ptBR}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                              <label htmlFor="comments">
+                                Informe o motivo:{" "}
+                                <span className="text-red-500"> *</span>
+                              </label>
+
+                              <Input
+                                id="comments"
+                                placeholder="Digite o motivo da falta agendada para o aluno..."
+                                onChange={(e) => setComments(e.target.value)}
+                                value={comments}
+                              />
+                            </div>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    ) : (
+                      <div className="space-y-6 mb-5">
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="nome">
+                            Selecione o dia desejado:{" "}
+                            <span className="text-red-500"> *</span>
+                          </label>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !dateSelectAbsence && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {dateSelectAbsence ? (
+                                  format(dateSelectAbsence, "dd/MM/yyyy", {
+                                    locale: ptBR,
+                                  })
+                                ) : (
+                                  <span>Escolha uma data</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                // @ts-ignore
+                                selected={dateSelectAbsence}
+                                // @ts-ignore
+                                onSelect={changeDateAbsence}
+                                initialFocus
+                                locale={ptBR}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="comments">
+                            Informe o motivo:{" "}
+                            <span className="text-red-500"> *</span>
+                          </label>
+
+                          <Input
+                            id="comments"
+                            placeholder="Digite o motivo da falta agendada para o aluno..."
+                            onChange={(e) => setComments(e.target.value)}
+                            value={comments}
                           />
                         </div>
+                      </div>
+                    )}
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    {(user as unknown as UserProps).level != 3 ? (
+                      optionTabs == "schedule" ? (
+                        <>
+                          <Button
+                            type="submit"
+                            className="bg-primary-color hover:bg-secondary-color"
+                          >
+                            {loading ? (
+                              <div className="flex justify-center">
+                                <TbLoader3
+                                  fontSize={23}
+                                  style={{
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              "Salvar"
+                            )}
+                          </Button>
+
+                          <Button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              setOptionTabs("selectStudent");
+                            }}
+                            className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                          >
+                            Voltar
+                          </Button>
+                        </>
                       ) : (
-                        "Salvar"
-                      )}
-                    </Button>
-                    <Button
-                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
-                      onClick={() => closeModal()}
-                    >
-                      Fechar
-                    </Button>
+                        <>
+                          <Button
+                            type="button"
+                            className={`bg-primary-color hover:bg-secondary-color ${
+                              studentsSelect.length <= 0
+                                ? "cursor-not-allowed"
+                                : ""
+                            }`}
+                            disabled={studentsSelect.length <= 0}
+                            title={
+                              studentsSelect.length <= 0
+                                ? "É necessário selecionar um ou mais alunos!"
+                                : ""
+                            }
+                            onClick={(event) => {
+                              event.preventDefault();
+                              setOptionTabs("schedule");
+                            }}
+                          >
+                            {loading ? (
+                              <div className="flex justify-center">
+                                <TbLoader3
+                                  fontSize={23}
+                                  style={{
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              "Próximo"
+                            )}
+                          </Button>
+
+                          <Button
+                            className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                            onClick={() => closeModal()}
+                          >
+                            Fechar
+                          </Button>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Button
+                          type="submit"
+                          className="bg-primary-color hover:bg-secondary-color"
+                        >
+                          {loading ? (
+                            <div className="flex justify-center">
+                              <TbLoader3
+                                fontSize={23}
+                                style={{ animation: "spin 1s linear infinite" }}
+                              />
+                            </div>
+                          ) : (
+                            "Salvar"
+                          )}
+                        </Button>
+
+                        <Button
+                          className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                          onClick={() => closeModal()}
+                        >
+                          Fechar
+                        </Button>
+                      </>
+                    )}
                   </Modal.Footer>
                 </form>
               </Modal>
@@ -1553,6 +1803,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <div className="space-y-6">
                       <UploadButton
                         uploader={uploader}
+                        // @ts-ignore
                         options={options}
                         onComplete={(files) =>
                           files.length > 0 &&
@@ -1725,6 +1976,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <div className="space-y-6">
                       <UploadButton
                         uploader={uploader}
+                        // @ts-ignore
                         options={options}
                         onComplete={(files) =>
                           files.length > 0 &&
@@ -2165,7 +2417,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "category" && "Categoria"}
 
-                          {column.id == "degree_kinship" && "Grau de parentesco"}
+                          {column.id == "degree_kinship" &&
+                            "Grau de parentesco"}
 
                           {column.id == "modality" && "Modalidade"}
 

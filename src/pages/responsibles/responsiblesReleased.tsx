@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -145,6 +146,7 @@ export const columns: ColumnDef<RowProps>[] = [
 
 const ResponsiblesReleased = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
   const [responsibleId, setResponsibleId] = useState("");
@@ -200,6 +202,11 @@ const ResponsiblesReleased = () => {
 
   const closeModal = () => {
     if (!ready) {
+      navigate("/");
+      toast("É necessário selecionar um responsável para acessar a tela!", {
+        position: "top-right",
+        icon: "⚠️",
+      });
       return;
     }
 
@@ -258,7 +265,7 @@ const ResponsiblesReleased = () => {
                   Responsável: <span className="text-red-500">*</span>
                 </label>
 
-                <Select onValueChange={(e) => setResponsibleId(e)}>
+                <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
                   <SelectTrigger className="w-full" id="responsible">
                     <SelectValue placeholder="Selecione o responsável desejado" />
                   </SelectTrigger>

@@ -347,6 +347,10 @@ const Call = () => {
 
     if (!load) {
       navigate("/");
+      toast("É necessário utilizar os filtros obrigatórios para acessar a tela!", {
+        position: "top-right",
+        icon: "⚠️",
+      });
     }
   };
 

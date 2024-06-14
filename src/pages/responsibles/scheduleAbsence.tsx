@@ -19,6 +19,7 @@ import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { FaCircleQuestion } from "react-icons/fa6";
 
+
 export const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "name",
@@ -155,8 +156,8 @@ const ScheduleAbsence = () => {
     const getCalls = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/call/responsible/${(user as unknown as UserProps).id}`);
         
+        const response = await api.get(`/call/responsible/${(user as unknown as UserProps).id}/level/${(user as unknown as UserProps).level}`);
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os agendamentos de falta feitos pelo responsável!");

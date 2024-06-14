@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/popover"
 
 export interface RowProps {
+  user_id: any;
   id: number;
   image: string;
   name: string;
@@ -396,7 +397,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "call") {
       try {
         const response = await api.get(
-          `/responsibles/releaseds/${row[0].responsible}`
+          `/responsibles/releaseds/${row[0].user_id}`
         );
 
         setResponsibleRealeaseds(response.data);
