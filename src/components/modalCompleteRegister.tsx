@@ -19,19 +19,12 @@ import { FormEvent, useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { FaEye, FaTrash } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Uploader } from "uploader";
-import { UploadButton } from "react-uploader";
 import { IoIosImages } from "react-icons/io";
 import api from "@/api";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { TbEyeClosed, TbLoader3 } from "react-icons/tb";
 import { MdErrorOutline } from "react-icons/md";
-
-const uploader = Uploader({
-  apiKey: "free",
-});
-
-const options = { multi: true };
+import axios from "axios";
 
 const ModalCompleteRegister = () => {
   const { user } = useContext(AuthContext);
@@ -43,6 +36,7 @@ const ModalCompleteRegister = () => {
   const [degreeKinship, setDegreeKinship] = useState("");
   const [tabsValue, setTabsValue] = useState("password");
   const [email, setEmail] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [comments, setComments] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,6 +52,30 @@ const ModalCompleteRegister = () => {
     );
   };
 
+  const saveImage = async () => {
+    const formData = new FormData();
+    //@ts-ignore
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return `http://localhost:3000/files/${response.data}`;
+    } catch {
+      toast.error("Ocorreu um erro ao salvar a imagem!");
+      return "error";
+    }
+  };
+
+
   const updateData = async (e: FormEvent, level: number) => {
     e.preventDefault();
 
@@ -71,6 +89,12 @@ const ModalCompleteRegister = () => {
         });
   
         setError(true);
+        return;
+      }
+
+      const verifyIfSaveImage = await saveImage();
+
+      if (verifyIfSaveImage == "error") {
         return;
       }
   
@@ -120,6 +144,15 @@ const ModalCompleteRegister = () => {
     }
     
     return "";
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+
+    if (selectedFile) {
+      setFile(selectedFile);
+      setLink(URL.createObjectURL(selectedFile));
+    }
   };
 
   const passwordError = validatePassword(password);
@@ -285,40 +318,38 @@ const ModalCompleteRegister = () => {
                 {
                   (user as unknown as UserProps).level == 3 && (
                     <>
-                      <UploadButton
-                        uploader={uploader}
-                        options={options}
-                        onComplete={(files) =>
-                          files.length > 0 &&
-                          setLink(files.map((x) => x.fileUrl).join("\n"))
-                        }
+                      <div
+                        className={`${
+                          link != "" ? "h-64" : "h-48"
+                        } flex justify-center transition-all w-full border-dashed ${
+                          error && !link && "border-red-500"
+                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                       >
-                        {({ onClick }) => (
-                          <button
-                            onClick={onClick}
-                            className={`h-48 w-full border-dashed ${
-                              error && !link && "border-red-500"
-                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                          >
-                            {link ? (
-                              <div className="flex justify-center">
-                                <img
-                                  src={link}
-                                  className="w-32"
-                                  alt="foto_professor"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 items-center justify-center ">
-                                <IoIosImages fontSize={40} />
-                                <p className="w-full text-sm md:text-lg">
-                                  Clique aqui para selecionar uma imagem.
-                                </p>
-                              </div>
-                            )}
-                          </button>
+                        <input
+                          required
+                          onChange={(e) => handleFileChange(e)}
+                          type="file"
+                          name="image"
+                          accept="image/png, image/jpeg"
+                          id="image"
+                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                        />
+
+                        {link ? (
+                          <div className="flex justify-center">
+                            <svg className="p-10 flex justify-center">
+                              <image href={link} className="my-class w-80" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 items-center justify-center ">
+                            <IoIosImages fontSize={40} />
+                            <p className="w-full text-sm md:text-lg">
+                              Clique aqui para selecionar uma imagem.
+                            </p>
+                          </div>
                         )}
-                      </UploadButton>
+                      </div>
       
                       <FaTrash
                         fontSize={22}

@@ -31,8 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Uploader } from "uploader";
-import { UploadButton } from "react-uploader";
 import { ClassesProps } from "@/pages/classes";
 import { ResponsibleProps } from "@/components/table/dataTable";
 import toast from "react-hot-toast";
@@ -54,6 +52,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import axios from "axios";
 
 export interface RowProps {
   user_id: any;
@@ -85,12 +84,6 @@ export interface RowProps {
   class_time: Date;
   degree_kinship: string;
 }
-
-const uploader = Uploader({
-  apiKey: "free",
-});
-
-const options = { multi: true };
 
 interface ModalProps {
   getData: (row: [], type: string) => void;
@@ -219,6 +212,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState("");
   const [type, setType] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [link, setLink] = useState("");
   const [status, setStatus] = useState("");
   const [degreeKinship, setDegreeKinship] = useState("");
@@ -317,6 +311,38 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     const [dd, mm, yyyy] = dateStr.split('-');
     return `${yyyy}-${mm}-${dd}`;
   }
+
+  const saveImage = async () => {
+    const formData = new FormData();
+    //@ts-ignore
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return `http://localhost:3000/files/${response.data}`;
+    } catch {
+      toast.error("Ocorreu um erro ao salvar a imagem!");
+      return "error";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+
+    if (selectedFile) {
+      setFile(selectedFile);
+      setLink(URL.createObjectURL(selectedFile));
+    }
+  };
 
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
@@ -598,10 +624,19 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const editData = async (e: FormEvent) => {
     e.preventDefault();
     let data;
+    let verifyIfSaveImage;  
+
+    if(file) {
+        verifyIfSaveImage = await saveImage();
+    
+        if (verifyIfSaveImage == "error") {
+          return;
+        }
+    }
 
     if (type == "students") {
       data = {
-        image: link,
+        image: verifyIfSaveImage,
         name: name,
         team: team,
         date_of_birth: date,
@@ -626,7 +661,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "teacher") {
       data = {
-        image: link,
+        image: verifyIfSaveImage,
         name: name,
         userId: user,
         status: status,
@@ -675,7 +710,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "responsibles" || type == "responsibles_released") {
       data = {
-        image: link,
+        image: verifyIfSaveImage,
         name: name,
         phone: phone,
         degree_kinship: degreeKinship,
@@ -753,36 +788,37 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 type == "teacher" ||
                 type == "responsibles_released" ||
                 type == "responsibles") && (
-                <UploadButton
-                  uploader={uploader}
-                  options={options}
-                  onComplete={(files) =>
-                    files.length > 0 &&
-                    setLink(files.map((x) => x.fileUrl).join("\n"))
-                  }
-                >
-                  {({ onClick }) => (
-                    <button
-                      onClick={onClick}
-                      className={`h-48 w-full border-dashed border-2 ${
-                        error || !link ? " border-red-600" : "border-gray-300"
-                      } rounded-lg relative text-md font-medium text-gray-700`}
-                    >
-                      {link ? (
-                        <div className="flex justify-center">
-                          <img src={link} className="w-32" alt="foto" />
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2 items-center justify-center ">
-                          <IoIosImages fontSize={40} />
-                          <p className="w-full text-sm md:text-lg">
-                            Clique aqui para selecionar uma imagem.
-                          </p>
-                        </div>
-                      )}
-                    </button>
-                  )}
-                </UploadButton>
+                  <div
+                    className={`${
+                      link != "" ? "h-64" : "h-48"
+                    } flex justify-center transition-all w-full border-dashed ${
+                      error && !link && "border-red-500"
+                    } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                  >
+                    <input
+                      onChange={(e) => handleFileChange(e)}
+                      type="file"
+                      name="image"
+                      accept="image/png, image/jpeg"
+                      id="image"
+                      className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                    />
+
+                    {link ? (
+                      <div className="flex justify-center">
+                        <svg className="p-10 flex justify-center">
+                          <image href={link} className="my-class w-80" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2 items-center justify-center ">
+                        <IoIosImages fontSize={40} />
+                        <p className="w-full text-sm md:text-lg">
+                          Clique aqui para selecionar uma imagem.
+                        </p>
+                      </div>
+                    )}
+                  </div>
               )}
 
               {type == "responsibles" && (

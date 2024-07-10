@@ -64,15 +64,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { Uploader } from "uploader";
-import { UploadButton } from "react-uploader";
-
-const uploader = Uploader({
-  apiKey: "free",
-});
-
-const options = { multi: true };
-
 import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
@@ -81,6 +72,7 @@ import MaskedInput from "../InputMask";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { RowProps } from "@/contexts/ModalsContext";
 import { StudentsProps } from "@/pages/students";
+import axios from "axios";
 
 interface DataTableProps {
   data: [];
@@ -110,6 +102,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
+  const [file, setFile] = React.useState<File | null>(null);
   const [link, setLink] = React.useState("");
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -117,6 +110,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
+  const [level, setLevel] = React.useState(0);
   const [optionTabs, setOptionTabs] = React.useState("selectStudent");
   const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>(
     []
@@ -215,6 +209,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
+  };
+
+  const setTrash = () => {
+    setLink("");
+    setFile(null);
   };
 
   const handleClose = (state: boolean) => {
@@ -408,8 +407,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
+    const verifyIfSaveImage = await saveImage();
+
+    if (verifyIfSaveImage == "error") {
+      return;
+    }
+
     const data = {
-      image: link,
+      image: verifyIfSaveImage,
       name: name,
       phone: phone,
       status: status,
@@ -424,6 +429,44 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o responsável!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createUsers = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    let verifyIfSaveImage;
+
+    if (level == 2) {
+      verifyIfSaveImage = await saveImage();
+
+      if (verifyIfSaveImage == "error") {
+        return;
+      }
+    }
+
+    const userData = {
+      name: name,
+      level: level,
+      complete_register: 0,
+      user: phone,
+      password: phone,
+      ...(verifyIfSaveImage != "" && { image: verifyIfSaveImage }),
+      phone: phone,
+      status: status,
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/users/register", userData);
+      toast.success(`${name} cadastrado com sucesso!`);
+      setOpenModal(false);
+      reloadPage();
+      handlePhoneChange("");
+    } catch {
+      toast.error("Ocorreu um erro ao cadastrar o usuário!");
     } finally {
       setLoading(false);
     }
@@ -446,6 +489,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
+    const verifyIfSaveImage = await saveImage();
+
+    if (verifyIfSaveImage == "error") {
+      return;
+    }
+
     if (!link) {
       toast("É necessário que o aluno possua uma foto cadastrada!", {
         position: "top-right",
@@ -463,7 +512,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     );
 
     const data = {
-      image: link,
+      image: verifyIfSaveImage,
       name: name,
       phone: phone,
       degree_kinship: degreeKinship,
@@ -620,9 +669,35 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setPhone("");
     setOptionTabs("selectStudent");
     setIsStudent("");
+    setLevel(0);
     setComments("");
     setDateSelectAbsence("");
+    setName("");
+    setStatus("");
     setDateAbsence("");
+  };
+
+  const saveImage = async () => {
+    const formData = new FormData();
+    //@ts-ignore
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return `http://localhost:3000/files/${response.data}`;
+    } catch {
+      toast.error("Ocorreu um erro ao salvar a imagem!");
+      return "error";
+    }
   };
 
   const createStudent = async (e: React.FormEvent) => {
@@ -632,8 +707,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
+    const verifyIfSaveImage = await saveImage();
+
+    if (verifyIfSaveImage == "error") {
+      return;
+    }
+
     const data = {
-      image: link,
+      image: verifyIfSaveImage,
       name: name,
       team: team,
       date_of_birth: date,
@@ -691,6 +772,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     date.setHours(hours, minutes, seconds, 0);
     return date;
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+
+    if (selectedFile) {
+      setFile(selectedFile);
+      setLink(URL.createObjectURL(selectedFile));
+    }
+  };
 
   const createScheduleAbsence = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -788,8 +878,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
+    const verifyIfSaveImage = await saveImage();
+
+    if (verifyIfSaveImage == "error") {
+      return;
+    }
+
     const data = {
-      image: link,
+      image: verifyIfSaveImage,
       name: name,
       phone: phone,
       status: status,
@@ -878,40 +974,38 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     style={{ maxHeight: "500px" }}
                   >
                     <div className="space-y-6">
-                      <UploadButton
-                        uploader={uploader}
-                        options={options}
-                        onComplete={(files) =>
-                          files.length > 0 &&
-                          setLink(files.map((x) => x.fileUrl).join("\n"))
-                        }
+                      <div
+                        className={`${
+                          link != "" ? "h-64" : "h-48"
+                        } flex justify-center transition-all w-full border-dashed ${
+                          error && !link && "border-red-500"
+                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                       >
-                        {({ onClick }) => (
-                          <button
-                            onClick={onClick}
-                            className={`h-48 w-full border-dashed  overflow-hidden ${
-                              error && !link && "border-red-500"
-                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                          >
-                            {link ? (
-                              <div className="flex justify-center">
-                                <img
-                                  src={link}
-                                  className="w-full h-full object-cover"
-                                  alt="foto_professor"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 items-center justify-center ">
-                                <IoIosImages fontSize={40} />
-                                <p className="w-full text-sm md:text-lg">
-                                  Clique aqui para selecionar uma imagem.
-                                </p>
-                              </div>
-                            )}
-                          </button>
+                        <input
+                          required
+                          onChange={(e) => handleFileChange(e)}
+                          type="file"
+                          name="image"
+                          accept="image/png, image/jpeg"
+                          id="image"
+                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                        />
+
+                        {link ? (
+                          <div className="flex justify-center">
+                            <svg className="p-10 flex justify-center">
+                              <image href={link} className="my-class w-80" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 items-center justify-center ">
+                            <IoIosImages fontSize={40} />
+                            <p className="w-full text-sm md:text-lg">
+                              Clique aqui para selecionar uma imagem.
+                            </p>
+                          </div>
                         )}
-                      </UploadButton>
+                      </div>
 
                       <FaTrash
                         fontSize={22}
@@ -1370,44 +1464,42 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     style={{ maxHeight: "500px" }}
                   >
                     <div className="space-y-6">
-                      <UploadButton
-                        uploader={uploader}
-                        options={options}
-                        onComplete={(files) =>
-                          files.length > 0 &&
-                          setLink(files.map((x) => x.fileUrl).join("\n"))
-                        }
+                      <div
+                        className={`${
+                          link != "" ? "h-64" : "h-48"
+                        } flex justify-center transition-all w-full border-dashed ${
+                          error && !link && "border-red-500"
+                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                       >
-                        {({ onClick }) => (
-                          <button
-                            onClick={onClick}
-                            className={`h-48 w-full border-dashed ${
-                              error && !link && "border-red-500"
-                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                          >
-                            {link ? (
-                              <div className="flex justify-center">
-                                <img
-                                  src={link}
-                                  className="w-32"
-                                  alt="foto_aluno"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 items-center justify-center ">
-                                <IoIosImages fontSize={40} />
-                                <p className="w-full text-sm md:text-lg">
-                                  Clique aqui para selecionar uma imagem.
-                                </p>
-                              </div>
-                            )}
-                          </button>
+                        <input
+                          required
+                          onChange={(e) => handleFileChange(e)}
+                          type="file"
+                          name="image"
+                          accept="image/png, image/jpeg"
+                          id="image"
+                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                        />
+
+                        {link ? (
+                          <div className="flex justify-center">
+                            <svg className="p-10 flex justify-center">
+                              <image href={link} className="my-class w-80" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 items-center justify-center ">
+                            <IoIosImages fontSize={40} />
+                            <p className="w-full text-sm md:text-lg">
+                              Clique aqui para selecionar uma imagem.
+                            </p>
+                          </div>
                         )}
-                      </UploadButton>
+                      </div>
 
                       <FaTrash
                         fontSize={22}
-                        onClick={() => setLink("")}
+                        onClick={() => setTrash()}
                         className={`${
                           link ? "block" : "hidden"
                         } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
@@ -1801,41 +1893,38 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={(e) => createResponsiblesReleaseds(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
-                      <UploadButton
-                        uploader={uploader}
-                        // @ts-ignore
-                        options={options}
-                        onComplete={(files) =>
-                          files.length > 0 &&
-                          setLink(files.map((x) => x.fileUrl).join("\n"))
-                        }
+                      <div
+                        className={`${
+                          link != "" ? "h-64" : "h-48"
+                        } flex justify-center transition-all w-full border-dashed ${
+                          error && !link && "border-red-500"
+                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                       >
-                        {({ onClick }) => (
-                          <button
-                            onClick={onClick}
-                            className={`h-48 w-full border-dashed ${
-                              error && !link && "border-red-500"
-                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                          >
-                            {link ? (
-                              <div className="flex justify-center">
-                                <img
-                                  src={link}
-                                  className="w-32"
-                                  alt="foto_aluno"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 items-center justify-center ">
-                                <IoIosImages fontSize={40} />
-                                <p className="w-full text-sm md:text-lg">
-                                  Clique aqui para selecionar uma imagem.
-                                </p>
-                              </div>
-                            )}
-                          </button>
+                        <input
+                          required
+                          onChange={(e) => handleFileChange(e)}
+                          type="file"
+                          name="image"
+                          accept="image/png, image/jpeg"
+                          id="image"
+                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                        />
+
+                        {link ? (
+                          <div className="flex justify-center">
+                            <svg className="p-10 flex justify-center">
+                              <image href={link} className="my-class w-80" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 items-center justify-center ">
+                            <IoIosImages fontSize={40} />
+                            <p className="w-full text-sm md:text-lg">
+                              Clique aqui para selecionar uma imagem.
+                            </p>
+                          </div>
                         )}
-                      </UploadButton>
+                      </div>
 
                       <FaTrash
                         fontSize={22}
@@ -1974,41 +2063,38 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={(e) => createResponsibles(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
-                      <UploadButton
-                        uploader={uploader}
-                        // @ts-ignore
-                        options={options}
-                        onComplete={(files) =>
-                          files.length > 0 &&
-                          setLink(files.map((x) => x.fileUrl).join("\n"))
-                        }
+                      <div
+                        className={`${
+                          link != "" ? "h-64" : "h-48"
+                        } flex justify-center transition-all w-full border-dashed ${
+                          error && !link && "border-red-500"
+                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
                       >
-                        {({ onClick }) => (
-                          <button
-                            onClick={onClick}
-                            className={`h-48 w-full border-dashed ${
-                              error && !link && "border-red-500"
-                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                          >
-                            {link ? (
-                              <div className="flex justify-center">
-                                <img
-                                  src={link}
-                                  className="w-32"
-                                  alt="foto_aluno"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 items-center justify-center ">
-                                <IoIosImages fontSize={40} />
-                                <p className="w-full text-sm md:text-lg">
-                                  Clique aqui para selecionar uma imagem.
-                                </p>
-                              </div>
-                            )}
-                          </button>
+                        <input
+                          required
+                          onChange={(e) => handleFileChange(e)}
+                          type="file"
+                          name="image"
+                          accept="image/png, image/jpeg"
+                          id="image"
+                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                        />
+
+                        {link ? (
+                          <div className="flex justify-center">
+                            <svg className="p-10 flex justify-center">
+                              <image href={link} className="my-class w-80" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 items-center justify-center ">
+                            <IoIosImages fontSize={40} />
+                            <p className="w-full text-sm md:text-lg">
+                              Clique aqui para selecionar uma imagem.
+                            </p>
+                          </div>
                         )}
-                      </UploadButton>
+                      </div>
 
                       <FaTrash
                         fontSize={22}
@@ -2080,6 +2166,181 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
                       onClick={() => setOpenModal(false)}
+                    >
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
+          )}
+
+          {route == "users" && (
+            <>
+              <Input
+                placeholder="Pesquise pelo nome do usuário..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="max-w-80"
+              />
+
+              <Modal show={openModal} onClose={() => closeModal()}>
+                <Modal.Header>
+                  Cadastro de{" "}
+                  <span className="text-primary-color">usuários</span>
+                </Modal.Header>
+
+                <form onSubmit={(e) => createUsers(e)}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="name">
+                          Nível: <span className="text-red-500">*</span>
+                        </label>
+
+                        <Select
+                          required
+                          onValueChange={(e) => setLevel(Number(e))}
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            id="level"
+                            name="level"
+                          >
+                            <SelectValue placeholder="Selecione o nível do usuário" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">Professor</SelectItem>
+                            <SelectItem value="1">Administrador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {level == 2 && (
+                        <>
+                          <div
+                            className={`${
+                              link != "" ? "h-64" : "h-48"
+                            } flex justify-center transition-all w-full border-dashed ${
+                              error && !link && "border-red-500"
+                            } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                          >
+                            <input
+                              required
+                              onChange={(e) => handleFileChange(e)}
+                              type="file"
+                              name="image"
+                              accept="image/png, image/jpeg"
+                              id="image"
+                              className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                            />
+
+                            {link ? (
+                              <div className="flex justify-center">
+                                <svg className="p-10 flex justify-center">
+                                  <image
+                                    href={link}
+                                    className="my-class w-80"
+                                  />
+                                </svg>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2 items-center justify-center ">
+                                <IoIosImages fontSize={40} />
+                                <p className="w-full text-sm md:text-lg">
+                                  Clique aqui para selecionar uma imagem.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          <FaTrash
+                            fontSize={22}
+                            onClick={() => setLink("")}
+                            className={`${
+                              link ? "block" : "hidden"
+                            } absolute cursor-pointer top-28 right-9 hover:text-red-700 transition-all`}
+                          />
+                        </>
+                      )}
+
+                      {level != 0 && (
+                        <>
+                          <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                            <label htmlFor="name">
+                              Nome: <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                              id="name"
+                              name="name"
+                              value={name}
+                              placeholder="Digite o nome do usuário..."
+                              onChange={(e) => setName(e.target.value)}
+                              required
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                            <label htmlFor="phone">
+                              Telefone: <span className="text-red-500">*</span>
+                            </label>
+
+                            <MaskedInput
+                              value={phone}
+                              onChange={handlePhoneChange}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                            <label htmlFor="status">
+                              Status: <span className="text-red-500">*</span>
+                            </label>
+                            <Select
+                              defaultValue={status}
+                              required
+                              onValueChange={(e) => setStatus(e)}
+                            >
+                              <SelectTrigger
+                                className="w-full"
+                                id="status"
+                                value={status}
+                                name="status"
+                              >
+                                <SelectValue placeholder="Selecione o status do responsável" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Ativo</SelectItem>
+                                <SelectItem value="0">Inativo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
+                        </div>
+                      ) : (
+                        "Salvar"
+                      )}
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => closeModal()}
                     >
                       Fechar
                     </Button>
@@ -2428,6 +2689,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "actions" && "Ações"}
 
+                          {column.id == "level" && "Nível"}
+
+                          {column.id == "complete_register" &&
+                            "Cadastro completo"}
+
                           {route == "students"
                             ? column.id == "id" && "Matrícula"
                             : column.id == "id" && "Código"}
@@ -2480,7 +2746,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               Cadastrar <span className="hidden md:block">professor</span>
             </Button>
 
-            <Button
+            {/* <Button
               onClick={() => openModals()}
               className={`${
                 route != "responsibles" ? "hidden" : "flex"
@@ -2488,7 +2754,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">responsável</span>
-            </Button>
+            </Button> */}
 
             <Button
               onClick={() => openModals()}
@@ -2498,6 +2764,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Agendar falta <span className="hidden md:block"></span>
+            </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
+                route != "users" ? "hidden" : "flex"
+              } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <MdPersonAdd fontSize={20} className="hidden md:flex" />
+              Criar usuário <span className="hidden md:block"></span>
             </Button>
 
             <Button

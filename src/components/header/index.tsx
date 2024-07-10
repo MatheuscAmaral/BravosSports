@@ -9,6 +9,7 @@ import { FaBarsStaggered } from "react-icons/fa6";
 import { IoClose, IoLogOutOutline } from "react-icons/io5";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
+import { RiUserSettingsFill } from "react-icons/ri";
 
 const Header = () => {
   const [mobile, setMobile] = useState(false);
@@ -146,6 +147,16 @@ const Header = () => {
               >
                 <FaClipboardList fontSize={25} />
                 <p className="text-lg">Chamada</p>
+              </li>
+          )}
+
+          {(user as unknown as UserProps).level != 3 &&  (
+              <li
+                onClick={() => navigateToRoute("/usuarios")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <RiUserSettingsFill fontSize={25} />
+                <p className="text-lg">Usuários</p>
               </li>
           )}
 

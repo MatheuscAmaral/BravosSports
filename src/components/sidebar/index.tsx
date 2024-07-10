@@ -2,6 +2,7 @@ import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useCo
 import logo from "../../assets/logo-bravos-laranja.png";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { IoLogOutOutline } from "react-icons/io5";
+import { RiUserSettingsFill } from "react-icons/ri";
 import {
   Card,
   List,
@@ -45,7 +46,8 @@ const Sidebar = () => {
         { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
         { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
       { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
-      { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" }
+      { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" },
+      { label: "Usuários", icon: <RiUserSettingsFill fontSize={24} />, path: "/usuarios" }
       ];
     } else if ((user as unknown as UserProps).level === 2) {
       items = [
@@ -64,7 +66,7 @@ const Sidebar = () => {
   })() : [];
 
   const firstName = user && (user as unknown as UserProps).name ? (user as unknown as UserProps).name.split(" ")[0] : "";
-  const lastName = user && (user as unknown as UserProps).name ? (user as unknown as UserProps).name.split(" ").slice(-1)[0] : "";
+  const lastName = user && (user as unknown as UserProps).name.split(" ")[1] ? (user as unknown as UserProps).name.split(" ").slice(-1)[0] : "";
 
   return (
     //@ts-ignore

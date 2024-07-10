@@ -12,6 +12,7 @@ import Responsibles from "../responsibles";
 import Sports from "../sports";
 import ResponsiblesReleased from "../responsibles/responsiblesReleased";
 import ScheduleAbsence from "../responsibles/scheduleAbsence";
+import Users from "../users";
 
 const router = createBrowserRouter([
   {
@@ -97,6 +98,14 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      {
+        path: "/usuarios",
+        element:  (
+          <PrivateRoute>
+            <Users />
+          </PrivateRoute>
+        ),
+      }
     ],
   },
   {

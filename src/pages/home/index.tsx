@@ -173,7 +173,7 @@ function Home() {
       )}
 
       {
-        ((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 2) &&
+        ((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 2 || (user as unknown as UserProps).level == 1) &&
           (user as unknown as UserProps).complete_register == 0 && (
             <ModalCompleteRegister />
           )
