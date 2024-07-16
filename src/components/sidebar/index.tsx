@@ -14,7 +14,7 @@ import {
 import { PiChalkboardTeacherBold, PiUserFocusBold } from "react-icons/pi";
 import { FaUsers } from "react-icons/fa6";
 import { FaUserAlt, FaHome, FaClipboardList, FaUserTie } from "react-icons/fa";
-import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
+import { MdDisplaySettings, MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { To, useNavigate } from "react-router-dom";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
@@ -45,9 +45,9 @@ const Sidebar = () => {
         { label: "Esportes", icon: <MdSportsHandball fontSize={25} />, path: "/esportes" },
         { label: "Responsáveis", icon: <FaUserTie fontSize={22} />, path: "/responsaveis" },
         { label: "Chamada", icon: <FaClipboardList fontSize={24} />, path: "/chamada" },
-      { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
-      { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" },
-      { label: "Usuários", icon: <RiUserSettingsFill fontSize={24} />, path: "/usuarios" }
+        { label: "Responsáveis liber...", icon: <PiUserFocusBold fontSize={26} />, path: "/responsaveis/liberados" },
+        { label: "Agendamentos", icon: <MdFormatListBulletedAdd fontSize={24} />, path: "/agendamentos" },
+        { label: "Usuários", icon: <RiUserSettingsFill fontSize={24} />, path: "/usuarios" }
       ];
     } else if ((user as unknown as UserProps).level === 2) {
       items = [
@@ -66,7 +66,7 @@ const Sidebar = () => {
   })() : [];
 
   const firstName = user && (user as unknown as UserProps).name ? (user as unknown as UserProps).name.split(" ")[0] : "";
-  const lastName = user && (user as unknown as UserProps).name.split(" ")[1] ? (user as unknown as UserProps).name.split(" ").slice(-1)[0] : "";
+  const lastName = user && (user as unknown as UserProps).name && user && (user as unknown as UserProps).name.split(" ")[1] ? (user as unknown as UserProps).name.split(" ").slice(-1)[0] : "";
 
   return (
     //@ts-ignore

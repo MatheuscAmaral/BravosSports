@@ -2,11 +2,18 @@ import api from "@/api";
 import { DataTable } from "@/components/table/dataTable";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { RowProps } from "@/contexts/ModalsContext";
+import { modalContext, RowProps } from "@/contexts/ModalsContext";
 import toast from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ReloadContext } from "@/contexts/ReloadContext";
 
 export interface UsersProps {
@@ -86,7 +93,40 @@ export const columnsProf: ColumnDef<RowProps>[] = [
         {row.getValue("status") == 1 && "Ativo"}
       </div>
     ),
-  }
+  },
+  {
+    id: "actions",
+    header: "Ações",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const { open } = useContext(modalContext);
+
+      const openModals = (data: RowProps[], title: string, type: string) => {
+        open(data, title, type);
+      };
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() =>
+                openModals([row.original], "Editar usuário", "users")
+              }
+            >
+              Editar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
 ];
 
 const Users = () => {

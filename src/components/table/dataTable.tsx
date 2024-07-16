@@ -8,6 +8,8 @@ import {
 } from "react-icons/md";
 import Datepicker from "tailwind-datepicker-react";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
+import { DateRange } from "react-day-picker";
+
 import {
   ColumnFiltersState,
   SortingState,
@@ -73,6 +75,7 @@ import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { RowProps } from "@/contexts/ModalsContext";
 import { StudentsProps } from "@/pages/students";
 import axios from "axios";
+import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 
 interface DataTableProps {
   data: [];
@@ -99,6 +102,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
@@ -209,6 +213,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
+  };
+
+  const generateExcel = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    console.log(date2);
   };
 
   const setTrash = () => {
@@ -651,6 +661,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     if (route == "agendarFalta") {
       getStudents();
     }
+  };
+
+  const openExcelModal = async () => {
+    setOpenModal(true);
   };
 
   const closeModal = () => {
@@ -1122,6 +1136,99 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   })}
                 </SelectContent>
               </Select>
+
+              <Modal show={openModal} onClose={() => closeModal()}>
+                <Modal.Header>
+                  Gerar
+                  <span className="text-primary-color"> excel</span>
+                </Modal.Header>
+                <form onSubmit={generateExcel}>
+                  <Modal.Body
+                    className="relative"
+                    style={{ maxHeight: "500px" }}
+                  >
+                    <div className="space-y-6">
+                      <div className={cn("grade gap-2")}>
+                        <label htmlFor="status" className="text-gray-600 text-sm">
+                          Selecione uma data para gerar o filtro: <span className="text-red-500">*</span>
+                        </label>
+
+                        <Popover>
+                          <PopoverTrigger asChild className="mt-1">
+                            <Button
+                              id="data"
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !date2 && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {date2?.from ? (
+                                date2.to ? (
+                                  <>
+                                    {format(
+                                      date2.from,
+                                      "dd 'de' MMMM 'de' yyyy",
+                                      { locale: ptBR }
+                                    )}{" "}
+                                    -{" "}
+                                    {format(
+                                      date2.to,
+                                      "dd 'de' MMMM 'de' yyyy",
+                                      { locale: ptBR }
+                                    )}
+                                  </>
+                                ) : (
+                                  format(date2.from, "dd 'de' MMMM 'de' yyyy", {
+                                    locale: ptBR,
+                                  })
+                                )
+                              ) : (
+                                <span>Selecione uma data</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              initialFocus
+                              mode="range"
+                              defaultMonth={date2?.from}
+                              selected={date2}
+                              onSelect={setDate2}
+                              numberOfMonths={2}
+                              locale={ptBR}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      type="submit"
+                      className="bg-primary-color hover:bg-secondary-color"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
+                        </div>
+                      ) : (
+                        "Gerar"
+                      )}
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => closeModal()}
+                    >
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
             </div>
           )}
 
@@ -2672,6 +2779,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             ? column.id == "comments" && "Motivo"
                             : column.id == "comments" && "Observações"}
 
+                          {column.id == "comments_call" && "Motivo"}
+
                           {column.id == "date" && "Data agendada"}
 
                           {column.id == "date_of_birth" && "Data de nascimento"}
@@ -2784,6 +2893,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">novo</span>
+            </Button>
+
+            <Button
+              onClick={() => openExcelModal()}
+              className={`${
+                route != "call" ? "hidden" : "flex"
+              } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <PiMicrosoftExcelLogoFill
+                fontSize={23}
+                className="hidden md:flex"
+              />
+              Gerar excel
             </Button>
 
             <Button

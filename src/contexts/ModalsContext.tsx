@@ -679,6 +679,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
+    if (type == "users") {
+      data = {
+        status: status
+      };
+    }
+
     if (type == "classes") {
       data = {
         description: description,
@@ -739,6 +745,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "classes" && (await api.put(`/classes/${id}`, data));
       type == "esportes" && (await api.put(`/sports/${id}`, data));
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
+      type == "users" && (await api.put(`/users/${id}`, data));
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
       type == "responsibles_released" && (await api.put(`/responsibles/releaseds/${id}`, data));
       type == "agendarFalta" && (await api.put(`/call/${idCall}`, data));
@@ -781,7 +788,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
           >
             <div
               className={`${
-                type != "studentsClass" && type != "teacherClass" && "space-y-6"
+                type != "studentsClass" && type != "teacherClass" && type != "users" && "space-y-6"
               }`}
             >
               {(type == "students" ||
@@ -1517,6 +1524,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                           type == "esportes" ||
                           type == "responsibles" || 
                           type == "responsibles_released" ||
+                          type == "users" ||
                           type == "agendarFalta") && (
                           <>
                             <SelectItem value="1">Ativo</SelectItem>

@@ -127,7 +127,8 @@ const ModalCompleteRegister = () => {
         position: "top-right",
       });
       setOpenModal(false);
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("Ocorreu um erro ao atualizar os dados do responsável!");
     } finally {
       setLoading(false);
