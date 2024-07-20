@@ -1,4 +1,5 @@
 import * as React from "react";
+import { CSVLink } from "react-csv";
 import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
 import {
@@ -9,7 +10,6 @@ import {
 import Datepicker from "tailwind-datepicker-react";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { DateRange } from "react-day-picker";
-
 import {
   ColumnFiltersState,
   SortingState,
@@ -102,6 +102,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const today = new Date().toISOString().substring(0, 10);
   const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
@@ -112,6 +113,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [error, setError] = React.useState(false);
+  const [dataExcel, setDataExcel] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
   const [level, setLevel] = React.useState(0);
@@ -214,13 +216,39 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
   };
-
-  const generateExcel = (e: React.FormEvent) => {
+  const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const dataCall = {
+      "date": date2,
+      "unit": unitId,
+      "classId": idClass,
+      "day_of_training": daySaved,
+      "team": teamId
+    }
+    
+    try {
+      setLoading(true);
+      const response = await api.post("/students/excel", dataCall);
 
-    console.log(date2);
+      setDataExcel(response.data.students);
+
+      setTimeout(() => {
+        const generateExcelButton = document.getElementById("generateExcel");
+        
+        if (generateExcelButton) {
+            generateExcelButton.click();
+        }
+    }, 1000);
+    
+      } catch (error) {
+        toast.error("Ocorreu um erro ao gerar o excel!");
+        console.error(error);
+      } finally {    
+        setLoading(false);
+    }
   };
-
+  
   const setTrash = () => {
     setLink("");
     setFile(null);
@@ -656,6 +684,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     if (route == "call") {
       makeCall(table.getRowModel().rows);
+      setOpenModal(false);
     }
 
     if (route == "agendarFalta") {
@@ -681,6 +710,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setStudentsSelect([]);
     setClassTime("");
     setPhone("");
+    setDate2(undefined);
     setOptionTabs("selectStudent");
     setIsStudent("");
     setLevel(0);
@@ -1109,6 +1139,31 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 }
               />
 
+              {/* <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Presença</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Data de nascimento</th>
+                    <th scope="col">Observações</th>
+                    <th scope="col">Motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataExcel.map((d: { name: string, presence: number, date_of_birth: string, comments: string, comments_call: string }) => {
+                    return (
+                      <tr key={d.name}>
+                        <td>{d.presence}</td>
+                        <td>{d.name}</td>
+                        <td>{d.date_of_birth}</td>
+                        <td>{d.comments != "" ? d.comments : "-"}</td>
+                        <td>{d.comments_call != "" ? d.comments_call : "-"}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table> */}
+
               <Select
                 value={String(teamId)}
                 onValueChange={(e) =>
@@ -1206,26 +1261,31 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Body>
                   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
                     <Button
-                      type="submit"
                       className="bg-primary-color hover:bg-secondary-color"
+                      disabled={!date2}
                     >
-                      {loading ? (
-                        <div className="flex justify-center">
-                          <TbLoader3
-                            fontSize={23}
-                            style={{ animation: "spin 1s linear infinite" }}
-                          />
-                        </div>
-                      ) : (
-                        "Gerar"
-                      )}
+                       {loading ? (
+                          <div className="flex justify-center">
+                            <TbLoader3
+                              fontSize={23}
+                              style={{
+                                animation: "spin 1s linear infinite",
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          "Gerar"
+                        )}
                     </Button>
+
                     <Button
                       className="bg-white text-black border border-gray-100 hover:bg-gray-100"
                       onClick={() => closeModal()}
                     >
                       Fechar
                     </Button>
+
+                    <CSVLink className="opacity-0 cursor-default" filename={`Chamada.${today}.csv`} id="generateExcel" data={dataExcel} >Gerar</CSVLink>
                   </Modal.Footer>
                 </form>
               </Modal>
@@ -2900,6 +2960,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               className={`${
                 route != "call" ? "hidden" : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+              disabled={data.length <= 0}
             >
               <PiMicrosoftExcelLogoFill
                 fontSize={23}
@@ -2908,11 +2969,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               Gerar excel
             </Button>
 
-            <Button
+            <Button 
               onClick={() => openModals()}
               className={`${
                 route != "call" ? "hidden" : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+              disabled={data.length <= 0}
             >
               <MdFormatListBulletedAdd
                 fontSize={23}
