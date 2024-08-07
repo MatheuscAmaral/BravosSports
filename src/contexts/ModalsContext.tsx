@@ -663,6 +663,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       data = {
         image: verifyIfSaveImage,
         name: name,
+        phone: phone,
         userId: user,
         status: status,
       };
@@ -1469,27 +1470,16 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1 text-gray-700 mt-5 text-sm font-medium">
-                    <label htmlFor="user">Usuário:</label>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label>
+                      Telefone:
+                      <span className="text-red-500"> * </span>
+                    </label>
 
-                    <Select
-                      defaultValue={String(user)}
-                      required
-                      onValueChange={(e) => setUser(e)}
-                    >
-                      <SelectTrigger id="user" className="w-full">
-                        <SelectValue placeholder="Selecione o usuário para vincular" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((u) => {
-                          return (
-                            <SelectItem key={String(u.id)} value={String(u.id)}>
-                              {u.name}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                    <MaskedInput
+                      value={phone}
+                      onChange={handlePhoneChange}
+                    />
                   </div>
                 </div>
               )}

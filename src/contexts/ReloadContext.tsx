@@ -9,6 +9,12 @@ interface ReloadDataProps {
     filterStudentsByClass: (id: number) => void;
     filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number, time: string) => void;
     filterByUnit: (route: string, idUnit: number) => void;
+    saveUnitName: (name: string) => void;
+    saveClassName: (name: string) => void;
+    saveDayTrainingName: (name: string) => void;
+    dayTrainingName: string;
+    className: string;
+    unitName: string;
     newStudents: StudentsProps[];
     newStudentsCall: StudentsProps[];
     resetData: () => void;
@@ -47,6 +53,9 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [unitId, setUnitId] = useState(0);
     const [respId, setRespId] = useState(0);
     const [daySaved, setDaySaved] = useState("");
+    const [unitName, setUnitName] = useState("");
+    const [className, setClassName] = useState("");
+    const [dayTrainingName, setDayTrainingName] = useState("");
 
     const reloadPage = () => {
         setReload(!reload);
@@ -54,6 +63,18 @@ const ReloadProvider = ({children}: ChildrenProps) => {
 
     const saveUnitId = (id: number) => {
         setUnitId(id);
+    }
+
+    const saveUnitName = (name: string) => {
+        setUnitName(name);
+    }
+
+    const saveClassName = (name: string) => {
+        setClassName(name);
+    }
+
+    const saveDayTrainingName = (name: string) => {
+        setDayTrainingName(name);
     }
 
     const saveResponsibleId = (respId: number) => {
@@ -129,7 +150,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     return (
-        <ReloadContext.Provider value={{reloadPage, resetData, unitId, respId, saveResponsibleId, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
+        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitName, saveClassName, saveDayTrainingName, dayTrainingName, className, unitName, respId, saveResponsibleId, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

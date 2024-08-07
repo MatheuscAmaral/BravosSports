@@ -1,7 +1,8 @@
 import * as React from "react";
-import { CSVLink } from "react-csv";
 import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
+import { saveAs } from 'file-saver';
+import ExcelJS from 'exceljs';
 import {
   MdFormatListBulletedAdd,
   MdPersonAdd,
@@ -164,7 +165,22 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     unitId,
     daySaved,
     respId,
+    unitName,
+    className,
+    dayTrainingName
   } = React.useContext(ReloadContext);
+
+  function formatarDataParaBrasileiro(data: Date) {
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+
+      return `${dia}/${mes}/${ano}`;
+  }
+
+  const hoje = new Date();
+  const dataBrasileira = formatarDataParaBrasileiro(hoje);
+
 
   const optionsDate = {
     title: "",
@@ -216,36 +232,106 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
   };
+  
   const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const dataCall = {
-      "date": date2,
-      "unit": unitId,
-      "classId": idClass,
-      "day_of_training": daySaved,
-      "team": teamId
-    }
-    
+      date: date2,
+      unit: unitId,
+      classId: idClass,
+      day_of_training: daySaved,
+      team: teamId
+    };
+
     try {
       setLoading(true);
       const response = await api.post("/students/excel", dataCall);
 
-      setDataExcel(response.data.students);
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Chamada");
 
-      setTimeout(() => {
-        const generateExcelButton = document.getElementById("generateExcel");
-        
-        if (generateExcelButton) {
-            generateExcelButton.click();
-        }
-    }, 1000);
-    
-      } catch (error) {
-        toast.error("Ocorreu um erro ao gerar o excel!");
-        console.error(error);
-      } finally {    
-        setLoading(false);
+      worksheet.mergeCells('A1:H1');
+      const titleCell = worksheet.getCell('A1');
+      titleCell.value = `UNIDADE ${unitName}`;
+      titleCell.font = { size: 16, bold: true };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      worksheet.mergeCells('A2:H2');
+      const subtitleCell = worksheet.getCell('A2');
+      subtitleCell.value = "Coordenação: Gracielle Bravos: (31) 99100-5157";
+      subtitleCell.font = { size: 12, bold: true };
+      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      worksheet.mergeCells('A3:H3');
+      const descriptionCell = worksheet.getCell('A3');
+      descriptionCell.value = `Iniciação esportiva - ${className != "" ? className : "Todos"} ${dayTrainingName != "" && daysTraining != "" ? "-" + dayTrainingName : ""} - ${dataBrasileira}`;
+      descriptionCell.font = { size: 12.5, bold: true };
+      descriptionCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      const headers = ['Atleta', 'Data de nascimento', 'Turma', 'Esporte', 'Observações', 'Presença', 'Motivo', 'Data'];
+      worksheet.addRow(headers).font = { size: 12 , bold: true };
+
+      response.data.students.forEach((student: any) => {
+        worksheet.addRow([
+          student["Nome completo"],
+          student["Data de nascimento"],
+          student["Turma"],
+          student["Esporte"],
+          student["Observações"],
+          student["Presença"],
+          student["Motivo"],
+          student["Data"]
+        ]);
+      });
+
+      headers.forEach((_header, index) => {
+        const cell = worksheet.getRow(5).getCell(index + 1);
+        cell.font = { bold: false };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+
+      worksheet.eachRow({ includeEmpty: false }, (row, _rowNumber) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+      });
+
+      worksheet.columns = [
+        { width: 40 },
+        { width: 20 },
+        { width: 15 },
+        { width: 14 },
+        { width: 45 },
+        { width: 10 },
+        { width: 40 },
+        { width: 13 }
+      ];
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `Chamada - ${className != "" ? className : "Todos"} - ${dataBrasileira}.xlsx`);
+
+      if (response.data.students.length === 0) {
+        toast.error("Nenhum registro encontrado!");
+      }
+
+    } catch (error) {
+      toast.error("Ocorreu um erro ao gerar o excel!");
+      console.error(error);
+    } finally {    
+      setLoading(false);
     }
   };
   
@@ -1139,31 +1225,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 }
               />
 
-              {/* <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Presença</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Data de nascimento</th>
-                    <th scope="col">Observações</th>
-                    <th scope="col">Motivo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dataExcel.map((d: { name: string, presence: number, date_of_birth: string, comments: string, comments_call: string }) => {
-                    return (
-                      <tr key={d.name}>
-                        <td>{d.presence}</td>
-                        <td>{d.name}</td>
-                        <td>{d.date_of_birth}</td>
-                        <td>{d.comments != "" ? d.comments : "-"}</td>
-                        <td>{d.comments_call != "" ? d.comments_call : "-"}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table> */}
-
               <Select
                 value={String(teamId)}
                 onValueChange={(e) =>
@@ -1197,6 +1258,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   Gerar
                   <span className="text-primary-color"> excel</span>
                 </Modal.Header>
+
                 <form onSubmit={generateExcel}>
                   <Modal.Body
                     className="relative"
@@ -1285,7 +1347,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       Fechar
                     </Button>
 
-                    <CSVLink className="opacity-0 cursor-default" filename={`Chamada.${today}.csv`} id="generateExcel" data={dataExcel} >Gerar</CSVLink>
+                    <button type="submit" className="opacity-0 cursor-default" >
+                        Gerar
+                    </button>
                   </Modal.Footer>
                 </form>
               </Modal>

@@ -266,7 +266,7 @@ const Call = () => {
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
-  const { reloadPage, newStudentsCall, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
+  const { reloadPage, newStudentsCall, saveUnitName, saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
     useContext(ReloadContext);
 
   useEffect(() => {
@@ -307,7 +307,38 @@ const Call = () => {
     saveDayTraining(e);
   };
 
-  const filterAndSetUnitId = (e: string) => {
+  useEffect(() => {
+   const getUnitName = async () => {
+    const response = await api.get(`/units/getname/${unitId}`);
+    
+    saveUnitName(response.data);
+   }
+
+   getUnitName();
+  }, [unitId])
+
+  useEffect(() => {
+   const getClassName = async () => {
+    const response = await api.get(`/classes/getname/${classId}`);
+    
+    saveClassName(response.data);
+   }
+
+   getClassName();
+  }, [classId])
+
+  
+  useEffect(() => {
+   const getTrainingDayName = async () => {
+    const response = await api.get(`/students/getname/${daysTraining}`);
+    
+    saveDayTrainingName(response.data);
+   }
+
+   getTrainingDayName();
+  }, [daysTraining])
+
+  const filterAndSetUnitId = async (e: string) => {
     setUnitId(e);
 
     getClasses(Number(e));
@@ -344,6 +375,8 @@ const Call = () => {
 
   const closeModal = () => {
     setOpenModal(false);
+
+    saveDayTrainingName("");
 
     if (!load) {
       navigate("/");
