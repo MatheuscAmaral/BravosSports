@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
 import { saveAs } from 'file-saver';
 import ExcelJS from 'exceljs';
-
+import { TbAdjustmentsHorizontal } from "react-icons/tb";
 import {
   MdFormatListBulletedAdd,
   MdPersonAdd,
@@ -25,7 +25,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
 import { FiAlertOctagon } from "react-icons/fi";
 import { FaPlus, FaTrash } from "react-icons/fa";
@@ -254,27 +253,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
   };
 
-  const getNameMonths = (datas: DateRange) => {
-    let dates = [];
-
-    const monthNames = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-
-    const from = datas.from?.getUTCMonth();
-    const to = datas.to?.getUTCMonth();
-
-    dates = [
-      {
-        from: from !== undefined ? monthNames[from] : "",
-        to: to !== undefined ? monthNames[to] : ""
-      }
-    ];
-
-    return dates;
-  };
-
   const formatDateToExcel = (date: string) => {
     const formatedDate = date.split("/");
 
@@ -292,8 +270,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   
   const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const monthName = getNameMonths(date2 as DateRange);
 
     const dataCall = {
         date: date2,
@@ -1297,7 +1273,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-80"
+                className="max-w-full xl:max-w-96"
               />
 
               <Modal show={openModal} onClose={() => closeModal()}>
@@ -2319,7 +2295,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-96"
+                className="md:max-w-96 max-w-full"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -2490,7 +2466,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-80"
+                className="max-w-full md:max-w-80 "
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -2623,7 +2599,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-80"
+                className=" max-w-80 md:max-w-80"
               />
 
               <Modal show={openModal} onClose={() => closeModal()}>
@@ -3076,11 +3052,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             {route != "studentsClass" && route != "teacherClass" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="w-full xl:w-40">
-                  <Button variant="outline" className="ml-auto">
-                    Colunas <ChevronDown className="ml-2 h-4 w-4" />
+                  <Button variant="outline" className="ml-auto flex gap-1">
+                    <TbAdjustmentsHorizontal fontSize={20} /> Colunas
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Alterar colunas</DropdownMenuLabel>
+                  <DropdownMenuSeparator/>
                   {table
                     .getAllColumns()
                     .filter((column) => column.getCanHide())
@@ -3098,7 +3076,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "name" && "Nome"}
 
-                          {column.id == "responsible" && "Responsável"}
+                          {column.id == "responsible_name" && "Responsável"}
 
                           {column.id == "class" && "Turma"}
 
@@ -3126,6 +3104,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           {column.id == "team" && "Equipe"}
 
                           {column.id == "status" && "Status"}
+
+                          {column.id == "status_call" && "Status"}
 
                           {column.id == "actions" && "Ações"}
 

@@ -178,7 +178,6 @@ const ScheduleAbsence = () => {
         </h1>
       </section>
 
-      
       {
         loading ? (
           <div className="mx-auto max-w-5 mt-40 mb-10">
