@@ -1,8 +1,11 @@
+import moment from "moment";
+import 'moment/locale/pt-br';
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
 import { saveAs } from 'file-saver';
 import ExcelJS from 'exceljs';
+
 import {
   MdFormatListBulletedAdd,
   MdPersonAdd,
@@ -84,6 +87,26 @@ interface DataTableProps {
   route: string;
 }
 
+interface AttendanceRecord {
+  Motivo: string;
+  Presença: string;
+  Data: string;
+}
+
+interface StudentData {
+  "Nome completo": string;
+  "Data de nascimento": string;
+  Turma: string;
+  Esporte: string;
+  Observações: string;
+  Presenças: { [month: string]: AttendanceRecord[] };
+}
+
+interface StudentsDataProps {
+  [id: string]: StudentData;
+}
+
+
 export interface ResponsibleProps {
   id: number;
   name: string;
@@ -103,7 +126,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const today = new Date().toISOString().substring(0, 10);
   const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
@@ -114,7 +136,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [error, setError] = React.useState(false);
-  const [dataExcel, setDataExcel] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [isStudent, setIsStudent] = React.useState("");
   const [level, setLevel] = React.useState(0);
@@ -232,109 +253,295 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
   };
+
+  const getNameMonths = (datas: DateRange) => {
+    let dates = [];
+
+    const monthNames = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    const from = datas.from?.getUTCMonth();
+    const to = datas.to?.getUTCMonth();
+
+    dates = [
+      {
+        from: from !== undefined ? monthNames[from] : "",
+        to: to !== undefined ? monthNames[to] : ""
+      }
+    ];
+
+    return dates;
+  };
+
+  const formatDateToExcel = (date: string) => {
+    const formatedDate = date.split("/");
+
+    return formatedDate[0];
+  }
+
+  const verifyMonthName = (date: number) => {
+    const monthNames = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+   return monthNames[date];
+  }
   
   const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    const monthName = getNameMonths(date2 as DateRange);
+
     const dataCall = {
-      date: date2,
-      unit: unitId,
-      classId: idClass,
-      day_of_training: daySaved,
-      team: teamId
+        date: date2,
+        unit: unitId,
+        classId: idClass,
+        day_of_training: daySaved,
+        team: teamId,
     };
 
     try {
-      setLoading(true);
-      const response = await api.post("/students/excel", dataCall);
+        setLoading(true);
+        const response = await api.post("/students/excel", dataCall);
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Chamada");
+        const students: Student[] = response.data.students;
 
-      worksheet.mergeCells('A1:H1');
-      const titleCell = worksheet.getCell('A1');
-      titleCell.value = `UNIDADE ${unitName}`;
-      titleCell.font = { size: 16, bold: true };
-      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        const groupedStudents: StudentsDataProps = {};
 
-      worksheet.mergeCells('A2:H2');
-      const subtitleCell = worksheet.getCell('A2');
-      subtitleCell.value = "Coordenação: Gracielle Bravos: (31) 99100-5157";
-      subtitleCell.font = { size: 12, bold: true };
-      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        students.forEach((student: { [key: string]: any }) => {
+            const id = student["id"];
 
-      worksheet.mergeCells('A3:H3');
-      const descriptionCell = worksheet.getCell('A3');
-      descriptionCell.value = `Iniciação esportiva - ${className != "" ? className : "Todos"} ${dayTrainingName != "" && daysTraining != "" ? "-" + dayTrainingName : ""} - ${dataBrasileira}`;
-      descriptionCell.font = { size: 12.5, bold: true };
-      descriptionCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            if (!groupedStudents[id]) {
+                groupedStudents[id] = {
+                    "Nome completo": student["Nome completo"],
+                    "Data de nascimento": student["Data de nascimento"],
+                    "Turma": student["Turma"],
+                    "Esporte": student["Esporte"],
+                    "Observações": student["Observações"],
+                    "Presenças": {},
+                };
+            }
 
-      const headers = ['Atleta', 'Data de nascimento', 'Turma', 'Esporte', 'Observações', 'Presença', 'Motivo', 'Data'];
-      worksheet.addRow(headers).font = { size: 12 , bold: true };
+            const data = moment(student["Data"], "DD/MM/YYYY");
+            const mes = verifyMonthName(data.month());
 
-      response.data.students.forEach((student: any) => {
-        worksheet.addRow([
-          student["Nome completo"],
-          student["Data de nascimento"],
-          student["Turma"],
-          student["Esporte"],
-          student["Observações"],
-          student["Presença"],
-          student["Motivo"],
-          student["Data"]
-        ]);
-      });
+            if (!groupedStudents[id].Presenças[mes]) {
+                groupedStudents[id].Presenças[mes] = [];
+            }
 
-      headers.forEach((_header, index) => {
-        const cell = worksheet.getRow(5).getCell(index + 1);
-        cell.font = { bold: false };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' },
-        };
-      });
-
-      worksheet.eachRow({ includeEmpty: false }, (row, _rowNumber) => {
-        row.eachCell({ includeEmpty: true }, (cell) => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' },
-          };
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            groupedStudents[id].Presenças[mes].push({
+                "Motivo": student["Motivo"],
+                "Presença": student["Presença"],
+                "Data": student["Data"],
+            });
         });
-      });
 
-      worksheet.columns = [
-        { width: 40 },
-        { width: 20 },
-        { width: 15 },
-        { width: 14 },
-        { width: 45 },
-        { width: 10 },
-        { width: 40 },
-        { width: 13 }
-      ];
+        const result = Object.values(groupedStudents);
 
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `Chamada - ${className != "" ? className : "Todos"} - ${dataBrasileira}.xlsx`);
+        const monthMapping: { [key: string]: number } = {
+            "janeiro": 1,
+            "fevereiro": 2,
+            "março": 3,
+            "abril": 4,
+            "maio": 5,
+            "junho": 6,
+            "julho": 7,
+            "agosto": 8,
+            "setembro": 9,
+            "outubro": 10,
+            "novembro": 11,
+            "dezembro": 12
+        };
 
-      if (response.data.students.length === 0) {
-        toast.error("Nenhum registro encontrado!");
-      }
+        const getMonthNumber = (monthName: string): number => monthMapping[monthName.toLowerCase()] || 0;
 
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Chamada");
+        
+        worksheet.columns = [
+            { width: 30 },
+            { width: 30 },
+            { width: 20 },
+            { width: 15 }, 
+            { width: 40 }, 
+            { width: 50 }, 
+        ];
+        
+        worksheet.mergeCells("A1:F1");
+        const titleCell = worksheet.getCell("A1");
+        titleCell.value = `UNIDADE ${unitName.toLocaleUpperCase()}`;
+        titleCell.font = { size: 15, bold: true };
+        titleCell.alignment = { vertical: "middle", horizontal: "center" };
+        titleCell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+        };
+        
+        worksheet.mergeCells("A2:F2");
+        const subtitleCell = worksheet.getCell("A2");
+        subtitleCell.value = "Coordenação: Gracielle Bravos: (31) 99100-5157";
+        subtitleCell.font = { size: 12, bold: true };
+        subtitleCell.alignment = { vertical: "middle", horizontal: "center" };
+        subtitleCell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+        };
+        
+        worksheet.mergeCells("A3:F3");
+        const descriptionCell = worksheet.getCell("A3");
+        descriptionCell.value = `Iniciação esportiva - ${
+          className !== "" ? className : "Todos"
+        } ${dayTrainingName !== "" ? "- " + dayTrainingName : ""} - ${
+          dataBrasileira
+        }`;
+        descriptionCell.font = { size: 12.5, bold: true };
+        descriptionCell.alignment = { vertical: "middle", horizontal: "center" };
+        descriptionCell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+        };
+        
+        const headers = [
+          "Atleta",
+          "Data de nascimento",
+          "Turma",
+          "Esporte",
+          "Presença",
+          "Observações",
+        ];
+        
+        const headerRow = worksheet.addRow(headers);
+        headerRow.height = 25;
+        headerRow.font = { size: 12, bold: true };
+        
+        headerRow.eachCell({ includeEmpty: true }, (cell) => {
+            cell.alignment = { vertical: "middle", horizontal: "center" };
+            cell.border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" }
+            };
+        });
+        
+        result.forEach((student: any) => {
+            const initialRow = worksheet.rowCount + 1;
+        
+            worksheet.addRow([
+                student["Nome completo"],
+                student["Data de nascimento"],
+                student["Turma"],
+                student["Esporte"],
+                "",
+                student["Observações"],
+            ]);
+        
+            const sortedMonths = Object.keys(student["Presenças"]).sort((a, b) => {
+                return getMonthNumber(a) - getMonthNumber(b);
+            });
+
+            sortedMonths.forEach((month: string) => {
+                const monthRow = worksheet.addRow([
+                    "", "", "", "",
+                    month.toLocaleUpperCase(), ""
+                ]);
+                worksheet.mergeCells(monthRow.number, 5, monthRow.number, 5);
+                const monthCell = worksheet.getCell(monthRow.number, 5);
+                monthCell.alignment = { vertical: "middle", horizontal: "center" };
+                monthCell.font = { bold: true };
+                monthCell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+        
+                const days = student["Presenças"][month]
+                    .map((p: { [x: string]: string }) =>
+                        formatDateToExcel(p["Data"]).slice(0, 2)
+                    )
+                    .join(", ");
+                const daysRow = worksheet.addRow(["", "", "", "", days, ""]);
+                worksheet.mergeCells(daysRow.number, 5, daysRow.number, 5);
+                const daysCell = worksheet.getCell(daysRow.number, 5);
+                daysCell.alignment = { vertical: "middle", horizontal: "center" };
+                daysCell.font = { bold: true };
+                daysCell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+        
+                const presencas = student["Presenças"][month]
+                    .map((p: { [x: string]: string }) => `${p["Presença"]}`)
+                    .join(", ");
+                const presencasRow = worksheet.addRow(["", "", "", "", presencas, ""]);
+                worksheet.mergeCells(presencasRow.number, 5, presencasRow.number, 5);
+                const presencasCell = worksheet.getCell(presencasRow.number, 5);
+                presencasCell.alignment = { vertical: "middle", horizontal: "center" };
+                presencasCell.font = { bold: true };
+                presencasCell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+            });
+        
+            const lastRow = worksheet.rowCount;
+            worksheet.mergeCells(initialRow, 1, lastRow, 1);
+            worksheet.mergeCells(initialRow, 2, lastRow, 2);
+            worksheet.mergeCells(initialRow, 3, lastRow, 3);
+            worksheet.mergeCells(initialRow, 4, lastRow, 4);
+            worksheet.mergeCells(initialRow, 6, lastRow, 6);
+        
+            for (let i = 1; i <= 6; i++) {
+                const cell = worksheet.getCell(initialRow, i);
+                cell.alignment = { vertical: "middle", horizontal: "center" };
+            }
+        
+            for (let i = initialRow; i <= lastRow; i++) {
+                worksheet.getRow(i).eachCell((cell) => {
+                    cell.border = {
+                        top: { style: "thin" },
+                        left: { style: "thin" },
+                        bottom: { style: "thin" },
+                        right: { style: "thin" },
+                    };
+                });
+            }
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(
+            new Blob([buffer], { type: "application/octet-stream" }),
+            `Chamada - ${className != "" ? className : "Todos"} - ${
+              dataBrasileira
+            }.xlsx`
+        );
+
+        if (response.data.students.length === 0) {
+            toast.error("Nenhum registro encontrado!");
+        }
     } catch (error) {
-      toast.error("Ocorreu um erro ao gerar o excel!");
-      console.error(error);
-    } finally {    
-      setLoading(false);
+        toast.error("Ocorreu um erro ao gerar o excel!");
+        console.error(error);
+    } finally {
+        setLoading(false);
     }
-  };
-  
+};
+
+
   const setTrash = () => {
     setLink("");
     setFile(null);

@@ -362,6 +362,10 @@ const Call = () => {
         `/students/class/${classId}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`
       );
 
+      if (daysTraining == "") {
+        saveDayTrainingName("");
+      }
+
       setData(response.data);
       setLoad(true);
       setDaysTraining("");
@@ -376,7 +380,9 @@ const Call = () => {
   const closeModal = () => {
     setOpenModal(false);
 
-    saveDayTrainingName("");
+    if (daysTraining == "") {
+      saveDayTrainingName("");
+    }
 
     if (!load) {
       navigate("/");
