@@ -404,7 +404,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       headerRow.height = 25;
       headerRow.font = { size: 12, bold: true };
   
-      headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      headerRow.eachCell({ includeEmpty: true }, (cell: { alignment: { vertical: string; horizontal: string; }; border: { top: { style: string; }; left: { style: string; }; bottom: { style: string; }; right: { style: string; }; }; }) => {
         cell.alignment = { vertical: "middle", horizontal: "center" };
         cell.border = {
           top: { style: "thin" },
@@ -517,7 +517,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             };
           
             for (let i = initialRow; i <= lastRow; i++) {
-              worksheet.getRow(i).eachCell((cell) => {
+              worksheet.getRow(i).eachCell((cell: { border: { top: { style: string; }; left: { style: string; }; bottom: { style: string; }; right: { style: string; }; }; }) => {
                 cell.border = {
                   top: { style: "thin" },
                   left: { style: "thin" },
