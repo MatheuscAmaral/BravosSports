@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContext, useEffect, useState } from "react";
 import api from "@/api";
@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
+import { PiCaretUpDownBold } from "react-icons/pi";
 import { TbLoader3 } from "react-icons/tb";
 
 
@@ -43,7 +44,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -58,7 +59,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Grau de parentesco
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -77,7 +78,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Telefone
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -92,7 +93,7 @@ export const columns: ColumnDef<RowProps>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <PiCaretUpDownBold className="ml-2 h-4 w-4" />
       </Button>
     )
   },

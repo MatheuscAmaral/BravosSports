@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import api from "@/api";
@@ -17,6 +17,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
+import { PiCaretUpDownBold } from "react-icons/pi";
 import { Modal } from "flowbite-react";
 import {
   Select,
@@ -52,7 +53,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -67,7 +68,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Grau de parentesco
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -84,7 +85,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Telefone
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -99,7 +100,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },

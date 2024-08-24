@@ -1,12 +1,13 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContext, useEffect, useState } from "react";
 import { TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
+import { PiCaretUpDownBold } from "react-icons/pi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -46,7 +47,7 @@ export const columns: ColumnDef<RowProps>[] = [
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Data agendada
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <PiCaretUpDownBold className="ml-2 h-4 w-4" />
           </Button>
         </div>
       );
@@ -101,7 +102,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       )
     },

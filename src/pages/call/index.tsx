@@ -1,8 +1,9 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
+import { PiCaretUpDownBold } from "react-icons/pi";
 import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
@@ -117,7 +118,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -132,7 +133,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Data de nascimento
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -205,7 +206,7 @@ export const columns: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -300,7 +301,6 @@ const Call = () => {
     }
   };
 
-  
   const saveAndFilterClassTime = (e: string) => {
     setDaysTraining(e);
 
@@ -340,6 +340,8 @@ const Call = () => {
 
   const filterAndSetUnitId = async (e: string) => {
     setUnitId(e);
+    setClassId("");
+    setDaysTraining("");
 
     getClasses(Number(e));
   };
@@ -452,8 +454,9 @@ const Call = () => {
                 <Select
                   onValueChange={(e) => setClassId(e)}
                   required
+                  value={classId != "" ? String(classId) : ""}
+                  defaultValue={classId != "" ? String(classId) : ""}
                   disabled={unitId == ""}
-                  defaultValue={String(classId)}
                 >
                   <SelectTrigger id="class" className="w-full">
                     <SelectValue placeholder="Selecione uma turma" />
@@ -477,6 +480,8 @@ const Call = () => {
 
                 <Select
                   onValueChange={(e) => saveAndFilterClassTime(e)}
+                  value={daysTraining != "" ? String(daysTraining) : ""}
+                  defaultValue={daysTraining != "" ? String(daysTraining) : ""}
                   disabled={classId == ""}
                 >
                   <SelectTrigger id="class" className="w-full">

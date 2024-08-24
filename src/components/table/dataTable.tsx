@@ -2,10 +2,10 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import * as React from "react";
 import { toast } from "react-hot-toast";
-import { TbLoader3 } from "react-icons/tb";
+import { TbLoader3, TbAdjustmentsHorizontal } from "react-icons/tb";
+import { BsBuildingAdd } from "react-icons/bs";
 import { saveAs } from "file-saver";
 import ExcelJS from "exceljs";
-import { TbAdjustmentsHorizontal } from "react-icons/tb";
 import {
   MdFormatListBulletedAdd,
   MdPersonAdd,
@@ -73,7 +73,6 @@ import api from "@/api";
 import { ClassesProps } from "@/pages/classes";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import MaskedInput from "../InputMask";
-// import { TeachersProps } from "@/pages/teachers";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { RowProps } from "@/contexts/ModalsContext";
 import { StudentsProps } from "@/pages/students";
@@ -278,7 +277,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     const dataCall = {
       date: date2,
       unit: unitId,
@@ -286,17 +285,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       day_of_training: daySaved,
       team: teamId,
     };
-
+  
     try {
       setLoading(true);
       const response = await api.post("/students/excel", dataCall);
       const students: Student[] = response.data.students;
-
+  
       const groupedStudents: StudentsDataProps = {};
-
+  
       students.forEach((student: { [key: string]: any }) => {
         const id = student["id"];
-
+  
         if (!groupedStudents[id]) {
           groupedStudents[id] = {
             "Nome completo": student["Nome completo"],
@@ -307,23 +306,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             Presenças: {},
           };
         }
-
+  
         const data = moment(student["Data"], "DD/MM/YYYY");
         const mes = verifyMonthName(data.month());
-
+  
         if (!groupedStudents[id].Presenças[mes]) {
           groupedStudents[id].Presenças[mes] = [];
         }
-
+  
         groupedStudents[id].Presenças[mes].push({
           Motivo: student["Motivo"],
           Presença: student["Presença"],
           Data: student["Data"],
         });
       });
-
-      const result = Object.values(groupedStudents); // Aqui definimos a variável `result`
-
+  
+      const result = Object.values(groupedStudents);
+  
       const monthMapping: { [key: string]: number } = {
         janeiro: 1,
         fevereiro: 2,
@@ -338,22 +337,22 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         novembro: 11,
         dezembro: 12,
       };
-
+  
       const getMonthNumber = (monthName: string): number =>
         monthMapping[monthName.toLowerCase()] || 0;
-
+  
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Chamada");
-
+  
       worksheet.columns = [
         { width: 30 },
         { width: 30 },
         { width: 20 },
         { width: 15 },
-        { width: 40 },
+        { width: 60 },
         { width: 50 },
       ];
-
+  
       worksheet.mergeCells("A1:F1");
       const titleCell = worksheet.getCell("A1");
       titleCell.value = `UNIDADE ${unitName.toLocaleUpperCase()}`;
@@ -365,7 +364,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-
+  
       worksheet.mergeCells("A2:F2");
       const subtitleCell = worksheet.getCell("A2");
       subtitleCell.value = "Coordenação: Gracielle Bravos: (31) 99100-5157";
@@ -377,14 +376,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-
+  
       worksheet.mergeCells("A3:F3");
       const descriptionCell = worksheet.getCell("A3");
       descriptionCell.value = `Iniciação esportiva - ${
         className !== "" ? className : "Todos"
-      } ${
-        dayTrainingName !== "" ? "- " + dayTrainingName : ""
-      } - ${dataBrasileira}`;
+      } ${dayTrainingName !== "" ? "- " + dayTrainingName : ""} - ${dataBrasileira}`;
       descriptionCell.font = { size: 12.5, bold: true };
       descriptionCell.alignment = { vertical: "middle", horizontal: "center" };
       descriptionCell.border = {
@@ -393,7 +390,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-
+  
       const headers = [
         "Atleta",
         "Data de nascimento",
@@ -402,11 +399,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         "Presença",
         "Observações",
       ];
-
+  
       const headerRow = worksheet.addRow(headers);
       headerRow.height = 25;
       headerRow.font = { size: 12, bold: true };
-
+  
       headerRow.eachCell({ includeEmpty: true }, (cell) => {
         cell.alignment = { vertical: "middle", horizontal: "center" };
         cell.border = {
@@ -416,15 +413,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           right: { style: "thin" },
         };
       });
-
+  
       const monthsPresent: { [key: string]: any[] } = {};
-
+  
       result.forEach((student: any) => {
         Object.keys(student["Presenças"]).forEach((month) => {
           if (!monthsPresent[month]) {
             monthsPresent[month] = [];
           }
-
+  
           const dataEntry = {
             "Nome completo": student["Nome completo"],
             "Data de nascimento": student["Data de nascimento"],
@@ -433,91 +430,111 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             Observações: student["Observações"],
             Presenças: student["Presenças"][month],
           };
-
+  
           monthsPresent[month].push(dataEntry);
         });
       });
-
+  
       Object.keys(monthsPresent)
-      .sort((a, b) => getMonthNumber(a) - getMonthNumber(b))
-      .forEach((month) => {
+        .sort((a, b) => getMonthNumber(a) - getMonthNumber(b))
+        .forEach((month) => {
           const monthTitleRow = worksheet.addRow(["", "", "", "", month.toUpperCase(), ""]);
-          monthTitleRow.getCell(5).alignment = { vertical: "middle", horizontal: "center" };
+          monthTitleRow.getCell(5).alignment = {
+            vertical: "middle",
+            horizontal: "center",
+          };
           monthTitleRow.getCell(5).font = { bold: true, size: 14 };
   
-          // Adicionando bordas nas colunas A e F
           monthTitleRow.getCell(1).border = {
-              top: { style: "thin" },
-              left: { style: "thin" },
-              bottom: { style: "thin" },
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
           };
           monthTitleRow.getCell(6).border = {
-              top: { style: "thin" },
-              right: { style: "thin" },
-              bottom: { style: "thin" },
+            top: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
           };
   
-          // Omitindo bordas laterais da coluna E
           monthTitleRow.getCell(5).border = {};
   
           monthsPresent[month].forEach((student) => {
-              const initialRow = worksheet.rowCount + 1;
-  
-              worksheet.addRow([
-                  student["Nome completo"],
-                  student["Data de nascimento"],
-                  student["Turma"],
-                  student["Esporte"],
-                  "",
-                  student["Observações"],
-              ]);
-  
-              const days = student["Presenças"]
-                  .map((p: { [x: string]: string }) =>
-                      formatDateToExcel(p["Data"]).slice(0, 2)
-                  )
-                  .join(", ");
-              const presencas = student["Presenças"]
-                  .map((p: { [x: string]: string }) => `${p["Presença"]}`)
-                  .join(", ");
-  
-              worksheet.addRow(["", "", "", "", days, ""]);
-              worksheet.addRow(["", "", "", "", presencas, ""]);
-  
-              const lastRow = worksheet.rowCount;
-              worksheet.mergeCells(initialRow, 1, lastRow, 1);
-              worksheet.mergeCells(initialRow, 2, lastRow, 2);
-              worksheet.mergeCells(initialRow, 3, lastRow, 3);
-              worksheet.mergeCells(initialRow, 4, lastRow, 4);
-              worksheet.mergeCells(initialRow, 6, lastRow, 6);
-  
-              for (let i = 1; i <= 6; i++) {
-                  const cell = worksheet.getCell(initialRow, i);
-                  cell.alignment = { vertical: "middle", horizontal: "center" };
-              }
-  
-              for (let i = initialRow; i <= lastRow; i++) {
-                  worksheet.getRow(i).eachCell((cell) => {
-                      cell.border = {
-                          top: { style: "thin" },
-                          left: { style: "thin" },
-                          bottom: { style: "thin" },
-                          right: { style: "thin" },
-                      };
-                  });
-              }
+            const initialRow = worksheet.rowCount + 1;
+          
+            worksheet.addRow([
+              student["Nome completo"],
+              student["Data de nascimento"],
+              student["Turma"],
+              student["Esporte"],
+              "", 
+              student["Observações"],
+            ]);
+          
+            const presencaCell = worksheet.getCell(initialRow, 5);
+            
+            const presenceArray = student["Presenças"].map((p: { Data: string; Presença: string }) => ({
+              date: formatDateToExcel(p["Data"]).slice(0, 2),
+              status: p["Presença"], 
+            }));
+            
+            presenceArray.sort((a: { date: any; }, b: { date: any; }) => Number(a.date) - Number(b.date));
+          
+            const presenceString = presenceArray
+              .map((p: { date: any; status: any; }) => `${p.date} ${p.status}`)
+              .join(' | ');
+          
+            presencaCell.value = presenceString;
+            presencaCell.alignment = {
+              vertical: "middle",
+              horizontal: "center",
+              wrapText: true,
+            };
+            presencaCell.border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          
+            const lastRow = worksheet.rowCount;
+            worksheet.mergeCells(initialRow, 1, lastRow, 1);
+            worksheet.mergeCells(initialRow, 2, lastRow, 2);
+            worksheet.mergeCells(initialRow, 3, lastRow, 3);
+            worksheet.mergeCells(initialRow, 4, lastRow, 4);
+            worksheet.mergeCells(initialRow, 6, lastRow, 6);
+          
+            for (let i = 1; i <= 6; i++) {
+              const cell = worksheet.getCell(initialRow, i);
+              cell.alignment = { vertical: "middle", horizontal: "center" };
+            }
+        
+            const observationCell = worksheet.getCell(initialRow, 6);
+            observationCell.border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          
+            for (let i = initialRow; i <= lastRow; i++) {
+              worksheet.getRow(i).eachCell((cell) => {
+                cell.border = {
+                  top: { style: "thin" },
+                  left: { style: "thin" },
+                  bottom: { style: "thin" },
+                  right: { style: "thin" },
+                };
+              });
+            }
           });
-      });
+        });
   
-
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(
         new Blob([buffer], { type: "application/octet-stream" }),
-        `Chamada - ${
-          className != "" ? className : "Todos"
-        } - ${dataBrasileira}.xlsx`
+        `Chamada - ${className != "" ? className : "Todos"} - ${dataBrasileira}.xlsx`
       );
-
+  
       if (response.data.students.length === 0) {
         toast.error("Nenhum registro encontrado!");
       }
@@ -528,7 +545,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(false);
     }
   };
-
+  
   const setTrash = () => {
     setLink("");
     setFile(null);
@@ -558,8 +575,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const filterUnitWithClass = async (e: string, isStudent: string) => {
     setClasses("");
     setUnits(e);
+    setTeam("");
 
     const response = await api.get(`/classes/filter/${e}`);
+
+    if (e != "0") {
+      const responseSports = await api.get(`/sports/unit/${e}`);
+      setTeamsDisp(responseSports.data);
+    }
 
     if (isStudent == "0") {
       const newData = response.data.filter((d: { description: string }) => {
@@ -623,7 +646,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       const getTeamsFilter = async () => {
         const response = await api.get(`/sports`);
 
-        response.data.unshift({ id: 999, description: "Todos", status: 1 });
+        response.data.unshift({ id: 999, modality: "Todos", status: 1 });
         setClassesDisp(response.data);
       };
 
@@ -685,6 +708,31 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar a turma!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createUnit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
+
+    const data = {
+      description: description,
+      status: status,
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/units", data);
+      toast.success("Unidade cadastrada com sucesso!");
+      setOpenModal(false);
+      reloadPage();
+    } catch {
+      toast.error("Ocorreu um erro ao cadastrar a unidade!");
     } finally {
       setLoading(false);
     }
@@ -1439,7 +1487,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     if (c.status == 1) {
                       return (
                         <SelectItem key={c.id} value={String(c.id)}>
-                          {c.description}
+                          {c.modality}
                         </SelectItem>
                       );
                     }
@@ -2068,10 +2116,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <div
                             className={
-                              classesDisp.length == 1 &&
-                              classesDisp[0]?.id == 999
-                                ? "flex"
-                                : "hidden"
+                              classesDisp.length == 0 ? "flex" : "hidden"
                             }
                           >
                             <DropdownMenu>
@@ -2100,11 +2145,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           value={classes != "" ? classes : ""}
                           defaultValue={classes != "" ? classes : ""}
                           onValueChange={(e) => setClasses(e)}
-                          disabled={
-                            units == "" ||
-                            (classesDisp.length == 1 &&
-                              classesDisp[0]?.id == 999)
-                          }
+                          disabled={units == "" || classesDisp.length == 0}
                           required
                         >
                           <SelectTrigger className="w-full" id="class">
@@ -2162,7 +2203,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                         <Select
                           onValueChange={(e) => setTeam(e)}
-                          disabled={teamsDisp.length <= 0}
+                          value={team != "" ? team : ""}
+                          defaultValue={team != "" ? team : ""}
+                          disabled={teamsDisp.length <= 0 || units == ""}
                           required
                         >
                           <SelectTrigger className="w-full" id="sport">
@@ -2172,7 +2215,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             {teamsDisp.map((t) => {
                               return (
                                 <SelectItem key={t.id} value={String(t.id)}>
-                                  {t.description}
+                                  {t.modality}
                                 </SelectItem>
                               );
                             })}
@@ -2310,7 +2353,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="md:max-w-96 max-w-full"
+                className="max-w-full xl:max-w-96"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -2481,7 +2524,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="max-w-full md:max-w-80 "
+                className="max-w-full xl:max-w-96"
               />
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
@@ -2794,7 +2837,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                       .getColumn("description")
                       ?.setFilterValue(event.target.value)
                   }
-                  className="w-full"
+                  className="max-w-full xl:max-w-96"
                 />
 
                 <Select
@@ -2911,6 +2954,94 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </>
           )}
 
+          {route == "units" && (
+            <>
+              <div className="flex items-center gap-4">
+                <Input
+                  placeholder="Pesquise pela descrição da unidade..."
+                  value={
+                    (table
+                      .getColumn("description")
+                      ?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table
+                      .getColumn("description")
+                      ?.setFilterValue(event.target.value)
+                  }
+                  className="max-w-full xl:max-w-96"
+                />
+              </div>
+
+              <Modal show={openModal} onClose={() => setOpenModal(false)}>
+                <Modal.Header>
+                  Cadastro de{" "}
+                  <span className="text-primary-color">unidade</span>
+                </Modal.Header>
+                <form onSubmit={(e) => createUnit(e)}>
+                  <Modal.Body className="relative">
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="description">
+                          Descrição: <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          id="description"
+                          name="description"
+                          placeholder="Digite a descrição da unidade..."
+                          onChange={(e) => setDescription(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <label htmlFor="status">
+                          Status: <span className="text-red-500">*</span>
+                        </label>
+                        <Select required onValueChange={(e) => setStatus(e)}>
+                          <SelectTrigger
+                            className="w-full"
+                            id="status"
+                            name="status"
+                          >
+                            <SelectValue placeholder="Selecione o status do esporte" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
+                        </div>
+                      ) : (
+                        "Salvar"
+                      )}
+                    </Button>
+                    <Button
+                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                      onClick={() => setOpenModal(false)}
+                    >
+                      Fechar
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
+          )}
+
           {route == "esportes" && (
             <>
               <div className="flex items-center gap-4">
@@ -2957,7 +3088,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={(e) => createSports(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="description">
                           Descrição: <span className="text-red-500">*</span>
                         </label>
@@ -2968,7 +3099,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           onChange={(e) => setDescription(e.target.value)}
                           required
                         />
-                      </div>
+                      </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="modality">
@@ -3164,6 +3295,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             <Button
               onClick={() => openModals()}
               className={`${
+                route != "units" ? "hidden" : "flex"
+              } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <BsBuildingAdd fontSize={22} className="hidden md:flex" />
+              Cadastrar <span className="hidden md:block">unidade</span>
+            </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
                 route != "esportes" ? "hidden" : "flex"
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
@@ -3224,7 +3365,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             <Button
               onClick={() => openExcelModal()}
               className={`${
-                route != "call" ? "hidden" : "flex"
+                route != "call" ||
+                ((user as unknown as UserProps).level != 0 &&
+                  (user as unknown as UserProps).level != 1)
+                  ? "hidden"
+                  : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
               disabled={data.length <= 0}
             >

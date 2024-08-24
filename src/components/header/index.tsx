@@ -4,8 +4,7 @@ import logo from "../../assets/logo-bravos-laranja.png";
 import { FaClipboardList, FaHome, FaUserAlt, FaUserTie } from "react-icons/fa";
 import { PiChalkboardTeacherBold, PiUserFocusBold } from "react-icons/pi";
 import { BiSolidBusSchool } from "react-icons/bi";
-import { FaUsers } from "react-icons/fa6";
-import { FaBarsStaggered } from "react-icons/fa6";
+import { FaBarsStaggered, FaBuildingColumns, FaUsers } from "react-icons/fa6";
 import { IoClose, IoLogOutOutline } from "react-icons/io5";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
@@ -46,7 +45,7 @@ const Header = () => {
       <section
         className={`${
           mobile ? "flex flex-col xl:hidden" : "hidden"
-        } items-center bg-white w-full h-svh absolute z-50 py-1 px-3`}
+        } items-center bg-white w-full h-svh absolute z-50 py-1 px-2`}
       >
         <div className="flex justify-between items-center w-full">
           <img src={logo} alt="logo" className=" h-16 py-3" />
@@ -59,7 +58,7 @@ const Header = () => {
           </button>
         </div>
 
-        <ul className="flex flex-col gap-2 w-full mt-1 select-none">
+        <ul className="flex flex-col gap-2 w-full mt-1 select-none overflow-auto pb-20 xl:pb-0">
           <li
             onClick={() => navigateToRoute("/")}
             className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
@@ -107,6 +106,16 @@ const Header = () => {
               >
                 <PiChalkboardTeacherBold fontSize={27} />
                 <p className="text-lg">Professores</p>
+              </li>
+          )}
+
+          {((user as unknown as UserProps).level == 0 || (user as unknown as UserProps).level == 1) &&  (
+              <li
+                onClick={() => navigateToRoute("/unidades")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <FaBuildingColumns fontSize={27} />
+                <p className="text-lg">Unidades</p>
               </li>
           )}
 
@@ -160,8 +169,8 @@ const Header = () => {
               </li>
           )}
 
-          <div className="fixed bottom-3 bg-white left-3 w-full">
-            <hr className="mr-6"/>
+          <div className="fixed h-20 bottom-0 bg-white left-3 w-full pr-6">
+            <hr/>
 
             <li className="flex justify-between gap-3 mt-2 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer">
               <div className="flex items-center gap-3.5">
@@ -172,7 +181,7 @@ const Header = () => {
               <IoLogOutOutline
                 onClick={LogOut}
                 fontSize={26}
-                className="cursor-pointer mr-10"
+                className="cursor-pointer mr-2"
               />
             </li>
           </div>

@@ -2,8 +2,9 @@ import api from "@/api";
 import { DataTable } from "@/components/table/dataTable";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { PiCaretUpDownBold } from "react-icons/pi";
 import { modalContext, RowProps } from "@/contexts/ModalsContext";
 import toast from "react-hot-toast";
 import { TbLoader3 } from "react-icons/tb";
@@ -34,7 +35,7 @@ export const columnsProf: ColumnDef<RowProps>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -42,7 +43,17 @@ export const columnsProf: ColumnDef<RowProps>[] = [
   },
   {
     accessorKey: "level",
-    header: "Nível",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Nível
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div>
         {
             row.getValue("level") == 0 && "Desenvolvedor"
@@ -60,7 +71,17 @@ export const columnsProf: ColumnDef<RowProps>[] = [
   },
   {
     accessorKey: "complete_register",
-    header: "Cadastro completo ?",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Cadastro completo ?
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div>
         {
             row.getValue("complete_register") == 0 && "Não"
@@ -82,7 +103,7 @@ export const columnsProf: ColumnDef<RowProps>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <PiCaretUpDownBold className="ml-2 h-4 w-4" />
       </Button>
     )
   },

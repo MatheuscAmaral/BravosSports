@@ -13,6 +13,7 @@ import Sports from "../sports";
 import ResponsiblesReleased from "../responsibles/responsiblesReleased";
 import ScheduleAbsence from "../responsibles/scheduleAbsence";
 import Users from "../users";
+import Units from "../units";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Teachers />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/unidades",
+        element: (
+          <PrivateRoute>
+            <Units />
           </PrivateRoute>
         ),
       },

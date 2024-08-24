@@ -37,7 +37,7 @@ import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
-import { AuthContext, UserProps } from "./AuthContext";
+import { AuthContext } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
 import { FiAlertOctagon } from "react-icons/fi";
@@ -240,7 +240,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [comments, setComments] = useState("");
   const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
   const [dateAbsence, setDateAbsence] = useState("");
-  const [users, setUsers] = useState<UserProps[]>([]);
   const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<
     ResponsibleProps[]
   >([]);
@@ -368,6 +367,10 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setDescription(String(row[0].description));
     }
     
+    if (type == "units") {
+      setId(String(row[0].id));
+    }
+    
     if (type == "agendarFalta") {
       const adjustedDate = row[0].date ? addDays(new Date(String(row[0].date)), 1) : undefined;
       
@@ -436,15 +439,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setId(String(row[0].id));
   };
 
-  const getUsers = async () => {
-    try {
-      const response = await api.get("/users/level/2");
 
-      setUsers(response.data);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar os usuários disponíveis!");
-    }
-  };
 
   const getUnits = async () => {
     try {
@@ -556,10 +551,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "esportes") {
       await getClasses(999);
-    }
-
-    if (type == "teacher") {
-      await getUsers();
     }
 
     type != "call" && (await getUnits());
@@ -686,6 +677,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       };
     }
 
+    if (type == "units") {
+      data = {
+        status: status
+      };
+    }
+
     if (type == "classes") {
       data = {
         description: description,
@@ -744,6 +741,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
       type == "classes" && (await api.put(`/classes/${id}`, data));
+      type == "units" && (await api.put(`/units/${id}`, data));
       type == "esportes" && (await api.put(`/sports/${id}`, data));
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
       type == "users" && (await api.put(`/users/${id}`, data));
@@ -769,7 +767,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     } catch (error: any) {
       type == "agendarFalta" ? toast.error(error.response.data.error, {
         position: "top-right"
-      }) : 
+      }) :  
       toast.error(`Ocorreu um erro ao editar os dados de ${data && (data && "description" in data ? data.description : data.name)}`);
     } finally {
       setLoading(false);
@@ -789,7 +787,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
           >
             <div
               className={`${
-                type != "studentsClass" && type != "teacherClass" && type != "users" && "space-y-6"
+                type != "studentsClass" && type != "teacherClass" && type != "units" && type != "users" && "space-y-6"
               }`}
             >
               {(type == "students" ||
@@ -1511,6 +1509,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                         {(type == "classes" ||
                           type == "teacher" ||
+                          type == "units" ||
                           type == "esportes" ||
                           type == "responsibles" || 
                           type == "responsibles_released" ||

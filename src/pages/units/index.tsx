@@ -1,5 +1,6 @@
 import { DataTable } from "@/components/table/dataTable";
 import { ColumnDef } from "@tanstack/react-table";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,59 +18,27 @@ import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { TbLoader3 } from "react-icons/tb";
 import { PiCaretUpDownBold } from "react-icons/pi";
 
-export interface SportsProps {
+export interface UnitsProps {
   id: number;
   description: string;
-  modality: string,
-  class: number,
   status: number;
 }
 
 export const columnsClass: ColumnDef<RowProps>[] = [
-  // {
-  //   accessorKey: "description",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Descrição
-  //         <PiCaretUpDownBold className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  // },
   {
-    accessorKey: "modality",
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Modalidade
+          Descrição
           <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
-  },
-  {
-    accessorKey: "desc_unit",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Unidade
-          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
     accessorKey: "status",
@@ -112,8 +81,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => openModals([row.original], "Alunos da Turma", "studentsClass")}>Ver alunos</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openModals([row.original], "Editar esportes", "esportes")}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModals([row.original], "Editar unidade", "units")}>Editar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -122,49 +90,53 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 ];
 
 
-const Sports = () => {
+const Units = () => {
   const { reloadPage, newData } = useContext(ReloadContext);
-  const [data, setData] = useState<SportsProps[]>([]);
+  const [data, setData] = useState<UnitsProps[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getClasses = async () => {
+    const getUnits = async () => {
       try {
         setLoading(true);
 
-        if (newData.length > 0) {
+        if (newData.length > 0) {      
           return setData(newData);
         }
 
-        const response = await api.get("/sports");
+        const response = await api.get("/units");
         setData(response.data);
       } catch {
-        toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");
+        toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
       } finally {
         setLoading(false);
       }
     }
   
-    getClasses();
-  }, [reloadPage]);
+    getUnits();
+  }, [reloadPage, newData]);
 
 
   return (
     <main className="w-full">
       <section className="mt-10">
-        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Esportes<span className="text-sm mt-1">({data.length})</span></h1>
+        <h1 className="text-2xl font-bold text-gray-700 flex gap-1 items-center mt-1">Unidades<span className="text-sm mt-1">({data.length})</span></h1>
       </section>
 
       {
         loading ? (
           <div className="mx-auto max-w-5 mt-40 mb-10">
-            <TbLoader3 fontSize={25} className="w-12" style={{ animation: "spin 1s linear infinite" }}/>
+            <TbLoader3
+              fontSize={25}
+              className="w-12"
+              style={{ animation: "spin 1s linear infinite" }}
+            />
           </div>
         ) : (
           <div className="w-full mx-auto mt-10">
             {
               //@ts-ignore       
-              <DataTable columns={columnsClass} data={data} route={"esportes"} />
+              <DataTable columns={columnsClass} data={data} route={"units"} />
             }
           </div>
         )
@@ -173,4 +145,4 @@ const Sports = () => {
   );
 };
 
-export default Sports;
+export default Units;

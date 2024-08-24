@@ -84,7 +84,7 @@ function Auth() {
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-gray-600 relative">
-            <label htmlFor="user">Usuário *</label>
+            <label htmlFor="user">Usuário <span className="text-red-500">*</span></label>
             <Input
               id="user"
               placeholder="Digite seu nome de usuário "
@@ -97,7 +97,7 @@ function Auth() {
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-gray-600 relative">
-            <label htmlFor="password">Senha *</label>
+            <label htmlFor="password">Senha <span className="text-red-500">*</span></label>
             <Input
               id="user"
               placeholder="Digite sua senha"
