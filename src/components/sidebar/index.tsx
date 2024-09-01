@@ -88,7 +88,7 @@ const Sidebar = () => {
               path: "/chamada",
             },
             {
-              label: "Responsáveis liber...",
+              label: "Responsáveis Liber...",
               icon: <PiUserFocusBold fontSize={26} />,
               path: "/responsaveis/liberados",
             },
@@ -116,7 +116,7 @@ const Sidebar = () => {
           items = [
             { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
             {
-              label: "Responsáveis liber...",
+              label: "Responsáveis Liber...",
               icon: <PiUserFocusBold fontSize={26} />,
               path: "/responsaveis/liberados",
             },

@@ -144,7 +144,7 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Observações",
     cell: ({ row }) => (
       <div>
-        {row.getValue("comments") != null ? (
+        {row.getValue("comments") != null && row.getValue("comments") != "" ? (
           <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
