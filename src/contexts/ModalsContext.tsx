@@ -318,7 +318,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/upload",
+        "https://bravos-api.onrender.com/upload",
         formData,
         {
           headers: {
@@ -327,7 +327,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         }
       );
 
-      return `http://localhost:3000/files/${response.data}`;
+      return `https://bravos-api.onrender.com/files/${response.data}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
