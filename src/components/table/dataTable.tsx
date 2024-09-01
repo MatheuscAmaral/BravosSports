@@ -1057,7 +1057,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/upload",
+        "https://bravos-sports.vercel.app//upload",
         formData,
         {
           headers: {
@@ -1066,7 +1066,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         }
       );
 
-      return `http://localhost:3000/files/${response.data}`;
+      return `https://bravos-sports.vercel.app/files/${response.data}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";

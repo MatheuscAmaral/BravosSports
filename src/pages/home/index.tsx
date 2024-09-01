@@ -78,7 +78,7 @@ function Home() {
           return (
             <section
               key={s.classes}
-              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10"
+              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10 mb-10"
             >
               {(user as unknown as UserProps).level != 3 ? (
                 <>

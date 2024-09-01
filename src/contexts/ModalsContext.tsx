@@ -1335,7 +1335,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         {teamsDisp.map((t) => {
                           return (
                             <SelectItem key={t.id} value={String(t.id)}>
-                              {t.description}
+                              {t.modality}
                             </SelectItem>
                           );
                         })}

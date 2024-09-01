@@ -32,7 +32,7 @@ const Header = () => {
           mobile ? "hidden" : "flex xl:hidden"
         } justify-between items-center px-3 bg-white w-full`}
       >
-        <img src={logo} alt="logo" className="w-40 py-3" />
+        <img src={logo} alt="logo" className=" w-44 py-3" />
 
         <button
           className="p-3 my-5 rounded-lg hover:bg-gray-100"
