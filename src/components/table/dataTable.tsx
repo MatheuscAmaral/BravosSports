@@ -1057,7 +1057,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       const response = await axios.post(
-        "https://bravos-sports.vercel.app//upload",
+        "https://bravos-api.onrender.com/upload",
         formData,
         {
           headers: {
@@ -1066,7 +1066,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         }
       );
 
-      return `https://bravos-sports.vercel.app/files/${response.data}`;
+      console.log(response.data)
+      return `https://bravos-api.onrender.com/files/${response.data}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -1075,14 +1076,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setLoading(true);
+    
     if (route == "studentsClass") {
       return;
     }
-
+    
     const verifyIfSaveImage = await saveImage();
-
+    
     if (verifyIfSaveImage == "error") {
+      setLoading(false);
       return;
     }
 
@@ -1112,7 +1115,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setClassFilter("999");
-      setLoading(true);
       await api.post("/students", data);
 
       setPhone("");
