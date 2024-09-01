@@ -170,6 +170,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [dateSelectAbsence, setDateSelectAbsence] = React.useState<
     Date | string
   >();
+  const hostName = window.location.hostname;
   const [dateAbsence, setDateAbsence] = React.useState("");
   const [comments, setComments] = React.useState("");
   const {
@@ -1057,7 +1058,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       const response = await axios.post(
-        "https://bravos-api.onrender.com/upload",
+        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
         formData,
         {
           headers: {
@@ -1066,8 +1067,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         }
       );
 
-      console.log(response.data)
-      return `https://bravos-api.onrender.com/files/${response.data}`;
+      return `${hostName == "localhost" ? `http://localhost:3000/files/${response.data}` : `https://bravos-api.onrender.com/files/${response.data}`}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -1468,7 +1468,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
+                className="w-full"
               />
+              
 
               <Select
                 value={String(teamId)}
@@ -1525,7 +1527,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               id="data"
                               variant={"outline"}
                               className={cn(
-                                "w-full justify-start text-left font-normal",
+                                "w-full justify-start text-left font-normal text-xs",
                                 !date2 && "text-muted-foreground"
                               )}
                             >
@@ -2366,7 +2368,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Modal.Header>
 
                 <form onSubmit={(e) => createResponsiblesReleaseds(e)}>
-                  <Modal.Body className="relative">
+                  <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
                     <div className="space-y-6">
                       <div
                         className={`${
@@ -2536,7 +2538,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   <span className="text-primary-color">responsável</span>
                 </Modal.Header>
                 <form onSubmit={(e) => createResponsibles(e)}>
-                  <Modal.Body className="relative">
+                  <Modal.Body className="relative" >
                     <div className="space-y-6">
                       <div
                         className={`${
@@ -3201,7 +3203,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             {route != "studentsClass" && route != "teacherClass" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="w-full xl:w-40">
-                  <Button variant="outline" className="ml-auto flex gap-1">
+                  <Button variant="outline" className="hidden lg:flex ml-auto gap-1">
                     <TbAdjustmentsHorizontal fontSize={20} /> Colunas
                   </Button>
                 </DropdownMenuTrigger>
@@ -3382,6 +3384,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               />
               Gerar excel
             </Button>
+            
 
             <Button
               onClick={() => openModals()}

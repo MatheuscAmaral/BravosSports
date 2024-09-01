@@ -240,6 +240,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [comments, setComments] = useState("");
   const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
   const [dateAbsence, setDateAbsence] = useState("");
+  const hostName = window.location.hostname;
   const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<
     ResponsibleProps[]
   >([]);
@@ -318,7 +319,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     try {
       const response = await axios.post(
-        "https://bravos-api.onrender.com/upload",
+        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
         formData,
         {
           headers: {
@@ -327,7 +328,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         }
       );
 
-      return `https://bravos-api.onrender.com/files/${response.data}`;
+      return `${hostName == "localhost" ? `http://localhost:3000/files/${response.data}` : `https://bravos-api.onrender.com/files/${response.data}`}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -614,6 +615,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
   const editData = async (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     let data;
     let verifyIfSaveImage;  
 
@@ -621,6 +623,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         verifyIfSaveImage = await saveImage();
     
         if (verifyIfSaveImage == "error") {
+          setLoading(true);
           return;
         }
     }
@@ -701,7 +704,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
 
     if (type == "agendarFalta") {
-      console.log(username)
       data = {
         registration: id,
         date: dateAbsence,

@@ -41,6 +41,7 @@ const ModalCompleteRegister = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const hostName = window.location.hostname;
 
   const closeModal = () => {
     toast(
@@ -59,7 +60,7 @@ const ModalCompleteRegister = () => {
 
     try {
       const response = await axios.post(
-        "https://bravos-api.onrender.com/upload",
+        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
         formData,
         {
           headers: {
@@ -67,8 +68,8 @@ const ModalCompleteRegister = () => {
           },
         }
       );
-
-      return `https://bravos-api.onrender.com/files/${response.data}`;
+      
+      return `${hostName == "localhost" ? `http://localhost:3000/files/${response.data}` : `https://bravos-api.onrender.com/files/${response.data}`}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -314,7 +315,7 @@ const ModalCompleteRegister = () => {
         </TabsContent>
         <TabsContent value="data">
           <form onSubmit={(e) => updateData(e, (user as unknown as UserProps).level)}>
-            <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
+            <Modal.Body className="relative" style={{ maxHeight: "400px" }}>
               <div className="space-y-6 mb-5">
                 {
                   (user as unknown as UserProps).level == 3 && (
@@ -338,8 +339,8 @@ const ModalCompleteRegister = () => {
 
                         {link ? (
                           <div className="flex justify-center">
-                            <svg className="p-10 flex justify-center">
-                              <image href={link} className="my-class w-80" />
+                            <svg className="ml-24 lg:ml-0 p-20 lg:p-10 flex justify-center">
+                              <image href={link} className="my-class w-52 lg:w-80" />
                             </svg>
                           </div>
                         ) : (
