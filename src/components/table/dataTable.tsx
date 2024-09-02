@@ -3054,12 +3054,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   placeholder="Pesquise pela descrição do esporte..."
                   value={
                     (table
-                      .getColumn("description")
+                      .getColumn("modality")
                       ?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
                     table
-                      .getColumn("description")
+                      .getColumn("modality")
                       ?.setFilterValue(event.target.value)
                   }
                 />
