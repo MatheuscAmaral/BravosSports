@@ -123,6 +123,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [modalMaxHeight, setModalMaxHeight] = React.useState("500px");
   const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
@@ -196,6 +197,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     return `${dia}/${mes}/${ano}`;
   }
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 375) { 
+        setModalMaxHeight("290px");
+      } else {
+        setModalMaxHeight("540px");
+      }
+    };
+
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const hoje = new Date();
   const dataBrasileira = formatarDataParaBrasileiro(hoje);
@@ -1346,7 +1362,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={createTeacher}>
                   <Modal.Body
                     className="relative"
-                    style={{ maxHeight: "500px" }}
+                     style={{ maxHeight: modalMaxHeight }}
                   >
                     <div className="space-y-6">
                       <div
@@ -1375,7 +1391,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         ) : (
                           <div className="flex flex-col gap-2 items-center justify-center ">
                             <IoIosImages fontSize={40} />
-                            <p className="w-full text-sm md:text-lg">
+                            <p className="w-full px-3 text-center text-sm md:text-lg">
                               Clique aqui para selecionar uma imagem.
                             </p>
                           </div>
@@ -1509,7 +1525,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={generateExcel}>
                   <Modal.Body
                     className="relative"
-                    style={{ maxHeight: "500px" }}
+                     style={{ maxHeight: modalMaxHeight }}
                   >
                     <div className="space-y-6">
                       <div className={cn("grade gap-2")}>
@@ -1629,7 +1645,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={createScheduleAbsence}>
                   <Modal.Body
                     className="relative"
-                    style={{ maxHeight: "500px" }}
+                     style={{ maxHeight: modalMaxHeight }}
                   >
                     {(user as unknown as UserProps).level != 3 ? (
                       <Tabs
@@ -1943,7 +1959,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={createStudent}>
                   <Modal.Body
                     className="relative"
-                    style={{ maxHeight: "500px" }}
+                    style={{ maxHeight: modalMaxHeight }}
                   >
                     <div className="space-y-6">
                       <div
@@ -1972,7 +1988,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         ) : (
                           <div className="flex flex-col gap-2 items-center justify-center ">
                             <IoIosImages fontSize={40} />
-                            <p className="w-full text-sm md:text-lg">
+                            <p className="w-full px-3 text-center text-sm md:text-lg">
                               Clique aqui para selecionar uma imagem.
                             </p>
                           </div>
@@ -2368,7 +2384,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Modal.Header>
 
                 <form onSubmit={(e) => createResponsiblesReleaseds(e)}>
-                  <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
+                  <Modal.Body className="relative"  style={{ maxHeight: modalMaxHeight }}>
                     <div className="space-y-6">
                       <div
                         className={`${
@@ -3455,7 +3471,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   ${
                     location.pathname == "/chamada" &&
                     (row.original as RowProps).status == 3
-                      ? " bg-red-500"
+                      ? " bg-orange-500"
+                      : ""
+                  }
+                  ${
+                    location.pathname == "/chamada" &&
+                    (row.original as RowProps).status == 0
+                      ? "bg-red-500"
                       : ""
                   } text-center`}
                 >
