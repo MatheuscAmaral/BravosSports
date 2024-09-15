@@ -38,7 +38,7 @@ export const columns: ColumnDef<RowProps>[] = [
           <img
             src={row.getValue("image") ? row.getValue("image") : noFoto}
             className="w-full h-full object-cover"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "10%" }}
           />
         </div>
       </div>

@@ -14,6 +14,7 @@ import ResponsiblesReleased from "../responsibles/responsiblesReleased";
 import ScheduleAbsence from "../responsibles/scheduleAbsence";
 import Users from "../users";
 import Units from "../units";
+import ClassesCoordenador from "../classes/classesCoordenador";
 
 const router = createBrowserRouter([
   {
@@ -96,6 +97,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Classes />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/turmas/alunos",
+        element: (
+          <PrivateRoute>
+            <ClassesCoordenador />
           </PrivateRoute>
         ),
       },

@@ -662,9 +662,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   if (route == "call") {
     React.useEffect(() => {
       const getTeamsFilter = async () => {
-        const response = await api.get(`/sports`);
+        const response = await api.get(`/sports/unit/${unitId}`);
 
-        response.data.unshift({ id: 999, modality: "Todos", status: 1 });
+        response.data.unshift({ id: 999, description: "Todos", status: 1 });
         setClassesDisp(response.data);
       };
 
@@ -674,7 +674,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getStudents = async () => {
     try {
-      const response = await api.get("/students");
+      const response = await api.get("/students/agendamentos");
 
       const formatedData = response.data.map((d: StudentsProps) => ({
         value: d.id,
@@ -1508,7 +1508,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     if (c.status == 1) {
                       return (
                         <SelectItem key={c.id} value={String(c.id)}>
-                          {c.modality}
+                          {c.description}
                         </SelectItem>
                       );
                     }
@@ -2236,7 +2236,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             {teamsDisp.map((t) => {
                               return (
                                 <SelectItem key={t.id} value={String(t.id)}>
-                                  {t.modality}
+                                  {t.description}
                                 </SelectItem>
                               );
                             })}
@@ -2331,6 +2331,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             <SelectItem value="2">Experimental</SelectItem>
                             <SelectItem value="3">Pendente</SelectItem>
                             <SelectItem value="0">Inativo</SelectItem>
+                            <SelectItem value="4">Desativado</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -2709,6 +2710,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           <SelectContent>
                             <SelectItem value="2">Professor</SelectItem>
                             <SelectItem value="1">Administrador</SelectItem>
+                            <SelectItem value="4">Porteiro</SelectItem>
+                            <SelectItem value="5">Coordenador</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -3070,12 +3073,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   placeholder="Pesquise pela descrição do esporte..."
                   value={
                     (table
-                      .getColumn("modality")
+                      .getColumn("description")
                       ?.getFilterValue() as string) ?? ""
                   }
                   onChange={(event) =>
                     table
-                      .getColumn("modality")
+                      .getColumn("description")
                       ?.setFilterValue(event.target.value)
                   }
                 />
@@ -3109,7 +3112,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={(e) => createSports(e)}>
                   <Modal.Body className="relative">
                     <div className="space-y-6">
-                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="description">
                           Descrição: <span className="text-red-500">*</span>
                         </label>
@@ -3120,9 +3123,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           onChange={(e) => setDescription(e.target.value)}
                           required
                         />
-                      </div> */}
+                      </div>
 
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                      {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="modality">
                           Modalidade: <span className="text-red-500">*</span>
                         </label>
@@ -3140,7 +3143,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             <SelectItem value="Vôlei">Vôlei</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
 
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="units">
@@ -3265,6 +3268,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           {column.id == "degree_kinship" &&
                             "Grau de parentesco"}
+
+                          {column.id == "description_sport" && "Esporte"}
 
                           {column.id == "modality" && "Modalidade"}
 
@@ -3479,10 +3484,17 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     (row.original as RowProps).status == 0
                       ? "bg-red-500"
                       : ""
-                  } text-center`}
+                  }
+                  ${
+                    location.pathname == "/alunos" &&
+                    (row.original as RowProps).status == 4
+                      ? "bg-red-500"
+                      : ""
+                  }`
+                }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="whitespace-nowrap">
+                    <TableCell key={cell.id} className={`whitespace-nowrap ${((location.pathname == "alunos" || location.pathname == "chamada") && (cell.column.id == "name" || cell.column.id == "responsible_name")) ? "text-left" : "text-center"}`}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

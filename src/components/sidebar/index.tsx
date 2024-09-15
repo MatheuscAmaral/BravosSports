@@ -126,6 +126,29 @@ const Sidebar = () => {
               path: "/agendamentos",
             },
           ];
+        } else if ((user as unknown as UserProps).level === 4) {
+          items = [
+            { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
+            {
+              label: "Responsáveis Liber...",
+              icon: <PiUserFocusBold fontSize={26} />,
+              path: "/responsaveis/liberados",
+            },
+            {
+              label: "Chamada",
+              icon: <FaClipboardList fontSize={24} />,
+              path: "/chamada",
+            },
+          ];
+        } else if ((user as unknown as UserProps).level === 5) {
+          items = [
+            { label: "Início", icon: <FaHome fontSize={24} />, path: "/" },
+            {
+              label: "Turmas",
+              icon: <BiSolidBusSchool fontSize={24} />,
+              path: "/turmas/alunos",
+            },
+          ];
         }
 
         return items.filter((item: { label: string }) =>

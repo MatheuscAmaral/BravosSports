@@ -41,7 +41,7 @@ export const columns: ColumnDef<RowProps>[] = [
           <img
             src={row.getValue("image") ? row.getValue("image") : noFoto}
             className="w-full h-full object-cover"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "10%" }}
           />
         </div>
       </div>
@@ -154,6 +154,8 @@ export const columns: ColumnDef<RowProps>[] = [
         {row.getValue("status") == 2 && "Experimental"}
 
         {row.getValue("status") == 3 && "Pendente"}
+
+        {row.getValue("status") == 4 && "Desativado"}
       </div>
     ),
   },

@@ -26,36 +26,36 @@ export interface SportsProps {
 }
 
 export const columnsClass: ColumnDef<RowProps>[] = [
-  // {
-  //   accessorKey: "description",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Descrição
-  //         <PiCaretUpDownBold className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  // },
   {
-    accessorKey: "modality",
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Modalidade
+          Descrição
           <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
+  // {
+  //   accessorKey: "modality",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Modalidade
+  //         <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+  // },
   {
     accessorKey: "desc_unit",
     header: ({ column }) => {

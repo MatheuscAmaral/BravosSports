@@ -67,6 +67,12 @@ export const columnsProf: ColumnDef<RowProps>[] = [
         {
             row.getValue("level") == 3 && "Responsável"
         }
+        {
+            row.getValue("level") == 4 && "Porteiro"
+        }
+        {
+            row.getValue("level") == 5 && "Coordenador"
+        }
     </div>,
   },
   {

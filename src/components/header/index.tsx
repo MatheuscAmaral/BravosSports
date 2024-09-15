@@ -129,13 +129,23 @@ const Header = () => {
               </li>
           )}
 
-          {((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 1 || (user as unknown as UserProps).level == 0) &&  (
+          {((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 1 || (user as unknown as UserProps).level == 0) || (user as unknown as UserProps).level == 4 &&  (
               <li
                 onClick={() => navigateToRoute("/responsaveis/liberados")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
                 <PiUserFocusBold fontSize={26} />
                 <p className="text-lg">Responsáveis liberados</p>
+              </li>
+          )}
+
+          {((user as unknown as UserProps).level == 5) && (
+              <li
+                onClick={() => navigateToRoute("/turmas/alunos")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full p-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
+                <BiSolidBusSchool fontSize={24} />
+                <p className="text-lg">Turmas</p>
               </li>
           )}
 
@@ -149,7 +159,7 @@ const Header = () => {
               </li>
           )}
 
-          {(user as unknown as UserProps).level != 3 &&  (
+          {(user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 &&  (
               <li
                 onClick={() => navigateToRoute("/chamada")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
@@ -159,7 +169,7 @@ const Header = () => {
               </li>
           )}
 
-          {(user as unknown as UserProps).level != 3 &&  (
+          {(user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 && (user as unknown as UserProps).level != 4 &&  (
               <li
                 onClick={() => navigateToRoute("/usuarios")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"

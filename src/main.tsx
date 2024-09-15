@@ -8,6 +8,7 @@ import AuthProvider from './contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import ReloadProvider from './contexts/ReloadContext';
 import ModalProvider from './contexts/ModalsContext';
+import ModalPictureProvider from './contexts/ModalPicture';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
  
@@ -19,9 +20,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} localization={ptBR}>
         <AuthProvider>
           <ReloadProvider>
-            <ModalProvider>
-              <RouterProvider router={router}/>
-            </ModalProvider>
+            <ModalPictureProvider>
+              <ModalProvider>
+                <RouterProvider router={router}/>
+              </ModalProvider>
+            </ModalPictureProvider>
           </ReloadProvider>
         </AuthProvider>
         

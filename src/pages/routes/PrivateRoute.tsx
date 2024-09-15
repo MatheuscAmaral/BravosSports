@@ -95,7 +95,7 @@ const PrivateRoute = ({ children }: any) => {
         const storedUser = localStorage.getItem("@bravosSports:user");
 
         if (storedUser) {
-            if (location.pathname == "/responsaveis/liberados" && (JSON.parse(storedUser).level != 3 && JSON.parse(storedUser).level != 1 && JSON.parse(storedUser).level != 0)) {
+            if (location.pathname == "/responsaveis/liberados" && (JSON.parse(storedUser).level != 4 && JSON.parse(storedUser).level != 3 && JSON.parse(storedUser).level != 1 && JSON.parse(storedUser).level != 0)) {
                 toast('Você não tem permissão para acessar essa tela!', {
                     icon: '⚠️',
                 });

@@ -37,7 +37,7 @@ import toast from "react-hot-toast";
 import api from "@/api";
 import { ReloadContext } from "./ReloadContext";
 import MaskedInput from "@/components/InputMask";
-import { AuthContext } from "./AuthContext";
+import { AuthContext, UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
 import { FiAlertOctagon } from "react-icons/fi";
@@ -104,7 +104,7 @@ const columnsStudentClass: ColumnDef<RowProps>[] = [
           <img
             src={row.getValue("image") ? row.getValue("image") : noFoto}
             className="w-full h-full object-cover"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "10%" }}
           />
         </div>
       </div>
@@ -145,7 +145,7 @@ const columnsResponsibleRealeaseds: ColumnDef<RowProps>[] = [
           <img
             src={row.getValue("image") ? row.getValue("image") : noFoto}
             className="w-full h-full object-cover"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "10%" }}
           />
         </div>
       </div>
@@ -162,16 +162,10 @@ const columnsResponsibleRealeaseds: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("phone")}</div>,
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {row.getValue("status") == "0" && "Inativo"}
-
-        {row.getValue("status") == "1" && "Ativo"}
-      </div>
-    ),
-  },
+    accessorKey: "degree_kinship",
+    header: "Grau de parentesco",
+    cell: ({ row }) => <div>{row.getValue("degree_kinship")}</div>,
+  }
 ];
 
 const columnsClass: ColumnDef<RowProps>[] = [
@@ -181,13 +175,6 @@ const columnsClass: ColumnDef<RowProps>[] = [
       return "Descrição";
     },
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  },
-  {
-    accessorKey: "modality",
-    header: () => {
-      return "Modalidade";
-    },
-    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
   },
   {
     accessorKey: "status",
@@ -205,8 +192,8 @@ const columnsClass: ColumnDef<RowProps>[] = [
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
-  const { username } = useContext(AuthContext);
-  const { filterStudentsByClass, reloadPage, filterId } =
+  const { user, username } = useContext(AuthContext);
+  const { filterStudentsByClass, reloadPage, verifyUserCreate, filterId } =
     useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -235,7 +222,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
-  const [user, setUser] = useState("");
+  const [userId, setUserId] = useState("");
   const [date, setDate] = useState("");
   const [comments, setComments] = useState("");
   const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
@@ -406,7 +393,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "teacher") {
       setUnits(String(row[0].unit));
       setName(row[0].name);
-      setUser(row[0].userId);
+      setUserId(row[0].userId);
     }
 
     if (type == "teacherClass") {
@@ -427,7 +414,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "call") {
       try {
         const response = await api.get(
-          `/responsibles/releaseds/${row[0].user_id}`
+          `/responsibles/releaseds/call/${row[0].user_id}`
         );
 
         setResponsibleRealeaseds(response.data);
@@ -439,7 +426,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     type != "agendarFalta" ? setStatus(String(row[0].status)) : setStatus(String(row[0].status_call));
     setId(String(row[0].id));
   };
-
 
 
   const getUnits = async () => {
@@ -567,7 +553,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setDescription("");
     setModality("");
     setId("");
-    setUser("");
+    setUserId("");
     setDate("");
     setClassTime("");
     setClassTimeCall("");
@@ -658,7 +644,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         image: verifyIfSaveImage,
         name: name,
         phone: phone,
-        userId: user,
+        userId: userId,
         status: status,
       };
 
@@ -764,6 +750,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
       filterStudentsByClass(filterId);
       reloadPage();
+      verifyUserCreate(true);
       setError(false);
       setOpenModal(false);
     } catch (error: any) {
@@ -1042,14 +1029,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     <Input
                       id="description"
                       name="description"
-                      placeholder="Digite o descrição da turma..."
+                      placeholder="Digite o descrição do esporte..."
                       onChange={(e) => setDescription(e.target.value)}
                       value={description}
                       required
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="modality">
                       Modalidade: <span className="text-red-500">*</span>
                     </label>
@@ -1071,7 +1058,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         <SelectItem value="Vôlei">Vôlei</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </div> */}
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="units">
@@ -1337,7 +1324,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         {teamsDisp.map((t) => {
                           return (
                             <SelectItem key={t.id} value={String(t.id)}>
-                              {t.modality}
+                              {t.description}
                             </SelectItem>
                           );
                         })}
@@ -1484,7 +1471,34 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "studentsClass" &&
+              {
+                ((user as unknown as UserProps).level != 3 && type == "responsibles_released") &&
+                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="status">
+                    Status: <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    required
+                    onValueChange={(e) => setStatus(e)}
+                    defaultValue={status}
+                  >
+                    <SelectTrigger className="w-full" id="status">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(
+                        <>
+                          <SelectItem value="1">Ativo</SelectItem>
+                          <SelectItem value="0">Inativo</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              }
+
+                {type != "studentsClass" &&
+                type != "responsibles_released" &&
                 type != "teacherClass" &&
                 type != "call" && (
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -1506,6 +1520,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                             <SelectItem value="2">Experimental</SelectItem>
                             <SelectItem value="3">Pendente</SelectItem>
                             <SelectItem value="0">Inativo</SelectItem>
+                            <SelectItem value="4">Desativado</SelectItem>
                           </>
                         )}
 
@@ -1557,3 +1572,4 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 };
 
 export default ModalProvider;
+

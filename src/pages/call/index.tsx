@@ -32,6 +32,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { FaCircleQuestion } from "react-icons/fa6";
+import { modalPictureContext } from "@/contexts/ModalPicture";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -103,7 +104,7 @@ export const columns: ColumnDef<RowProps>[] = [
           <img
             src={row.getValue("image") ? row.getValue("image") : noFoto}
             className="w-full h-full object-cover"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "10%" }}
           />
         </div>
       </div>
@@ -140,7 +141,7 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
-    accessorKey: "modality",
+    accessorKey: "description_sport",
     header: ({ column }) => {
       return (
         <Button
@@ -152,7 +153,7 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("modality")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description_sport")}</div>,
   },
   {
     accessorKey: "date_of_birth",
@@ -258,29 +259,38 @@ export const columns: ColumnDef<RowProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const { open } = useContext(modalContext);
+      const { openPicture } = useContext(modalPictureContext);
 
       const openModals = (data: RowProps[]) => {
         open(data, "Responsáveis cadastrados", "call");
       };
 
+      const openModalPicture = (data: RowProps[]) => {
+        openPicture(data[0].name, data[0].image);
+        console.log(data)
+      };
+
       return (
         <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openModals([row.original])}>
-                Ver responsáveis
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => openModals([row.original])}>
+              Ver responsáveis
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModalPicture([row.original])}>
+              Ver Foto
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       );
     },
   },
