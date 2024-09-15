@@ -159,7 +159,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   >([]);
   const [team, setTeam] = React.useState("");
   const [teamsDisp, setTeamsDisp] = React.useState<ClassesProps[]>([]);
-  const [modality, setModality] = React.useState("");
   const [units, setUnits] = React.useState("");
   const [unitsDisp, setUnitsDisp] = React.useState<UnitsProps[]>([]);
   const [classFilter, setClassFilter] = React.useState("999");
@@ -765,7 +764,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       description: description,
-      modality: modality,
       unit: units,
       status: status,
     };
