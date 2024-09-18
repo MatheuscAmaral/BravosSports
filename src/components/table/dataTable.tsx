@@ -2363,6 +2363,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </>
           )}
 
+        {route == "turmasCoordenador" && (
+            <>
+              <div className={`flex justify-center w-full gap-4`}>
+                <Input
+                  placeholder="Nome do aluno..."
+                  value={
+                    (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("name")?.setFilterValue(event.target.value)
+                  }
+                />
+              </div>
+            </>
+          )}
+
+
           {route == "responsibles_released" && (
             <>
               <Input
@@ -3379,7 +3396,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             <Button
               onClick={() => openModals()}
               className={`${
-                route != "responsibles_released" ? "hidden" : "flex"
+                route != "responsibles_released" || (user as unknown as UserProps).level == 4 ? "hidden" : "flex"
               } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />

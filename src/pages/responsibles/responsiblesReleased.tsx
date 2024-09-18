@@ -27,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { StudentsProps } from "../students";
+import { modalPictureContext } from "@/contexts/ModalPicture";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -117,6 +119,13 @@ export const columns: ColumnDef<RowProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const { open } = useContext(modalContext);
+      const { openPicture } = useContext(modalPictureContext);
+      const { user } = useContext(AuthContext);
+
+      const openModalPicture = (data: RowProps[]) => {
+        openPicture(data[0].name, data[0].image);
+        console.log(data)
+      };
 
       const openModals = (data: RowProps[]) => {
         open(data, "Editar responsável", "responsibles_released");
@@ -134,9 +143,17 @@ export const columns: ColumnDef<RowProps>[] = [
 
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openModals([row.original])}>
-                Editar
-              </DropdownMenuItem>
+              {
+                (user as unknown as UserProps).level != 4 ?(
+                  <DropdownMenuItem onClick={() => openModals([row.original])}>
+                    Editar
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => openModalPicture([row.original])}>
+                    Ver Foto
+                  </DropdownMenuItem>
+                )
+              }
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -150,6 +167,7 @@ const ResponsiblesReleased = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
+  const [students, setStudents] = useState<StudentsProps[]>([]);
   const [responsibleId, setResponsibleId] = useState("");
   const { reloadPage, saveResponsibleId, createdUser } =
     useContext(ReloadContext);
@@ -171,10 +189,8 @@ const ResponsiblesReleased = () => {
 
       const response = await api.get(
         `/responsibles/releaseds/${
-          (user as unknown as UserProps).level != 3
-            ? responsibleId
-            : (user as unknown as UserProps).id
-        }`
+          (user as unknown as UserProps).level != 3 ? responsibleId : (user as unknown as UserProps).id
+        }/${(user as unknown as UserProps).level}`
       );
 
       setReady(true);
@@ -196,6 +212,18 @@ const ResponsiblesReleased = () => {
       setResponsibles(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStudents = async () => {
+    try {
+      const response = await api.get(`/students/`);
+
+      setStudents(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     } finally {
       setLoading(false);
     }
@@ -230,6 +258,17 @@ const ResponsiblesReleased = () => {
 
       getResponsibles();
     }
+
+    else if (
+      (user as unknown as UserProps).level == 4
+    ) {
+      if (createdUser) {
+        getResponsiblesReleased();
+        return;
+      }
+
+      getStudents();
+    }
   }, [reloadPage]);
 
   return (
@@ -255,7 +294,13 @@ const ResponsiblesReleased = () => {
 
       <Modal show={openModal} onClose={() => closeModal()}>
         <Modal.Header>
-          Selecione um <span className="text-primary-color">responsável</span>
+          {
+            ((user as unknown as UserProps).level != 4) ? (
+              <>Selecione um <span className="text-primary-color">responsável</span></>
+            ) : (
+              <>Selecione um <span className="text-primary-color">aluno</span></>
+            )
+          }
         </Modal.Header>
 
         <form onSubmit={(e) => getResponsiblesReleased(e)}>
@@ -263,24 +308,50 @@ const ResponsiblesReleased = () => {
             <div className="space-y-6">
               <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                 <label htmlFor="unit">
-                  Responsável: <span className="text-red-500">*</span>
+                  { 
+                    ((user as unknown as UserProps).level != 4) ? (
+                      <>Responsável: <span className="text-red-500">*</span></>
+                    ) : (
+                      <>Aluno: <span className="text-red-500">*</span></>
+                    )
+                  }
                 </label>
 
-                <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
-                  <SelectTrigger className="w-full" id="responsible">
-                    <SelectValue placeholder="Selecione o responsável desejado" />
-                  </SelectTrigger>
+                { 
+                  ((user as unknown as UserProps).level != 4) ? (
+                    <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
+                      <SelectTrigger className="w-full" id="responsible">
+                        <SelectValue placeholder="Selecione o responsável desejado" />
+                      </SelectTrigger>
 
-                  <SelectContent>
-                    {responsibles.map((r) => {
-                      return (
-                        <SelectItem key={r.user_id} value={r.user_id}>
-                          {r.name}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                      <SelectContent>
+                        {responsibles.map((r) => {
+                          return (
+                            <SelectItem key={r.user_id} value={r.user_id}>
+                              {r.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
+                      <SelectTrigger className="w-full" id="student">
+                        <SelectValue placeholder="Selecione o aluno desejado" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {students.map((s) => {
+                          return (
+                            <SelectItem key={s.responsible} value={String(s.responsible)}>
+                              {s.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )
+                }
               </div>
             </div>
           </Modal.Body>

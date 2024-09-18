@@ -47,6 +47,7 @@ function Home() {
         const response = await api.get(
           `/statistics/responsibles/${(user as unknown as UserProps).id}`
         );
+
         setStatistics([response.data]);
       } catch {
         toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
@@ -55,13 +56,14 @@ function Home() {
       }
     };
 
-    if ((user as unknown as UserProps).level != 3) {
+    if ((user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 4) {
       getStatistics();
     }
 
-    if ((user as unknown as UserProps).level == 3) {
+    if ((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 4) {
       getStatisticsResponsibles();
     }
+    
   });
 
   return (
@@ -232,7 +234,7 @@ function Home() {
       )}
 
       {
-        (user as unknown as UserProps).level == 5 || (user as unknown as UserProps).level == 4 || (user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 2 || (user as unknown as UserProps).level == 1 &&
+        ((user as unknown as UserProps).level == 5 || (user as unknown as UserProps).level == 4 || (user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 2 || (user as unknown as UserProps).level == 1) &&
           (user as unknown as UserProps).complete_register == 0 && (
             <ModalCompleteRegister />
           )
