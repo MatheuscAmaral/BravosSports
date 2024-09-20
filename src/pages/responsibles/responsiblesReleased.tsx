@@ -181,7 +181,6 @@ const ResponsiblesReleased = () => {
     label: "",
     class: "",
   });  
-  const [isOpen, setIsOpen] = useState(false);
   const { reloadPage, saveResponsibleId, createdUser } =
     useContext(ReloadContext);
   const [loading, setLoading] = useState(false);
@@ -377,8 +376,6 @@ const ResponsiblesReleased = () => {
                       // @ts-ignore
                       options={students}
                       className="basic-multi-select text-sm mb-10"
-                      onMenuOpen={() => setIsOpen(true)}
-                      onMenuClose={() => setIsOpen(false)}
                       maxMenuHeight={200}
                       placeholder="Selecione o aluno"
                     />

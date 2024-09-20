@@ -323,7 +323,6 @@ export const columns: ColumnDef<RowProps>[] = [
 const Call = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(true);
-  const [openModalReason, setOpenModalReason] = useState(true);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [data, setData] = useState<StudentsProps[]>([]);
@@ -332,7 +331,6 @@ const Call = () => {
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
-  const [reason, setReason] = useState("");
   const { reloadPage, newStudentsCall, saveUnitName, saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
     useContext(ReloadContext);
 
