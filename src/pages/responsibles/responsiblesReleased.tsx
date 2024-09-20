@@ -199,8 +199,6 @@ const ResponsiblesReleased = () => {
     try {
       setLoading(true);
 
-      console.log(responsibleId)
-
       let responsiblePath = "";
 
       if ((user as unknown as UserProps).level !== 3 && (user as unknown as UserProps).level !== 4) {
@@ -214,7 +212,6 @@ const ResponsiblesReleased = () => {
       const response = await api.get(
         `/responsibles/releaseds/${responsiblePath}/${(user as unknown as UserProps).level}`
       );
-
 
       setReady(true);
       setOpenModal(false);
@@ -245,7 +242,7 @@ const ResponsiblesReleased = () => {
       const response = await api.get(`/students/`);
 
       const formatedData = response.data.map((d: StudentsProps) => ({
-        value: d.id,
+        value: d.responsible,
         label: d.name,
         class: d.class,
       }));
