@@ -46,6 +46,30 @@ export const columns: ColumnDef<RowProps>[] = [
       const changePresence = (presence: number) => {
         setPresence(presence);
         row.original.presence = presence;
+
+        if(presence == 0) {
+        //   <Modal show={openModalReason} onClose={() => setOpenModalReason(false)}>
+        //   <Modal.Header>
+        //     Motivo da <span className="text-primary-color">falta</span>
+        //   </Modal.Header>
+        //   <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
+        //     <div className="space-y-6">
+        //       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+        //         <label htmlFor="reason">Escreva o motivo da falta:</label>
+        //         <Input id="reason" onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo da falta..." />
+        //       </div>
+        //     </div>
+        //   </Modal.Body>
+        //   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+        //     <Button
+        //       type="submit"
+        //       className="bg-primary-color hover:bg-secondary-color"
+        //     >
+        //       Salvar
+        //     </Button>
+        //   </Modal.Footer>
+        // </Modal>
+        }
       };
 
       return (
@@ -299,6 +323,7 @@ export const columns: ColumnDef<RowProps>[] = [
 const Call = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(true);
+  const [openModalReason, setOpenModalReason] = useState(true);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [data, setData] = useState<StudentsProps[]>([]);
@@ -307,6 +332,7 @@ const Call = () => {
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
+  const [reason, setReason] = useState("");
   const { reloadPage, newStudentsCall, saveUnitName, saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
     useContext(ReloadContext);
 

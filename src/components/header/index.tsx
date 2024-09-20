@@ -182,7 +182,7 @@ const Header = () => {
           <div className="fixed h-20 bottom-0 bg-white left-3 w-full pr-6">
             <hr/>
 
-            <li className="flex justify-between gap-3 mt-2 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer">
+            <li className="flex justify-between gap-3 mt-2 w-full pl-3 py-2 rounded-lg items-center text-gray-600 font-semibold cursor-pointer">
               <div className="flex items-center gap-3.5">
                 <FaUserAlt fontSize={23} />
                 <p className="text-lg">{(user as unknown as UserProps).name}</p>
@@ -190,8 +190,8 @@ const Header = () => {
 
               <IoLogOutOutline
                 onClick={LogOut}
-                fontSize={26}
-                className="cursor-pointer mr-2"
+                fontSize={40}
+                className="cursor-pointer mr-2 rounded-md p-2 hover:bg-gray-100 transition-all"
               />
             </li>
           </div>

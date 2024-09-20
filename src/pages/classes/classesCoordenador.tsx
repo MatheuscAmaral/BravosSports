@@ -191,7 +191,7 @@ const ClassesCoordenador = () => {
       try {
         setLoading(true);
 
-        const response = await api.get("/classes");
+        const response = await api.get("/classes/coordinator");
         setClasses(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -245,17 +245,17 @@ const ClassesCoordenador = () => {
           <TbArrowsExchange className="text-white" fontSize={20} />
         </button>
       </section>
+      
       <Modal show={openModal} onClose={() => closeModal()}>
         <Modal.Header>Selecione uma <span className="text-primary-color">turma</span></Modal.Header>
-
         <form onSubmit={(e) => getStudents(e)}>
           <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
             <div className="space-y-6">
               <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                 <label htmlFor="unit">Turmas: <span className="text-red-500">*</span> </label>
-                  <Select value={classId} required onValueChange={(e) => setClassId(e)}>
+                  <Select disabled={classes.length == 0} value={classId} required onValueChange={(e) => setClassId(e)}>
                     <SelectTrigger className="w-full" id="classes">
-                      <SelectValue placeholder="Selecione a turma desejada" />
+                      <SelectValue placeholder={classes.length > 0 ? "Selecione a turma desejada" : "Nenhuma turma disponível"} />
                     </SelectTrigger>
 
                     <SelectContent>

@@ -7,6 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import SelectReact from "react-select";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
@@ -162,6 +163,12 @@ export const columns: ColumnDef<RowProps>[] = [
   },
 ];
 
+interface FormatedResponsibleProps {
+  value: string;
+  label: string;
+  class: string;
+}
+
 const ResponsiblesReleased = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -169,6 +176,12 @@ const ResponsiblesReleased = () => {
   const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [responsibleId, setResponsibleId] = useState("");
+  const [formatedResponsibleId, setFormatedResponsibleId] = useState<FormatedResponsibleProps>({
+    value: "",   
+    label: "",
+    class: "",
+  });  
+  const [isOpen, setIsOpen] = useState(false);
   const { reloadPage, saveResponsibleId, createdUser } =
     useContext(ReloadContext);
   const [loading, setLoading] = useState(false);
@@ -187,11 +200,22 @@ const ResponsiblesReleased = () => {
     try {
       setLoading(true);
 
+      console.log(responsibleId)
+
+      let responsiblePath = "";
+
+      if ((user as unknown as UserProps).level !== 3 && (user as unknown as UserProps).level !== 4) {
+        responsiblePath = responsibleId;
+      } else if ((user as unknown as UserProps).level === 3) {
+        responsiblePath = String((user as unknown as UserProps).id);
+      } else if ((user as unknown as UserProps).level === 4) {
+        responsiblePath = formatedResponsibleId.value;
+      }
+
       const response = await api.get(
-        `/responsibles/releaseds/${
-          (user as unknown as UserProps).level != 3 ? responsibleId : (user as unknown as UserProps).id
-        }/${(user as unknown as UserProps).level}`
+        `/responsibles/releaseds/${responsiblePath}/${(user as unknown as UserProps).level}`
       );
+
 
       setReady(true);
       setOpenModal(false);
@@ -221,7 +245,13 @@ const ResponsiblesReleased = () => {
     try {
       const response = await api.get(`/students/`);
 
-      setStudents(response.data);
+      const formatedData = response.data.map((d: StudentsProps) => ({
+        value: d.id,
+        label: d.name,
+        class: d.class,
+      }));
+
+      setStudents(formatedData);
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     } finally {
@@ -335,21 +365,23 @@ const ResponsiblesReleased = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
-                      <SelectTrigger className="w-full" id="student">
-                        <SelectValue placeholder="Selecione o aluno desejado" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {students.map((s) => {
-                          return (
-                            <SelectItem key={s.responsible} value={String(s.responsible)}>
-                              {s.name}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                    <SelectReact
+                      defaultValue={[]}
+                      name="students"
+                      value={formatedResponsibleId.value == "" ? "" : formatedResponsibleId}
+                      // @ts-ignore
+                      onChange={(e) => setFormatedResponsibleId(e)}
+                      noOptionsMessage={() =>
+                        "Nenhum resultado encontrado"
+                      }
+                      // @ts-ignore
+                      options={students}
+                      className="basic-multi-select text-sm mb-10"
+                      onMenuOpen={() => setIsOpen(true)}
+                      onMenuClose={() => setIsOpen(false)}
+                      maxMenuHeight={200}
+                      placeholder="Selecione o aluno"
+                    />
                   )
                 }
               </div>

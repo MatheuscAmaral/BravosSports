@@ -61,6 +61,7 @@ export interface RowProps {
   name: string;
   responsible_name: string;
   responsible: number;
+  free_view_coordinator: number;
   class: number;
   phone: string;
   status: number;

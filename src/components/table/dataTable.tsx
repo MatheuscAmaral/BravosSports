@@ -3,7 +3,7 @@ import "moment/locale/pt-br";
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { TbLoader3, TbAdjustmentsHorizontal } from "react-icons/tb";
-import { BsBuildingAdd } from "react-icons/bs";
+import { BsBuildingAdd, BsUiChecksGrid } from "react-icons/bs";
 import { saveAs } from "file-saver";
 import ExcelJS from "exceljs";
 import {
@@ -15,6 +15,7 @@ import Datepicker from "tailwind-datepicker-react";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { DateRange } from "react-day-picker";
 import {
+  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -78,6 +79,7 @@ import { RowProps } from "@/contexts/ModalsContext";
 import { StudentsProps } from "@/pages/students";
 import axios from "axios";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
+import { Checkbox } from "../ui/checkbox";
 
 interface DataTableProps {
   data: [];
@@ -118,6 +120,59 @@ export interface UnitsProps {
   status: number;
 }
 
+export const columnsCoordinator: ColumnDef<RowProps>[] = [
+  {
+    id: "select",
+    header: "",
+    cell: ({ row }) => {
+      const [valueCheck, setValueCheck] = React.useState(row.original.free_view_coordinator);
+
+      const changeFieldValue = (value: boolean) => {
+        row.toggleSelected(value);
+      
+        if (value == true) {
+          row.original.free_view_coordinator = 1;
+          setValueCheck(1);
+        } else {
+          row.original.free_view_coordinator = 0;
+          setValueCheck(0);
+        }
+      };
+
+      return (
+        <Checkbox
+          checked={row.original.free_view_coordinator == 1 || valueCheck == 1}
+          onCheckedChange={(value) => changeFieldValue(!!value)} 
+          aria-label="Select row"
+        />
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "description",
+    header: "Descrição",
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+  },
+  {
+    accessorKey: "desc_unit",
+    header: "Unidade",
+    cell: ({ row }) => <div>{row.getValue("desc_unit")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("status") == 0 && "Inativo"}
+
+        {row.getValue("status") == 1 && "Ativo"}
+      </div>
+    ),
+  },
+];
+
 export function DataTable({ data, columns, route }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -127,6 +182,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
+  const [openCoordinatorModal, setOpenCoordinatorModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [link, setLink] = React.useState("");
@@ -973,6 +1029,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     };
   };
 
+
+  const selectClassesToCoordinatorSee = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await api.put("/classes/coordinator", data);
+      
+      reloadPage();
+    } catch {
+      toast.error("Ocorreu um erro ao selecionar as turmas!");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const makeCall = async (students: Student[]) => {
     try {
       const studentsMap = students.map((s) => s.original);
@@ -1038,6 +1109,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const openExcelModal = async () => {
     setOpenModal(true);
+  };
+
+  const openCoordinatorModals = async () => {
+    setOpenCoordinatorModal(true);
   };
 
   const closeModal = () => {
@@ -1312,7 +1387,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         className={`${
           route == "studentsClass" ||
           route == "teacherClass" ||
-          route == "responsibleRealeaseds"
+          route == "responsibleRealeaseds" ||
+          route == "turmasCoordenadorSelect"
             ? "hidden"
             : openFilter
             ? "bg-white xl:bg-gray-50 px-5 xl:px-0 py-10 xl:py-0"
@@ -2900,6 +2976,45 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Select>
               </div>
 
+              <Modal show={openCoordinatorModal} onClose={() => setOpenCoordinatorModal(false)}>
+                <Modal.Header>
+                  Selecionar <span className="text-primary-color">turmas</span>
+                </Modal.Header>
+                <form onSubmit={(e) => selectClassesToCoordinatorSee(e)}>
+                  <Modal.Body className="relative">
+                    <div>
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                        <DataTable
+                          //@ts-ignore
+                          columns={columnsCoordinator}
+                          //@ts-ignore
+                          data={data}
+                          route={"turmasCoordenadorSelect"}
+                        />
+                      </div>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    <Button
+                      className="text-center bg-primary-color hover:bg-secondary-color"
+                      type="submit"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center">
+                          <TbLoader3
+                            fontSize={23}
+                            style={{ animation: "spin 1s linear infinite" }}
+                          />
+                        </div>
+                      ) : (
+                        "Salvar"
+                      )}
+                    </Button>
+                  </Modal.Footer>
+                </form>
+              </Modal>
+
+
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>
                   Cadastro de <span className="text-primary-color">turma</span>
@@ -2990,6 +3105,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Footer>
                 </form>
               </Modal>
+
+
             </>
           )}
 
@@ -3234,10 +3351,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           <div className="flex gap-5">
-            {route != "studentsClass" && route != "teacherClass" && (
+            {route != "studentsClass" && route != "teacherClass" && route != "turmasCoordenadorSelect" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="w-full xl:w-40">
-                  <Button variant="outline" className="hidden lg:flex ml-auto gap-1">
+                  <Button variant="outline" className={`${(route == "call" || route == "turmas") ? "hidden 2xl:flex" : ""} ml-auto gap-1`}>
                     <TbAdjustmentsHorizontal fontSize={20} /> Colunas
                   </Button>
                 </DropdownMenuTrigger>
@@ -3324,13 +3441,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             </Button>
 
             <Button
+              onClick={() => openCoordinatorModals()}
+              className={`${
+                route != "turmas" ? "hidden" : "flex"
+              } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <BsUiChecksGrid fontSize={16} className="hidden md:flex" />
+              Selecionar 
+            </Button>
+
+            <Button
               onClick={() => openModals()}
               className={`${
                 route != "turmas" ? "hidden" : "flex"
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdGroupAdd fontSize={22} className="hidden md:flex" />
-              Cadastrar <span className="hidden md:block">turma</span>
+              Cadastrar 
             </Button>
 
             <Button
@@ -3362,16 +3489,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Cadastrar <span className="hidden md:block">professor</span>
             </Button>
-
-            {/* <Button
-              onClick={() => openModals()}
-              className={`${
-                route != "responsibles" ? "hidden" : "flex"
-              } w-full xl:max-w-56 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
-            >
-              <MdPersonAdd fontSize={20} className="hidden md:flex" />
-              Cadastrar <span className="hidden md:block">responsável</span>
-            </Button> */}
 
             <Button
               onClick={() => openModals()}
