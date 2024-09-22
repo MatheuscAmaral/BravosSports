@@ -8,7 +8,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 const PrivateRoute = ({ children }: any) => {
     const navigate = useNavigate();
     const { user, authUser } = useContext(AuthContext);
-    const { resetNewStudents, resetData } = useContext(ReloadContext);
+    const { resetNewStudents, resetData, saveReason } = useContext(ReloadContext);
     const location = useLocation();
 
     useEffect(() => {
@@ -60,6 +60,10 @@ const PrivateRoute = ({ children }: any) => {
                 <Navigate to={lastVisitedRoute}/>
                 return;
             }
+        }
+
+        if (location.pathname != "call") {
+            saveReason([]);
         }
     }, [location.pathname]);
     

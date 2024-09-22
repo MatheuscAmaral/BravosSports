@@ -218,7 +218,7 @@ export const columns: ColumnDef<RowProps>[] = [
           setComments(reason[0].comments_call); 
         }
 
-        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].presence == 1) {
+        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].presence == 1 && row.original.presence == 1) {
           setComments("");
         }
       }, [reason, row.original.id]);
