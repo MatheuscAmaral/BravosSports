@@ -112,7 +112,7 @@ function Home() {
                     <div className="flex justify-between w-full">
                       <MdFormatListBulletedAdd fontSize={30} />
                       <p className="text-3xl font-bold">
-                        {s.schedule_absence}
+                        {/* {s.schedule_absence} */}
                       </p>
                     </div>
                   </div>
