@@ -169,7 +169,7 @@ const Header = () => {
               </li>
           )}
 
-          {(user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 && (user as unknown as UserProps).level != 4 &&  (
+          {(user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 && (user as unknown as UserProps).level != 4 && (user as unknown as UserProps).level != 2  &&  (
               <li
                 onClick={() => navigateToRoute("/usuarios")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"

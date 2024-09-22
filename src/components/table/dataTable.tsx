@@ -144,7 +144,9 @@ export const columnsCoordinator: ColumnDef<RowProps>[] = [
           checked={row.original.free_view_coordinator == 1 || valueCheck == 1}
           onCheckedChange={(value) => changeFieldValue(!!value)} 
           aria-label="Select row"
+          className="h-5 w-5"
         />
+
       )
     },
     enableSorting: false,
@@ -1026,6 +1028,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       date: string | null;
       schedule_by_responsible: number;
       status_call: number;
+      comments_call: string;
     };
   };
 
@@ -1070,6 +1073,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 schedule_by_responsible: 1,
                 status_call: student.status_call,
               }),
+            comments: student.presence == 1 ? null : student.comments_call
           };
         });
 

@@ -28,6 +28,7 @@ export interface StudentsProps {
   team: string;
   phone: string;
   status: number;
+  comments_call: string;
   class_time: string;
 }
 

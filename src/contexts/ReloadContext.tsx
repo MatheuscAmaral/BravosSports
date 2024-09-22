@@ -12,27 +12,31 @@ interface ReloadDataProps {
     saveUnitName: (name: string) => void;
     saveClassName: (name: string) => void;
     saveDayTrainingName: (name: string) => void;
-    dayTrainingName: string;
-    className: string;
-    unitName: string;
-    newStudents: StudentsProps[];
-    newStudentsCall: StudentsProps[];
     resetData: () => void;
-    newData: RowProps[];
-    filterId: number;
-    teamId: number;
     verifyUserCreate: (response: boolean) => void;
-    idClass: number;
     saveClassId: (id: number) => void;
-    createdUser: boolean;
     resetNewStudents: () => void
     resetSelect: () => void;
-    unitId: number;
-    daySaved: string;
-    respId: number;
     saveUnitId: (id: number) => void;
     saveDayTraining: (time: string) => void;
     saveResponsibleId: (respId: number) => void;
+    saveReason: (row: RowProps[]) => void;
+    saveData: (data: StudentsProps[]) => void;
+    filterId: number;
+    teamId: number;
+    idClass: number;
+    createdUser: boolean;
+    dayTrainingName: string;
+    className: string;
+    unitName: string;
+    unitId: number;
+    daySaved: string;
+    respId: number;
+    newData: RowProps[];
+    newStudents: StudentsProps[];
+    newStudentsCall: StudentsProps[];
+    data: StudentsProps[];
+    reason: RowProps[];
 }
 
 interface ChildrenProps {
@@ -56,6 +60,8 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [unitName, setUnitName] = useState("");
     const [className, setClassName] = useState("");
     const [dayTrainingName, setDayTrainingName] = useState("");
+    const [reason, setReason] = useState<RowProps[]>([]);
+    const [data, setData] = useState<StudentsProps[]>([]);
 
     const reloadPage = () => {
         setReload(!reload);
@@ -67,6 +73,14 @@ const ReloadProvider = ({children}: ChildrenProps) => {
 
     const saveUnitName = (name: string) => {
         setUnitName(name);
+    }
+
+    const saveReason = (row: RowProps[]) => {
+        setReason(row);
+    }
+
+    const saveData = (data: StudentsProps[]) => {
+        setData(data);
     }
 
     const saveClassName = (name: string) => {
@@ -150,7 +164,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     return (
-        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitName, saveClassName, saveDayTrainingName, dayTrainingName, className, unitName, respId, saveResponsibleId, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
+        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitName, saveClassName, saveData, data, saveDayTrainingName, dayTrainingName, className, unitName, respId, saveResponsibleId, reason, saveReason, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

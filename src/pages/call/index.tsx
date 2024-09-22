@@ -8,7 +8,6 @@ import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
-import { StudentsProps } from "../students";
 import { Modal } from "flowbite-react";
 import noFoto from "../../assets/noFoto.jpg";
 import { GoAlertFill } from "react-icons/go";
@@ -40,77 +39,61 @@ export const columns: ColumnDef<RowProps>[] = [
     header: "Presença",
     cell: ({ row }) => {
       const [presence, setPresence] = useState(row.original.presence);
+      const { open } = useContext(modalContext);
+      const { reason, saveReason } = useContext(ReloadContext);
       const statusCall = row.original.status_call;
       const schedule = row.original.schedule_by_responsible;
-
+  
+      const openModals = (data: RowProps[], title: string, type: string) => {
+        open(data, title, type);
+      };
+  
+      useEffect(() => {
+        if (reason.length > 0 && reason[0] && reason[0].comments_call !== "" && row.original.id === reason[0].id) {
+          setPresence(presence);
+        }
+      }, [reason, row.original.id]);
+      
+  
       const changePresence = (presence: number) => {
-        setPresence(presence);
-        row.original.presence = presence;
-
-        if(presence == 0) {
-        //   <Modal show={openModalReason} onClose={() => setOpenModalReason(false)}>
-        //   <Modal.Header>
-        //     Motivo da <span className="text-primary-color">falta</span>
-        //   </Modal.Header>
-        //   <Modal.Body className="relative" style={{ maxHeight: "500px" }}>
-        //     <div className="space-y-6">
-        //       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-        //         <label htmlFor="reason">Escreva o motivo da falta:</label>
-        //         <Input id="reason" onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo da falta..." />
-        //       </div>
-        //     </div>
-        //   </Modal.Body>
-        //   <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-        //     <Button
-        //       type="submit"
-        //       className="bg-primary-color hover:bg-secondary-color"
-        //     >
-        //       Salvar
-        //     </Button>
-        //   </Modal.Footer>
-        // </Modal>
+        if (presence === 0) {
+          openModals([row.original], "Motivo da falta", "reasonAbsence");
+        } else {
+          setPresence(presence);
+          row.original.presence = presence;
+          row.original.comments_call = "";
+          saveReason([row.original]);
         }
       };
-
+  
       return (
         <div className="flex justify-center items-center gap-3 text-2xl bg-gray-50 p-2 w-20 mx-auto rounded-lg">
           <button
-            disabled={(schedule != null && statusCall != 0)}
-            className={(schedule != null && statusCall != 0) ? "cursor-not-allowed" : ""}
+            disabled={schedule != null && statusCall != 0}
+            className={schedule != null && statusCall != 0 ? "cursor-not-allowed" : ""}
             onClick={() => changePresence(1)}
-            title={
-              (schedule != null && statusCall != 0)
-                ? "Não é possível alterar uma falta agendada"
-                : ""
-            }
+            title={schedule != null && statusCall != 0 ? "Não é possível alterar uma falta agendada" : ""}
           >
             <IoIosCheckmarkCircle
               className={`${
-                row.original.presence != null &&
-                presence != null &&
-                row.original.presence == 1
+                row.original.presence != null && presence != null && row.original.presence === 1
                   ? "text-green-500"
                   : "text-gray-300"
-              }
-
-              ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
+              } ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
           </button>
-
-          <button 
-            disabled={(schedule != null && statusCall != 0)} 
+  
+          <button
+            disabled={schedule != null && statusCall != 0}
             onClick={() => changePresence(0)}
-            title={(schedule != null && statusCall != 0) ? "Não é possível alterar uma falta agendada" : ""}
+            title={schedule != null && statusCall != 0 ? "Não é possível alterar uma falta agendada" : ""}
           >
             <IoMdCloseCircle
               className={`${
-                row.original.presence != null &&
-                presence != null &&
-                row.original.presence == 0 
+                row.original.presence != null && presence != null && row.original.presence === 0
                   ? "text-red-500"
                   : "text-gray-300"
-              } 
-              ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
+              } ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
           </button>
         </div>
@@ -118,7 +101,7 @@ export const columns: ColumnDef<RowProps>[] = [
     },
     enableSorting: false,
     enableHiding: false,
-  },
+  },  
   {
     accessorKey: "image",
     header: "Foto",
@@ -226,31 +209,46 @@ export const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "comments_call",
     header: "Motivo",
-    cell: ({ row }) => (
-      <div>
-        {(row.getValue("comments_call") != null && row.original.status_call != 0) ? (
-          <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                  <FaCircleQuestion fontSize={19} className="text-red-600" />
-                </Button>
-              </DropdownMenuTrigger>
+    cell: ({ row }) => {
+      const { reason } = useContext(ReloadContext);
+      const [comments, setComments] = useState<string | null>(row.getValue("comments_call"));
+  
+      useEffect(() => {
+        if (reason.length > 0 && reason[0] && reason[0].comments_call !== "" && row.original.id === reason[0].id) {
+          setComments(reason[0].comments_call); 
+        }
 
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="py-2 p-3 text-sm">
-                  {row.getValue("comments_call")}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : (
-          "-"
-        )}
-      </div>
-    ),
+        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].presence == 1) {
+          setComments("");
+        }
+      }, [reason, row.original.id]);
+  
+      return (
+        <div>
+          {(comments != null && row.original.status_call != 0 && row.original.presence == 0) ? (
+            <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                    <FaCircleQuestion fontSize={19} className="text-red-600" />
+                  </Button>
+                </DropdownMenuTrigger>
+  
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="py-2 p-3 text-sm">
+                    {comments}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            "-"
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -291,7 +289,6 @@ export const columns: ColumnDef<RowProps>[] = [
 
       const openModalPicture = (data: RowProps[]) => {
         openPicture(data[0].name, data[0].image);
-        console.log(data)
       };
 
       return (
@@ -325,14 +322,13 @@ const Call = () => {
   const [openModal, setOpenModal] = useState(true);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
-  const [data, setData] = useState<StudentsProps[]>([]);
   const [unitId, setUnitId] = useState("");
   const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
-  const { reloadPage, newStudentsCall, saveUnitName, saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
-    useContext(ReloadContext);
+  const { reloadPage, newStudentsCall, saveData, data, saveUnitName, reason,saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
+    useContext(ReloadContext); 
 
   useEffect(() => {
     const getUnits = async () => {
@@ -347,10 +343,29 @@ const Call = () => {
 
     if (newStudentsCall.length <= 0) {
       getUnits();
-      setData([]);
+      saveData(data);
     } else {
-      setData(newStudentsCall);
+      saveData(newStudentsCall);
     }
+
+    if (data.length > 0 && reason && reason[0]) {
+      const updatedData = data.map((d) => {
+        if (d.id === reason[0].id && d.comments_call !== reason[0].comments_call) {
+          return { ...d, comments_call: reason[0].comments_call };
+        }
+
+        if (d.id === reason[0].id && d.comments_call == "" && reason[0].comments_call == "") {
+          return { ...d, presence: 1 };
+        }
+
+        return d;
+      });
+    
+      saveData(updatedData); 
+    }
+    
+
+    saveData(data);
   }, [reloadPage]);
 
   const getClasses = async (idUnit: number) => {
@@ -389,7 +404,7 @@ const Call = () => {
    }
 
    getClassName();
-  }, [classId])
+  }, [classId]);
 
   
   useEffect(() => {
@@ -400,7 +415,7 @@ const Call = () => {
    }
 
    getTrainingDayName();
-  }, [daysTraining])
+  }, [daysTraining]);
 
   const filterAndSetUnitId = async (e: string) => {
     setUnitId(e);
@@ -432,7 +447,7 @@ const Call = () => {
         saveDayTrainingName("");
       }
 
-      setData(response.data);
+      saveData(response.data);
       setLoad(true);
       setDaysTraining("");
       setOpenModal(false);

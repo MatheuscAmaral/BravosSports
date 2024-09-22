@@ -125,7 +125,6 @@ export const columns: ColumnDef<RowProps>[] = [
 
       const openModalPicture = (data: RowProps[]) => {
         openPicture(data[0].name, data[0].image);
-        console.log(data)
       };
 
       const openModals = (data: RowProps[]) => {

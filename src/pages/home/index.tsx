@@ -138,11 +138,11 @@ function Home() {
               }
 
               {
-                (user as unknown as UserProps).level == 4 && (
+                ((user as unknown as UserProps).level == 4 || (user as unknown as UserProps).level == 2) && (
                   <>
                     <div
                       onClick={() => navigate("/responsaveis/liberados")}
-                      className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
+                      className={`${(user as unknown as UserProps).level != 2 ? "flex flex-col" : "hidden"} gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer`}
                     >
                       <p className="text-lg md:text-xl font-bold">
                         Responsáveis liberados
@@ -173,7 +173,7 @@ function Home() {
               }
 
               {
-                (user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 && (user as unknown as UserProps).level != 4 && (
+                (user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 && (user as unknown as UserProps).level != 4 && (user as unknown as UserProps).level != 2 && (
                    <>
                    <div
                      onClick={() => navigate("/alunos")}

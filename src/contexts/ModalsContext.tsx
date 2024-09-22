@@ -59,6 +59,7 @@ export interface RowProps {
   id: number;
   image: string;
   name: string;
+  comments_call: string;
   responsible_name: string;
   responsible: number;
   free_view_coordinator: number;
@@ -194,7 +195,7 @@ export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
   const { user, username } = useContext(AuthContext);
-  const { filterStudentsByClass, reloadPage, verifyUserCreate, filterId } =
+  const { filterStudentsByClass, reloadPage, verifyUserCreate, filterId, saveReason } =
     useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -221,10 +222,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [team, setTeam] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
+  const [row, setRow] = useState<RowProps[]>([]);
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [userId, setUserId] = useState("");
   const [date, setDate] = useState("");
+  const [reasonData, setReasonData] = useState("");
   const [comments, setComments] = useState("");
   const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
   const [dateAbsence, setDateAbsence] = useState("");
@@ -530,6 +533,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setModalData(data);
     setType(type);
     getData(row, type);
+    setRow(row);
 
     if (type == "students") {
       setLoading(true);
@@ -613,6 +617,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
           setLoading(true);
           return;
         }
+    }
+
+    if (type == "reasonAbsence") {
+      row[0].comments_call = reasonData;
+      row[0].presence = 0;
+      saveReason(row);
     }
 
     if (type == "students") {
@@ -746,12 +756,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       } else {
         message = "Chamada editada com sucesso!";
       }
-    
-      toast.success(message);
 
-      filterStudentsByClass(filterId);
-      reloadPage();
-      verifyUserCreate(true);
+      if (type != "reasonAbsence") {
+        toast.success(message);
+        filterStudentsByClass(filterId);
+        reloadPage();
+        verifyUserCreate(true);
+      }
+    
       setError(false);
       setOpenModal(false);
     } catch (error: any) {
@@ -816,6 +828,24 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     )}
                   </div>
               )}
+
+              {
+                type == "reasonAbsence" && (
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="reason">
+                      Motivo: <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="reason"
+                      name="reason"
+                      placeholder="Digite o motivo da falta..."
+                      onChange={(e) => setReasonData(e.target.value)}
+                      value={reasonData}
+                      required
+                    />
+                  </div>
+                )
+              }
 
               {type == "responsibles" && (
                 <>
@@ -1084,7 +1114,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "teacherClass" && type != "call" && (
+              {type != "teacherClass" && type != "reasonAbsence" && type != "call" && (
                 <FaTrash
                   fontSize={22}
                   onClick={() => setLink("")}
@@ -1500,6 +1530,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                 {type != "studentsClass" &&
                 type != "responsibles_released" &&
+                type != "reasonAbsence" &&
                 type != "teacherClass" &&
                 type != "call" && (
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
