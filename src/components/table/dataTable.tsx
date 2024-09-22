@@ -2774,7 +2774,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className=" max-w-80 md:max-w-80"
+                className=" max-w-full 2xl:max-w-80"
               />
 
               <Modal show={openModal} onClose={() => closeModal()}>
