@@ -50,11 +50,11 @@ export const columns: ColumnDef<RowProps>[] = [
   
       useEffect(() => {
         if (reason.length > 0 && reason[0] && reason[0].comments_call !== "" && row.original.id === reason[0].id) {
-          setPresence(presence);
+          setPresence(presence != null ? presence : 0);
         }
       }, [reason, row.original.id]);
       
-  
+      
       const changePresence = (presence: number) => {
         if (presence === 0) {
           openModals([row.original], "Motivo da falta", "reasonAbsence");
