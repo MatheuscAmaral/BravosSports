@@ -113,6 +113,7 @@ function Auth() {
           <button
             type="submit"
             className=" text-white p-3 rounded-md border-0"
+            disabled={loading}
             style={{backgroundColor: "#F43806"}}
           >
             {
