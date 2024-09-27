@@ -371,13 +371,9 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
         }
       );
 
-      return `${
-        hostName == "localhost"
-          ? `http://localhost:3000/files/${response.data}`
-          : `https://bravos-api.onrender.com/files/${response.data}`
-      }`;
+      return `${response.data.url}`
     } catch {
-      toast.error("Ocorreu um erro ao salvar a imagem!");
+      toast.error("Ocorreu umdsa erro ao salvar a imagem!");
       return "error";
     }
   };
@@ -409,6 +405,12 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
 
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
+    setId(String(row[0].id));
+
+    type != "agendarFalta"
+    ? setStatus(String(row[0].status))
+      : setStatus(String(row[0].status_call));
+      
 
     if (type == "students") {
       setName(String(row[0].name));
@@ -425,7 +427,6 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );
-      setUnits(String(row[0].unit));
       setHasRegistrationNumber(String(row[0].has_registration_number));
       setImageContract(String(row[0].image_contract));
       setContract(String(row[0].contract));
@@ -510,10 +511,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       }
     }
 
-    type != "agendarFalta"
-      ? setStatus(String(row[0].status))
-      : setStatus(String(row[0].status_call));
-    setId(String(row[0].id));
+    setUnits(String(row[0].unit));
   };
 
   const getUnits = async () => {
@@ -620,6 +618,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
   };
 
   const open = async (row: RowProps[], data: string, type: string) => {
+    type != "call" && (await getUnits());
     setModalData(data);
     setType(type);
     getData(row, type);
@@ -638,7 +637,6 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       await getClasses(999);
     }
 
-    type != "call" && (await getUnits());
   };
 
   const closeModal = () => {

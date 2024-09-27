@@ -443,6 +443,8 @@ const Call = () => {
   };
 
   const getTeamsDisp = async (unit: string) => {
+    setTeamIdCall("999");
+
     try {
       filterAndSetUnitId(unit);
       const responseSports = await api.get(`/sports/unit/${unit}`);
@@ -609,7 +611,7 @@ const Call = () => {
                   value={classId != "" ? String(classId) : ""}
                   defaultValue={classId != "" ? String(classId) : ""}
                   disabled={unitId == ""}
-                >
+                  >
                   <SelectTrigger id="class" className="w-full">
                     <SelectValue placeholder="Selecione uma turma" />
                   </SelectTrigger>
@@ -632,15 +634,16 @@ const Call = () => {
 
                 <Select
                   value={(teamIdCall != "" && teamIdCall != "999" && teamIdCall != "0") ? teamIdCall : ""}
+                  defaultValue={(teamIdCall != "" && teamIdCall != "999" && teamIdCall != "0") ? teamIdCall : ""}
                   onValueChange={(e) => {
                     setTeamIdCall(e); 
                     saveTeamId(e);
                   }}
                   
-                  disabled={unitId == "" || classId == ""}
+                  disabled={unitId == "" || classId == "" || teamsDisp.length <= 0}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione um esporte" />
+                    <SelectValue placeholder={(teamsDisp.length <= 0 && unitId != "") ? "Nenhum esporte disponível para esta unidade" : "Selecione um esporte"} />
                   </SelectTrigger>
 
                   <SelectContent>

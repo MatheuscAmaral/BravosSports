@@ -1216,11 +1216,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         }
       );
 
-      return `${
-        hostName == "localhost"
-          ? `http://localhost:3000/files/${response.data}`
-          : `https://bravos-api.onrender.com/files/${response.data}`
-      }`;
+      return `${response.data.url}`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
