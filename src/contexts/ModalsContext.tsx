@@ -3,6 +3,7 @@ import {
   ReactNode,
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import { DataTable, UnitsProps } from "@/components/table/dataTable";
@@ -12,9 +13,11 @@ import noFoto from "../assets/noFoto.jpg";
 import Datepicker from "tailwind-datepicker-react";
 import { Button } from "@/components/ui/button";
 import { TbLoader3 } from "react-icons/tb";
+import SelectReact from "react-select";
 import { Input } from "@/components/ui/input";
 import { StudentsProps } from "@/pages/students";
 import { IoIosImages } from "react-icons/io";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaTrash } from "react-icons/fa";
 import {
   DropdownMenu,
@@ -41,28 +44,35 @@ import { AuthContext, UserProps } from "./AuthContext";
 import { IoChevronBackOutline, IoChevronForward } from "react-icons/io5";
 import { Modal } from "flowbite-react";
 import { FiAlertOctagon } from "react-icons/fi";
-import { format, addDays } from "date-fns"
+import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import axios from "axios";
+import { SportsProps } from "@/pages/sports";
 
 export interface RowProps {
   user_id: any;
   id: number;
   image: string;
+  sport_id: number;
   name: string;
   comments_call: string;
   responsible_name: string;
   responsible: number;
   free_view_coordinator: number;
+  has_registration_number: boolean;
+  image_contract: boolean;
+  exit_autorization: boolean;
+  contract: boolean;
+  uniform: boolean;
   class: number;
   phone: string;
   status: number;
@@ -73,7 +83,7 @@ export interface RowProps {
   teacher_id: number;
   userId: string;
   team: string;
-  presence: number;
+  presence: boolean | number;
   id_responsible: number;
   days_training: string;
   date_of_birth: string;
@@ -167,7 +177,7 @@ const columnsResponsibleRealeaseds: ColumnDef<RowProps>[] = [
     accessorKey: "degree_kinship",
     header: "Grau de parentesco",
     cell: ({ row }) => <div>{row.getValue("degree_kinship")}</div>,
-  }
+  },
 ];
 
 const columnsClass: ColumnDef<RowProps>[] = [
@@ -195,9 +205,15 @@ export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
   const { user, username } = useContext(AuthContext);
-  const { filterStudentsByClass, reloadPage, verifyUserCreate, filterId, saveReason } =
-    useContext(ReloadContext);
+  const {
+    filterStudentsByClass,
+    reloadPage,
+    verifyDataCreate,
+    filterId,
+    saveReason,
+  } = useContext(ReloadContext);
   const [openModal, setOpenModal] = useState(false);
+  const [openModalStudent, setOpenModalStudent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState("");
   const [type, setType] = useState("");
@@ -218,15 +234,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [isStudent, setIsStudent] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
+  const [imageContract, setImageContract] = useState("");
+  const [uniform, setUniform] = useState("");
+  const [hasRegistrationNumber, setHasRegistrationNumber] = useState("");
+  const [contract, setContract] = useState("");
+  const [exitAutorization, setExitAutorization] = useState("");
   const [name, setName] = useState("");
-  const [team, setTeam] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [row, setRow] = useState<RowProps[]>([]);
   const [students, setStudents] = useState<StudentsProps[]>([]);
   const [teacherClass, setTeacherClass] = useState<ClassesProps[]>([]);
   const [userId, setUserId] = useState("");
+  const [optionTabsStudent, setOptionTabsStudent] = useState("dataStudent");
   const [date, setDate] = useState("");
+  const [modalMaxHeight, setModalMaxHeight] = useState("500px");
   const [reasonData, setReasonData] = useState("");
   const [comments, setComments] = useState("");
   const [dateSelectAbsence, setDateSelectAbsence] = useState<Date | string>();
@@ -235,6 +257,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [responsibleRealeaseds, setResponsibleRealeaseds] = useState<
     ResponsibleProps[]
   >([]);
+  const [sportsDisp, setSportsDisp] = useState<
+  { value: number; label: string; class: number }[]
+>([]);
+const [sportsSelect, setSportsSelect] = useState<
+  { value: number; label: string }[]
+>([]);
+const [sportsSelectOld, setSportsSelectOld] = useState<
+  { value: number; label: string; }[]
+>([]);
   const [show, setShow] = useState<boolean>(false);
 
   const optionsDate = {
@@ -281,6 +312,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     },
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 375) {
+        setModalMaxHeight("290px");
+      } else {
+        setModalMaxHeight("540px");
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleChange = (selectedDate: Date) => {
     setDate(selectedDate.toLocaleDateString("pt-BR"));
   };
@@ -295,11 +341,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
   const changeDateAbsence = (e: Date) => {
     setDateSelectAbsence(e);
-    setDateAbsence(convertDateFormat(e.toLocaleDateString("pt-BR").replace(/\//g, '-')));
+    setDateAbsence(
+      convertDateFormat(e.toLocaleDateString("pt-BR").replace(/\//g, "-"))
+    );
   };
 
   function convertDateFormat(dateStr: string) {
-    const [dd, mm, yyyy] = dateStr.split('-');
+    const [dd, mm, yyyy] = dateStr.split("-");
     return `${yyyy}-${mm}-${dd}`;
   }
 
@@ -310,7 +358,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     try {
       const response = await axios.post(
-        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
+        `${
+          hostName == "localhost"
+            ? "http://localhost:3000/upload"
+            : "https://bravos-api.onrender.com/upload"
+        }`,
         formData,
         {
           headers: {
@@ -319,7 +371,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         }
       );
 
-      return `${hostName == "localhost" ? `http://localhost:3000/files/${response.data}` : `https://bravos-api.onrender.com/files/${response.data}`}`;
+      return `${
+        hostName == "localhost"
+          ? `http://localhost:3000/files/${response.data}`
+          : `https://bravos-api.onrender.com/files/${response.data}`
+      }`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -335,37 +391,64 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
+  const getSportsSelect = async (id: number) => {
+    try {
+        const response = await api.get(`/sports/played/${id}`);
+
+        const formatedData = response.data.map((d: SportsProps) => ({
+          value: d.sport_id,
+          label: d.description
+        }));
+
+        setSportsSelect(formatedData);
+        setSportsSelectOld(formatedData);
+    } catch (error: any) {
+        toast.error(error);
+    }
+  }
+
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
 
     if (type == "students") {
       setName(String(row[0].name));
       setClasses(String(row[0].class));
-      setTeam(String(row[0].team));
       setPhone(String(row[0].phone));
       setDate(String(row[0].date_of_birth));
       setClassTime(
-        row[0].class_time != null ? String(row[0].class_time).split(":")[0] + ":" +  String(row[0].class_time).split(":")[1] : ""
+        row[0].class_time != null
+          ? String(row[0].class_time).split(":")[0] +
+              ":" +
+              String(row[0].class_time).split(":")[1]
+          : ""
       );
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );
       setUnits(String(row[0].unit));
+      setHasRegistrationNumber(String(row[0].has_registration_number));
+      setImageContract(String(row[0].image_contract));
+      setContract(String(row[0].contract));
+      setUniform(String(row[0].uniform));
+      setExitAutorization(String(row[0].exit_autorization));
       await getClasses(row[0].class);
+      await getSportsSelect(row[0].id);
     }
-    
+
     if (type == "classes") {
       setUnits(String(row[0].unit));
       setDescription(String(row[0].description));
     }
-    
+
     if (type == "units") {
       setId(String(row[0].id));
     }
-    
+
     if (type == "agendarFalta") {
-      const adjustedDate = row[0].date ? addDays(new Date(String(row[0].date)), 1) : undefined;
-      
+      const adjustedDate = row[0].date
+        ? addDays(new Date(String(row[0].date)), 1)
+        : undefined;
+
       setDateSelectAbsence(adjustedDate);
       setDateAbsence(String(row[0].date));
       setComments(String(row[0].comments));
@@ -418,7 +501,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type == "call") {
       try {
         const response = await api.get(
-          `/responsibles/releaseds/call/${row[0].user_id}`
+          `/responsibles/releaseds/${row[0].user_id}`
         );
 
         setResponsibleRealeaseds(response.data);
@@ -427,10 +510,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       }
     }
 
-    type != "agendarFalta" ? setStatus(String(row[0].status)) : setStatus(String(row[0].status_call));
+    type != "agendarFalta"
+      ? setStatus(String(row[0].status))
+      : setStatus(String(row[0].status_call));
     setId(String(row[0].id));
   };
-
 
   const getUnits = async () => {
     try {
@@ -508,10 +592,17 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const getTeams = async () => {
+  const getSports = async () => {
     try {
       const response = await api.get("/sports");
 
+      const formatedData = response.data.map((d: SportsProps) => ({
+        value: d.id,
+        label: d.description,
+        class: d.class,
+      }));
+
+      setSportsDisp(formatedData);
       setTeamsDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
@@ -529,16 +620,18 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   };
 
   const open = async (row: RowProps[], data: string, type: string) => {
-    setOpenModal(true);
     setModalData(data);
     setType(type);
     getData(row, type);
     setRow(row);
 
     if (type == "students") {
+      setOpenModalStudent(true);
       setLoading(true);
-      await getTeams();
+      await getSports();
       setLoading(false);
+    } else {
+      setOpenModal(true);
     }
 
     if (type == "esportes") {
@@ -551,8 +644,12 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const closeModal = () => {
     setError(false);
     setOpenModal(false);
+    setOpenModalStudent(false);
+    setOptionTabsStudent("dataStudent");
     setName("");
     setClasses("");
+    setSportsDisp([]);
+    setSportsSelect([]);
     setPhone("");
     setId("");
     setDescription("");
@@ -572,51 +669,57 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   };
 
   function parseTime(timeString: string) {
-      let [hours, minutes, seconds] = timeString.split(':').map(Number);
-      let date = new Date();
-      date.setHours(hours, minutes, seconds, 0);
-      return date;
+    let [hours, minutes, seconds] = timeString.split(":").map(Number);
+    let date = new Date();
+    date.setHours(hours, minutes, seconds, 0);
+    return date;
   }
 
   const validationTimeClass = () => {
     const dateToday = new Date();
-    const formatedDateToday = convertDateFormat(dateToday.toLocaleDateString().replace(/\//g, "-"));
+    const formatedDateToday = convertDateFormat(
+      dateToday.toLocaleDateString().replace(/\//g, "-")
+    );
     const formatedDateSelect = dateAbsence;
-    
+
     if (formatedDateToday == formatedDateSelect) {
       const hour = dateToday.toLocaleTimeString().split(":")[0];
       const minute = dateToday.toLocaleTimeString().split(":")[1];
       const formattedTime = parseTime(hour + ":" + minute + ":00");
       const formattedTimeClass = parseTime(classTimeCall);
 
-      let differenceInMillis =  formattedTimeClass.getTime() - formattedTime.getTime(); ;
-      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60); 
+      let differenceInMillis =
+        formattedTimeClass.getTime() - formattedTime.getTime();
+      let differenceInMinutes = Math.floor(differenceInMillis / 1000 / 60);
 
       if (differenceInMinutes <= 30) {
-        toast.error("Só é permitido agendar uma falta até 30 minutos antes do início da aula!", {
-          position: "top-right"
-        });
+        toast.error(
+          "Só é permitido agendar uma falta até 30 minutos antes do início da aula!",
+          {
+            position: "top-right",
+          }
+        );
 
         return true;
       }
     }
 
     return false;
-  }
+  };
 
   const editData = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     let data;
-    let verifyIfSaveImage;  
+    let verifyIfSaveImage;
 
-    if(file) {
-        verifyIfSaveImage = await saveImage();
-    
-        if (verifyIfSaveImage == "error") {
-          setLoading(true);
-          return;
-        }
+    if (file) {
+      verifyIfSaveImage = await saveImage();
+
+      if (verifyIfSaveImage == "error") {
+        setLoading(true);
+        return;
+      }
     }
 
     if (type == "reasonAbsence") {
@@ -629,13 +732,23 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       data = {
         image: verifyIfSaveImage,
         name: name,
-        team: team,
         date_of_birth: date,
         status: status,
-        ...( daysTraining != "" && { days_training: daysTraining }),
-        ...( classTime != "" && { class_time: classTime }),
         class: classes,
         unit: units,
+        has_registration_number:
+          hasRegistrationNumber != "" && hasRegistrationNumber == "true"
+            ? true
+            : false,
+        image_contract:
+          imageContract != "" && imageContract == "true" ? true : false,
+        exit_autorization:
+          exitAutorization != "" && exitAutorization == "true" ? true : false,
+        contract: contract != "" && contract == "true" ? true : false,
+        uniform: uniform != "" && uniform == "true" ? true : false,
+        ...(sportsSelect != sportsSelectOld && { sports: sportsSelect } ),
+        ...(daysTraining != "" && { days_training: daysTraining }),
+        ...(classTime != "" && { class_time: classTime }),
       };
 
       if (!link) {
@@ -645,7 +758,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         });
 
         setError(true);
-
         return;
       }
     }
@@ -673,13 +785,13 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
     if (type == "users") {
       data = {
-        status: status
+        status: status,
       };
     }
 
     if (type == "units") {
       data = {
-        status: status
+        status: status,
       };
     }
 
@@ -707,7 +819,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         comments: comments,
         edit_by: username,
         student_name: name,
-        status: status
+        status: status,
       };
     }
 
@@ -735,7 +847,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     if (type === "agendarFalta" && validationTimeClass()) {
       return;
     }
-    
+
     try {
       setLoading(true);
       type == "students" && (await api.put(`/students/${id}`, data));
@@ -745,14 +857,20 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       type == "teacher" && (await api.put(`/teachers/${id}`, data));
       type == "users" && (await api.put(`/users/${id}`, data));
       type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
-      type == "responsibles_released" && (await api.put(`/responsibles/releaseds/${id}`, data));
+      type == "responsibles_released" &&
+        (await api.put(`/responsibles/releaseds/${id}`, data));
       type == "agendarFalta" && (await api.put(`/call/${idCall}`, data));
 
       let message = "";
-      if (type === "students" || type === "teacher" || type === "responsibles" || type === "responsibles_released") {
+      if (
+        type === "students" ||
+        type === "teacher" ||
+        type === "responsibles" ||
+        type === "responsibles_released"
+      ) {
         message = (data && data.name) + " editado com sucesso!";
       } else if (data && "description" in data) {
-        message = (data.description) + " editado com sucesso!";
+        message = data.description + " editado com sucesso!";
       } else {
         message = "Chamada editada com sucesso!";
       }
@@ -761,21 +879,26 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         toast.success(message);
         filterStudentsByClass(filterId);
         reloadPage();
-        verifyUserCreate(true);
+        verifyDataCreate(true);
       }
-    
+
       setError(false);
-      setOpenModal(false);
+      closeModal();
     } catch (error: any) {
-      type == "agendarFalta" ? toast.error(error.response.data.error, {
-        position: "top-right"
-      }) :  
-      toast.error(`Ocorreu um erro ao editar os dados de ${data && (data && "description" in data ? data.description : data.name)}`);
+      type == "agendarFalta"
+        ? toast.error(error.response.data.error, {
+            position: "top-right",
+          })
+        : toast.error(
+            `Ocorreu um erro ao editar os dados de ${
+              data &&
+              (data && "description" in data ? data.description : data.name)
+            }`
+          );
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <modalContext.Provider value={{ getData, open }}>
@@ -785,67 +908,68 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         <form onSubmit={(e) => editData(e)}>
           <Modal.Body
             className="relative overflow-auto"
-            style={{ maxHeight: "500px" }}
+            style={{ maxHeight: modalMaxHeight }}
           >
             <div
               className={`${
-                type != "studentsClass" && type != "teacherClass" && type != "units" && type != "users" && "space-y-6"
+                type != "studentsClass" &&
+                type != "teacherClass" &&
+                type != "units" &&
+                type != "users" &&
+                "space-y-6"
               }`}
             >
-              {(type == "students" ||
-                type == "teacher" ||
+              {(type == "teacher" ||
                 type == "responsibles_released" ||
                 type == "responsibles") && (
-                  <div
-                    className={`${
-                      link != "" ? "h-64" : "h-48"
-                    } flex justify-center transition-all w-full border-dashed ${
-                      error && !link && "border-red-500"
-                    } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                  >
-                    <input
-                      onChange={(e) => handleFileChange(e)}
-                      type="file"
-                      name="image"
-                      accept="image/png, image/jpeg"
-                      id="image"
-                      className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
-                    />
+                <div
+                  className={`${
+                    link != "" ? "h-64" : "h-48"
+                  } flex justify-center transition-all w-full border-dashed ${
+                    error && !link && "border-red-500"
+                  } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                >
+                  <input
+                    onChange={(e) => handleFileChange(e)}
+                    type="file"
+                    name="image"
+                    accept="image/png, image/jpeg"
+                    id="image"
+                    className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                  />
 
-                    {link ? (
-                      <div className="flex justify-center">
-                        <svg className="p-10 flex justify-center">
-                          <image href={link} className="my-class w-80" />
-                        </svg>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2 items-center justify-center ">
-                        <IoIosImages fontSize={40} />
-                        <p className="w-full text-sm md:text-lg">
-                          Clique aqui para selecionar uma imagem.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  {link ? (
+                    <div className="flex justify-center">
+                      <svg className="p-10 flex justify-center">
+                        <image href={link} className="my-class w-80" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 items-center justify-center ">
+                      <IoIosImages fontSize={40} />
+                      <p className="w-full text-sm md:text-lg">
+                        Clique aqui para selecionar uma imagem.
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
 
-              {
-                type == "reasonAbsence" && (
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="reason">
-                      Motivo: <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="reason"
-                      name="reason"
-                      placeholder="Digite o motivo da falta..."
-                      onChange={(e) => setReasonData(e.target.value)}
-                      value={reasonData}
-                      required
-                    />
-                  </div>
-                )
-              }
+              {type == "reasonAbsence" && (
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="reason">
+                    Motivo: <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="reason"
+                    name="reason"
+                    placeholder="Digite o motivo da falta..."
+                    onChange={(e) => setReasonData(e.target.value)}
+                    value={reasonData}
+                    required
+                  />
+                </div>
+              )}
 
               {type == "responsibles" && (
                 <>
@@ -897,11 +1021,21 @@ const ModalProvider = ({ children }: ChildrenProps) => {
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="status">
-                      Grau de parentesco: <span className="text-red-500">*</span>
+                      Grau de parentesco:{" "}
+                      <span className="text-red-500">*</span>
                     </label>
 
-                    <Select value={degreeKinship != "" ? degreeKinship : ""} defaultValue={degreeKinship} required onValueChange={(e) => setDegreeKinship(e)}>
-                      <SelectTrigger className="w-full" id="status" name="status">
+                    <Select
+                      value={degreeKinship != "" ? degreeKinship : ""}
+                      defaultValue={degreeKinship}
+                      required
+                      onValueChange={(e) => setDegreeKinship(e)}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        id="status"
+                        name="status"
+                      >
                         <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
                       </SelectTrigger>
                       <SelectContent>
@@ -913,7 +1047,9 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         <SelectItem value="Escolar">
                           Escolar (transporte)
                         </SelectItem>
-                        <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                        <SelectItem value="Acompanhante">
+                          Acompanhante
+                        </SelectItem>
                         <SelectItem value="Primos">Primo ou Prima</SelectItem>
                       </SelectContent>
                     </Select>
@@ -921,57 +1057,63 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </>
               )}
 
-              {
-                type == "agendarFalta" && (
-                  <>
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">
-                          Selecione o dia desejado: <span className="text-red-500"> *</span>
-                        </label>
+              {type == "agendarFalta" && (
+                <>
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="nome">
+                      Selecione o dia desejado:{" "}
+                      <span className="text-red-500"> *</span>
+                    </label>
 
-                        <Popover>
-                          <PopoverTrigger asChild >
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !dateSelectAbsence && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {dateSelectAbsence ? format(dateSelectAbsence, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              // @ts-ignore
-                              selected={dateSelectAbsence || null}
-                              // @ts-ignore
-                              onSelect={changeDateAbsence}
-                              initialFocus
-                              locale={ptBR}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="comments">
-                          Informe o motivo: <span className="text-red-500"> *</span>
-                        </label>
-
-                        <Input
-                          id="comments"
-                          placeholder="Digite o motivo da falta agendada para o aluno..."
-                          onChange={(e) => setComments(e.target.value)}
-                          value={comments}
-                          required
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !dateSelectAbsence && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateSelectAbsence ? (
+                            format(dateSelectAbsence, "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })
+                          ) : (
+                            <span>Escolha uma data</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          // @ts-ignore
+                          selected={dateSelectAbsence || null}
+                          // @ts-ignore
+                          onSelect={changeDateAbsence}
+                          initialFocus
+                          locale={ptBR}
                         />
-                      </div>
-                  </>
-                )
-              }
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="comments">
+                      Informe o motivo:{" "}
+                      <span className="text-red-500"> *</span>
+                    </label>
+
+                    <Input
+                      id="comments"
+                      placeholder="Digite o motivo da falta agendada para o aluno..."
+                      onChange={(e) => setComments(e.target.value)}
+                      value={comments}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
               {type == "classes" && (
                 <div className="space-y-6">
@@ -1114,305 +1256,17 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                 </div>
               )}
 
-              {type != "teacherClass" && type != "reasonAbsence" && type != "call" && (
-                <FaTrash
-                  fontSize={22}
-                  onClick={() => setLink("")}
-                  className={`${
-                    link ? "block" : "hidden"
-                  } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
-                />
-              )}
-
-              {type == "students" && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="description">
-                      Nome: <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="nome"
-                      name="nome"
-                      placeholder="Digite o nome do aluno..."
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="dateBirth">
-                      Data de nascimento:{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-
-                    <Datepicker
-                      //@ts-ignore 
-                      options={optionsDate}
-                      onChange={handleChange}
-                      show={show}
-                      setShow={handleClose}
-                    >
-                      <div
-                        className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
-                        onClick={() => setShow(!show)}
-                      >
-                        <input
-                          type="text"
-                          placeholder="Selecione a data de nascimento"
-                          className=" placeholder:text-gray-600 cursor-pointer w-full"
-                          value={date}
-                          readOnly
-                        />
-                      </div>
-                    </Datepicker>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="class">
-                      É um aluno do colégio ?{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-
-                    <Select
-                      value={isStudent != "" ? isStudent : ""}
-                      defaultValue={isStudent}
-                      onValueChange={(e) => changeIsStudent(e)}
-                    >
-                      <SelectTrigger className="w-full" id="class">
-                        <SelectValue placeholder="Selecione sim ou não" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={"1"}>Sim</SelectItem>
-                        <SelectItem value={"0"}>Não</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label className="flex justify-between items-center cursor-pointer">
-                      <div>
-                        Unidade: <span className="text-red-500">*</span>
-                      </div>
-
-                      <div
-                        className={`${
-                          unitsDisp.length <= 0 ? "block" : "hidden"
-                        }`}
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon
-                                fontSize={19}
-                                className="text-yellow-800  "
-                              />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <div className="py-2 p-3 text-sm">
-                              Nenhuma unidade encontrada, cadastre novas
-                              unidades e tente novamente!
-                            </div>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </label>
-
-                    <Select
-                      defaultValue={unitsDisp.length <= 0 ? "" : units}
-                      onValueChange={(e) => filterUnitWithClass(e, isStudent)}
-                      disabled={unitsDisp.length <= 0}
-                    >
-                      <SelectTrigger className="w-full" id="units">
-                        <SelectValue placeholder="Selecione a unidade" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {unitsDisp.map((c) => {
-                          if (c.id == 999) {
-                            return;
-                          }
-
-                          return (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label className="flex justify-between items-center cursor-pointer">
-                      <div>
-                        Turma: <span className="text-red-500">*</span>
-                      </div>
-
-                      <div
-                        className={
-                          classesDisp.length == 1 && classesDisp[0]?.id == 999
-                            ? "flex"
-                            : "hidden"
-                        }
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon
-                                fontSize={19}
-                                className="text-yellow-800  "
-                              />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <div className="py-2 p-3 text-sm">
-                              Nenhuma turma encontrada, cadastre novas turmas e
-                              tente novamente!
-                            </div>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </label>
-
-                    <Select
-                      value={classes != "" ? classes : ""}
-                      defaultValue={classes}
-                      onValueChange={(e) => setClasses(e)}
-                      disabled={
-                        units == "" ||
-                        (classesDisp.length == 1 && classesDisp[0]?.id == 999)
-                      }
-                    >
-                      <SelectTrigger className="w-full" id="class">
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {classesDisp.map((c) => {
-                          if (c.id == 999) {
-                            return;
-                          }
-
-                          return (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.description.split("-")[0]}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label className="flex justify-between items-center cursor-pointer">
-                      <div>
-                        Esporte: <span className="text-red-500">*</span>
-                      </div>
-
-                      <div
-                        className={teamsDisp.length <= 0 ? "flex" : "hidden"}
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                              <FiAlertOctagon
-                                fontSize={19}
-                                className="text-yellow-800  "
-                              />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <div className="py-2 p-3 text-sm">
-                              Nenhum esporte encontrado, cadastre novos esportes
-                              e tente novamente!
-                            </div>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </label>
-
-                    <Select
-                      defaultValue={teamsDisp.length <= 0 ? "" : team}
-                      onValueChange={(e) => setTeam(e)}
-                      disabled={teamsDisp.length <= 0}
-                    >
-                      <SelectTrigger className="w-full" id="sport">
-                        <SelectValue placeholder="Selecione o esporte" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {teamsDisp.map((t) => {
-                          return (
-                            <SelectItem key={t.id} value={String(t.id)}>
-                              {t.description}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="days_training">Dias de treino:</label>
-
-                    <Select
-                      value={daysTraining != "" ? daysTraining.trim() : ""}
-                      onValueChange={(e) => setDaysTraining(e)}
-                      defaultValue={daysTraining.trim()}
-                    >
-                      <SelectTrigger className="w-full" id="days_training">
-                        <SelectValue placeholder="Selecione os dias de treino" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Segunda e Quarta">
-                          Segunda e Quarta
-                        </SelectItem>
-                        <SelectItem value="Terça e Quinta">
-                          Terça e Quinta
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="class_time">Horário de treino:</label>
-
-                    <Select value={classTime != "" ? classTime : ""} defaultValue={classTime != "" ? classTime : ""} disabled={daysTraining == ""} onValueChange={(e) => setClassTime(e)}>
-                      <SelectTrigger className="w-full" id="class_time">
-                        <SelectValue placeholder="Selecione os dias de treino" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="13:15">
-                          13:15 às 15:00
-                        </SelectItem>
-
-                        <SelectItem value="17:30">
-                          17:30 às 18:20
-                        </SelectItem>
-
-                        <SelectItem value="18:20">
-                          18:20 às 19:20
-                        </SelectItem>
-
-                        <SelectItem value="18:30">
-                          18:30 às 19:30
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
+              {type != "teacherClass" &&
+                type != "reasonAbsence" &&
+                type != "call" && (
+                  <FaTrash
+                    fontSize={22}
+                    onClick={() => setLink("")}
+                    className={`${
+                      link ? "block" : "hidden"
+                    } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
+                  />
+                )}
 
               {type == "studentsClass" &&
                 (students.length > 0 ? (
@@ -1494,41 +1348,39 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                       <span className="text-red-500"> * </span>
                     </label>
 
-                    <MaskedInput
-                      value={phone}
-                      onChange={handlePhoneChange}
-                    />
+                    <MaskedInput value={phone} onChange={handlePhoneChange} />
                   </div>
                 </div>
               )}
 
-              {
-                ((user as unknown as UserProps).level != 3 && type == "responsibles_released") &&
-                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                  <label htmlFor="status">
-                    Status: <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    required
-                    onValueChange={(e) => setStatus(e)}
-                    defaultValue={status}
-                  >
-                    <SelectTrigger className="w-full" id="status">
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(
-                        <>
-                          <SelectItem value="1">Ativo</SelectItem>
-                          <SelectItem value="0">Inativo</SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              }
+              {(user as unknown as UserProps).level != 3 &&
+                type == "responsibles_released" && (
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label htmlFor="status">
+                      Status: <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      required
+                      onValueChange={(e) => setStatus(e)}
+                      defaultValue={status}
+                    >
+                      <SelectTrigger className="w-full" id="status">
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {
+                          <>
+                            <SelectItem value="1">Ativo</SelectItem>
+                            <SelectItem value="0">Inativo</SelectItem>
+                          </>
+                        }
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-                {type != "studentsClass" &&
+              {type != "studentsClass" &&
+                type != "students" &&
                 type != "responsibles_released" &&
                 type != "reasonAbsence" &&
                 type != "teacherClass" &&
@@ -1546,21 +1398,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                       <SelectContent>
-                        {type == "students" && (
-                          <>
-                            <SelectItem value="1">Ativo</SelectItem>
-                            <SelectItem value="2">Experimental</SelectItem>
-                            <SelectItem value="3">Pendente</SelectItem>
-                            <SelectItem value="0">Inativo</SelectItem>
-                            <SelectItem value="4">Desativado</SelectItem>
-                          </>
-                        )}
-
                         {(type == "classes" ||
                           type == "teacher" ||
                           type == "units" ||
                           type == "esportes" ||
-                          type == "responsibles" || 
+                          type == "responsibles" ||
                           type == "responsibles_released" ||
                           type == "users" ||
                           type == "agendarFalta") && (
@@ -1584,10 +1426,15 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                   type="submit"
                 >
                   {loading ? (
-                      <div className="flex justify-center">
-                        <TbLoader3 fontSize={23} style={{ animation: "spin 1s linear infinite" }}/>
-                      </div>
-                    ) : "Salvar"}
+                    <div className="flex justify-center">
+                      <TbLoader3
+                        fontSize={23}
+                        style={{ animation: "spin 1s linear infinite" }}
+                      />
+                    </div>
+                  ) : (
+                    "Salvar"
+                  )}
                 </Button>
               )}
             <Button
@@ -1599,9 +1446,564 @@ const ModalProvider = ({ children }: ChildrenProps) => {
           </Modal.Footer>
         </form>
       </Modal>
+
+      <Modal show={openModalStudent} onClose={() => closeModal()}>
+        <Modal.Header>{modalData}</Modal.Header>
+        <Tabs
+          defaultValue={optionTabsStudent}
+          value={optionTabsStudent != "" ? optionTabsStudent : ""}
+          className="px-3"
+        >
+          <TabsList className="flex justify-center w-full mx-auto my-5">
+            <TabsTrigger value="dataStudent">Dados do aluno</TabsTrigger>
+            <TabsTrigger value="documentsStudent">Documentos</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dataStudent">
+            <Modal.Body
+              className="relative"
+              style={{ maxHeight: modalMaxHeight }}
+            >
+              <div className="space-y-6 mb-5">
+                <div
+                  className={`${
+                    link != "" ? "h-64" : "h-48"
+                  } flex justify-center transition-all w-full border-dashed ${
+                    error && !link && "border-red-500"
+                  } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                >
+                  <input
+                    onChange={(e) => handleFileChange(e)}
+                    type="file"
+                    name="image"
+                    accept="image/png, image/jpeg"
+                    id="image"
+                    className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                  />
+
+                  {link ? (
+                    <div className="flex justify-center">
+                      <svg className="p-10 flex justify-center">
+                        <image href={link} className="my-class w-80" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 items-center justify-center ">
+                      <IoIosImages fontSize={40} />
+                      <p className="w-full text-sm md:text-lg">
+                        Clique aqui para selecionar uma imagem.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="description">
+                    Nome: <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="nome"
+                    name="nome"
+                    placeholder="Digite o nome do aluno..."
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="dateBirth">
+                    Data de nascimento: <span className="text-red-500">*</span>
+                  </label>
+
+                  <Datepicker
+                    //@ts-ignore
+                    options={optionsDate}
+                    onChange={handleChange}
+                    show={show}
+                    setShow={handleClose}
+                  >
+                    <div
+                      className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
+                      onClick={() => setShow(!show)}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Selecione a data de nascimento"
+                        className=" placeholder:text-gray-600 cursor-pointer w-full"
+                        value={date}
+                        readOnly
+                      />
+                    </div>
+                  </Datepicker>
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="class">
+                    É um aluno do colégio ?{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+
+                  <Select
+                    value={isStudent != "" ? isStudent : ""}
+                    defaultValue={isStudent}
+                    onValueChange={(e) => changeIsStudent(e)}
+                  >
+                    <SelectTrigger className="w-full" id="class">
+                      <SelectValue placeholder="Selecione sim ou não" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={"1"}>Sim</SelectItem>
+                      <SelectItem value={"0"}>Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label className="flex justify-between items-center cursor-pointer">
+                    <div>
+                      Unidade: <span className="text-red-500">*</span>
+                    </div>
+
+                    <div
+                      className={`${
+                        unitsDisp.length <= 0 ? "block" : "hidden"
+                      }`}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                            <FiAlertOctagon
+                              fontSize={19}
+                              className="text-yellow-800  "
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <div className="py-2 p-3 text-sm">
+                            Nenhuma unidade encontrada, cadastre novas unidades
+                            e tente novamente!
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </label>
+
+                  <Select
+                    defaultValue={unitsDisp.length <= 0 ? "" : units}
+                    onValueChange={(e) => filterUnitWithClass(e, isStudent)}
+                    disabled={unitsDisp.length <= 0}
+                  >
+                    <SelectTrigger className="w-full" id="units">
+                      <SelectValue placeholder="Selecione a unidade" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {unitsDisp.map((c) => {
+                        if (c.id == 999) {
+                          return;
+                        }
+
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label className="flex justify-between items-center cursor-pointer">
+                    <div>
+                      Turma: <span className="text-red-500">*</span>
+                    </div>
+
+                    <div
+                      className={
+                        classesDisp.length == 1 && classesDisp[0]?.id == 999
+                          ? "flex"
+                          : "hidden"
+                      }
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                            <FiAlertOctagon
+                              fontSize={19}
+                              className="text-yellow-800  "
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <div className="py-2 p-3 text-sm">
+                            Nenhuma turma encontrada, cadastre novas turmas e
+                            tente novamente!
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </label>
+
+                  <Select
+                    value={classes != "" ? classes : ""}
+                    defaultValue={classes}
+                    onValueChange={(e) => setClasses(e)}
+                    disabled={
+                      units == "" ||
+                      (classesDisp.length == 1 && classesDisp[0]?.id == 999)
+                    }
+                  >
+                    <SelectTrigger className="w-full" id="class">
+                      <SelectValue placeholder="Selecione a turma" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {classesDisp.map((c) => {
+                        if (c.id == 999) {
+                          return;
+                        }
+
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description.split("-")[0]}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-2 my-3 mb-10">
+                  <label className="flex justify-between items-center cursor-pointer">
+                    <div>
+                      Esportes: <span className="text-red-500">*</span>
+                    </div>
+
+                    <div
+                      className={
+                        teamsDisp.length <= 0 ? "flex" : "hidden"
+                      }
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                            <FiAlertOctagon
+                              fontSize={19}
+                              className="text-yellow-800  "
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <div className="py-2 p-3 text-sm">
+                            Nenhum esporte encontrado, cadastre novos
+                            esportes e tente novamente!
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </label>
+
+                  <SelectReact
+                    defaultValue={[]}
+                    isMulti
+                    name="sports"
+                    value={sportsSelect}
+                    // @ts-ignore
+                    onChange={(e) => setSportsSelect(e)}
+                    noOptionsMessage={() =>
+                      "Nenhum resultado encontrado"
+                    }
+                    // @ts-ignore
+                    options={sportsDisp}
+                    className="basic-multi-select text-sm"
+                    maxMenuHeight={200}
+                    placeholder="Selecione o(s) esportes(s)"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="days_training">Dias de treino:</label>
+
+                  <Select
+                    value={daysTraining != "" ? daysTraining.trim() : ""}
+                    onValueChange={(e) => setDaysTraining(e)}
+                    defaultValue={daysTraining.trim()}
+                  >
+                    <SelectTrigger className="w-full" id="days_training">
+                      <SelectValue placeholder="Selecione os dias de treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Segunda e Quarta">
+                        Segunda e Quarta
+                      </SelectItem>
+                      <SelectItem value="Terça e Quinta">
+                        Terça e Quinta
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="class_time">Horário de treino:</label>
+
+                  <Select
+                    value={classTime != "" ? classTime : ""}
+                    defaultValue={classTime != "" ? classTime : ""}
+                    disabled={daysTraining == ""}
+                    onValueChange={(e) => setClassTime(e)}
+                  >
+                    <SelectTrigger className="w-full" id="class_time">
+                      <SelectValue placeholder="Selecione os dias de treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="13:15">13:15 às 15:00</SelectItem>
+
+                      <SelectItem value="17:30">17:30 às 18:20</SelectItem>
+
+                      <SelectItem value="18:20">18:20 às 19:20</SelectItem>
+
+                      <SelectItem value="18:30">18:30 às 19:30</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="status">
+                    Status: <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    required
+                    onValueChange={(e) => setStatus(e)}
+                    defaultValue={status}
+                  >
+                    <SelectTrigger className="w-full" id="status">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <>
+                        <SelectItem value="1">Ativo</SelectItem>
+                        <SelectItem value="2">Experimental</SelectItem>
+                        <SelectItem value="3">Pendente</SelectItem>
+                        <SelectItem value="0">Inativo</SelectItem>
+                        <SelectItem value="4">Desativado</SelectItem>
+                      </>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Modal.Body>
+            <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+              <Button
+                className="bg-primary-color hover:bg-secondary-color"
+                onClick={() => setOptionTabsStudent("documentsStudent")}
+              >
+                {loading ? (
+                  <div className="flex justify-center">
+                    <TbLoader3
+                      fontSize={23}
+                      style={{ animation: "spin 1s linear infinite" }}
+                    />
+                  </div>
+                ) : (
+                  "Próximo"
+                )}
+              </Button>
+              <Button
+                className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                onClick={() => closeModal()}
+              >
+                Fechar
+              </Button>
+            </Modal.Footer>
+          </TabsContent>
+
+          <TabsContent value="documentsStudent">
+            <form onSubmit={editData}>
+              <Modal.Body
+                className="relative"
+                style={{ maxHeight: modalMaxHeight }}
+              >
+                <div className="space-y-6 mb-10">
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label
+                      className="flex justify-between items-center cursor-pointer"
+                      htmlFor="has_registration_number"
+                    >
+                      <div>
+                        Matrícula: <span className="text-red-500">*</span>
+                      </div>
+                    </label>
+
+                    <Select
+                      value={
+                        hasRegistrationNumber != "" ? hasRegistrationNumber : ""
+                      }
+                      defaultValue={hasRegistrationNumber}
+                      onValueChange={(e) => setHasRegistrationNumber(e)}
+                      required
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        id="has_registration_number"
+                      >
+                        <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="true">Sim</SelectItem>
+                        <SelectItem value="false">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label
+                      className="flex justify-between items-center cursor-pointer"
+                      htmlFor="image_contract"
+                    >
+                      <div>
+                        Contrato de imagem:{" "}
+                        <span className="text-red-500">*</span>
+                      </div>
+                    </label>
+
+                    <Select
+                      value={imageContract != "" ? imageContract : ""}
+                      defaultValue={imageContract}
+                      onValueChange={(e) => setImageContract(e)}
+                      required
+                    >
+                      <SelectTrigger className="w-full" id="image_contract">
+                        <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="true">Sim</SelectItem>
+                        <SelectItem value="false">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label
+                      className="flex justify-between items-center cursor-pointer"
+                      htmlFor="exit_autorization"
+                    >
+                      <div>
+                        Autorização de saída:{" "}
+                        <span className="text-red-500">*</span>
+                      </div>
+                    </label>
+
+                    <Select
+                      value={exitAutorization != "" ? exitAutorization : ""}
+                      defaultValue={exitAutorization}
+                      onValueChange={(e) => setExitAutorization(e)}
+                      required
+                    >
+                      <SelectTrigger className="w-full" id="exit_autorization">
+                        <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="true">Sim</SelectItem>
+                        <SelectItem value="false">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label
+                      className="flex justify-between items-center cursor-pointer"
+                      htmlFor="contract"
+                    >
+                      <div>
+                        Contrato: <span className="text-red-500">*</span>
+                      </div>
+                    </label>
+
+                    <Select
+                      value={contract != "" ? contract : ""}
+                      defaultValue={contract}
+                      onValueChange={(e) => setContract(e)}
+                      required
+                    >
+                      <SelectTrigger className="w-full" id="contract">
+                        <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="true">Sim</SelectItem>
+                        <SelectItem value="false">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                    <label
+                      className="flex justify-between items-center cursor-pointer"
+                      htmlFor="uniform"
+                    >
+                      <div>
+                        Uniforme: <span className="text-red-500">*</span>
+                      </div>
+                    </label>
+
+                    <Select
+                      value={uniform != "" ? uniform : ""}
+                      defaultValue={uniform}
+                      onValueChange={(e) => setUniform(e)}
+                      required
+                    >
+                      <SelectTrigger className="w-full" id="uniform">
+                        <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="true">Sim</SelectItem>
+                        <SelectItem value="false">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </Modal.Body>
+              <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                <Button className="bg-primary-color hover:bg-secondary-color">
+                  {loading ? (
+                    <div className="flex justify-center">
+                      <TbLoader3
+                        fontSize={23}
+                        style={{ animation: "spin 1s linear infinite" }}
+                      />
+                    </div>
+                  ) : (
+                    "Salvar"
+                  )}
+                </Button>
+                <Button
+                  className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                  onClick={() => setOptionTabsStudent("dataStudent")}
+                >
+                  Voltar
+                </Button>
+              </Modal.Footer>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </Modal>
     </modalContext.Provider>
   );
 };
 
 export default ModalProvider;
-

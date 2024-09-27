@@ -7,25 +7,26 @@ import { RowProps } from "./ModalsContext";
 interface ReloadDataProps {
     reloadPage: () => void;
     filterStudentsByClass: (id: number) => void;
-    filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number, time: string) => void;
+    // filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number, time: string) => void;
     filterByUnit: (route: string, idUnit: number) => void;
     saveUnitName: (name: string) => void;
     saveClassName: (name: string) => void;
     saveDayTrainingName: (name: string) => void;
     resetData: () => void;
-    verifyUserCreate: (response: boolean) => void;
+    verifyDataCreate: (response: boolean) => void;
     saveClassId: (id: number) => void;
     resetNewStudents: () => void
     resetSelect: () => void;
     saveUnitId: (id: number) => void;
+    saveTeamId: (id: string) => void;
     saveDayTraining: (time: string) => void;
     saveResponsibleId: (respId: number) => void;
     saveReason: (row: RowProps[]) => void;
     saveData: (data: StudentsProps[]) => void;
     filterId: number;
-    teamId: number;
+    teamId: string;
     idClass: number;
-    createdUser: boolean;
+    createdNewData: boolean;
     dayTrainingName: string;
     className: string;
     unitName: string;
@@ -51,9 +52,9 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [newStudentsCall, setNewStudentsCall] = useState<StudentsProps[]>([]);
     const [newData, setNewData] = useState<RowProps[]>([]);
     const [filterId, setFilterId] = useState(0);
-    const [teamId, setTeamId] = useState(0);
+    const [teamId, setTeamId] = useState("999");
     const [idClass, setIdClass] = useState(0);
-    const [createdUser, setCreatedUser] = useState(false);
+    const [createdNewData, setCreatedNewData] = useState(false);
     const [unitId, setUnitId] = useState(0);
     const [respId, setRespId] = useState(0);
     const [daySaved, setDaySaved] = useState("");
@@ -99,8 +100,8 @@ const ReloadProvider = ({children}: ChildrenProps) => {
         setDaySaved(day);
     }
 
-    const verifyUserCreate = (response: boolean) => {
-        setCreatedUser(response);
+    const verifyDataCreate = (response: boolean) => {
+        setCreatedNewData(response);
     }
 
     const filterStudentsByClass = async (id: number) => {   
@@ -109,29 +110,29 @@ const ReloadProvider = ({children}: ChildrenProps) => {
             const response = await api.get(`/students/class/filter/${id}`);
             
             setNewStudents(response.data);     
-            setCreatedUser(false);
+            setCreatedNewData(false);
         } catch {
             toast.error("Ocorreu um erro ao buscar os alunos desta turma!");
         }
     }
 
-    const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number, day: string) => {
-        setFilterId(idClass);
-        setTeamId(idTeam);
+    // const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number, day: string) => {
+    //     setFilterId(idClass);
+    //     setTeamId(idTeam);
         
-        try {
-           if (idClass != 0) {
-                const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}/day/${day}`);
+    //     try {
+    //        if (idClass != 0) {
+    //             const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}/day/${day}`);
 
-                setNewStudentsCall(response.data); 
-            } else {
-                setNewStudentsCall([]);     
-            }
+    //             setNewStudentsCall(response.data); 
+    //         } else {
+    //             setNewStudentsCall([]);     
+    //         }
             
-        } catch {
-            toast.error("Ocorreu um erro ao buscar os alunos desta equipe!");
-        }
-    }
+    //     } catch {
+    //         toast.error("Ocorreu um erro ao buscar os alunos desta equipe!");
+    //     }
+    // }
 
     const filterByUnit = async (route: string, idUnit: number) => {
         try {
@@ -146,6 +147,10 @@ const ReloadProvider = ({children}: ChildrenProps) => {
         }
     }
 
+    const saveTeamId = (id: string) => {
+        setTeamId(id);
+    }
+
     const saveClassId = (id: number) => {
         setIdClass(id);
     }
@@ -155,7 +160,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     const resetSelect = () => {
-        setTeamId(999);
+        setTeamId("999");
     }
 
     const resetData = () => {
@@ -164,7 +169,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     return (
-        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitName, saveClassName, saveData, data, saveDayTrainingName, dayTrainingName, className, unitName, respId, saveResponsibleId, reason, saveReason, saveUnitId, daySaved, filterStudentsByClass, filterStudentsByTeam, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyUserCreate, createdUser, resetSelect, resetNewStudents, idClass, saveClassId }}>
+        <ReloadContext.Provider value={{reloadPage, resetData, unitId, saveUnitName, saveTeamId,  saveClassName, saveData, data, saveDayTrainingName, dayTrainingName, className, unitName, respId, saveResponsibleId, reason, saveReason, saveUnitId, daySaved, filterStudentsByClass, filterByUnit, saveDayTraining, newData, newStudents, newStudentsCall, filterId, teamId, verifyDataCreate, createdNewData, resetSelect, resetNewStudents, idClass, saveClassId }}>
             {children}
         </ReloadContext.Provider>
     )

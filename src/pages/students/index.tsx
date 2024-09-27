@@ -24,6 +24,7 @@ export interface StudentsProps {
   responsible: number;
   responsible_name: string;
   class: number;
+  presence: number;
   description: string;
   team: string;
   phone: string;
@@ -193,7 +194,7 @@ export const columns: ColumnDef<RowProps>[] = [
 ];
 
 const Students = () => {
-  const { reloadPage, newStudents, createdUser, filterStudentsByClass } = useContext(ReloadContext);
+  const { reloadPage, newStudents, createdNewData, filterStudentsByClass } = useContext(ReloadContext);
   const [data, setData] = useState<StudentsProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -202,7 +203,7 @@ const Students = () => {
       try {  
         setLoading(true);
         
-        if (createdUser) {
+        if (createdNewData) {
           filterStudentsByClass(999);
         }
 

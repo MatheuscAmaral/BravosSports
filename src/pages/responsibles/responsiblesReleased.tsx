@@ -180,7 +180,7 @@ const ResponsiblesReleased = () => {
     label: "",
     class: "",
   });  
-  const { reloadPage, saveResponsibleId, createdUser } =
+  const { reloadPage, saveResponsibleId, createdNewData } =
     useContext(ReloadContext);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
@@ -276,7 +276,7 @@ const ResponsiblesReleased = () => {
       (user as unknown as UserProps).level == 0 ||
       (user as unknown as UserProps).level == 1
     ) {
-      if (createdUser) {
+      if (createdNewData) {
         getResponsiblesReleased();
         return;
       }
@@ -287,7 +287,7 @@ const ResponsiblesReleased = () => {
     else if (
       (user as unknown as UserProps).level == 4
     ) {
-      if (createdUser) {
+      if (createdNewData) {
         getResponsiblesReleased();
         return;
       }

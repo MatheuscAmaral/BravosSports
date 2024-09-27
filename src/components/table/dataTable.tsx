@@ -80,6 +80,7 @@ import { StudentsProps } from "@/pages/students";
 import axios from "axios";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { Checkbox } from "../ui/checkbox";
+import { SportsProps } from "@/pages/sports";
 
 interface DataTableProps {
   data: [];
@@ -114,6 +115,10 @@ export interface ResponsibleProps {
   user_id: string;
 }
 
+interface CallProps {
+  presence: number;
+}
+
 export interface UnitsProps {
   id: number;
   description: string;
@@ -125,11 +130,13 @@ export const columnsCoordinator: ColumnDef<RowProps>[] = [
     id: "select",
     header: "",
     cell: ({ row }) => {
-      const [valueCheck, setValueCheck] = React.useState(row.original.free_view_coordinator);
+      const [valueCheck, setValueCheck] = React.useState(
+        row.original.free_view_coordinator
+      );
 
       const changeFieldValue = (value: boolean) => {
         row.toggleSelected(value);
-      
+
         if (value == true) {
           row.original.free_view_coordinator = 1;
           setValueCheck(1);
@@ -142,12 +149,11 @@ export const columnsCoordinator: ColumnDef<RowProps>[] = [
       return (
         <Checkbox
           checked={row.original.free_view_coordinator == 1 || valueCheck == 1}
-          onCheckedChange={(value) => changeFieldValue(!!value)} 
+          onCheckedChange={(value) => changeFieldValue(!!value)}
           aria-label="Select row"
           className="h-5 w-5"
         />
-
-      )
+      );
     },
     enableSorting: false,
     enableHiding: false,
@@ -196,6 +202,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [isStudent, setIsStudent] = React.useState("");
   const [level, setLevel] = React.useState(0);
   const [optionTabs, setOptionTabs] = React.useState("selectStudent");
+  const [optionTabsStudent, setOptionTabsStudent] = React.useState("dataStudent");
   const [studentRespData, setStudentRespData] = React.useState<StudentsProps[]>(
     []
   );
@@ -203,6 +210,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     { value: number; label: string; class: number }[]
   >([]);
   const [studentsSelect, setStudentsSelect] = React.useState<
+    { value: number; label: string; class: number }[]
+  >([]);
+  const [sportsDisp, setSportsDisp] = React.useState<
+    { value: number; label: string; class: number }[]
+  >([]);
+  const [sportsSelect, setSportsSelect] = React.useState<
     { value: number; label: string; class: number }[]
   >([]);
   const [description, setDescription] = React.useState("");
@@ -215,12 +228,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [classesDispFilter, setClassesDispFilter] = React.useState<
     ClassesProps[]
   >([]);
-  const [team, setTeam] = React.useState("");
   const [teamsDisp, setTeamsDisp] = React.useState<ClassesProps[]>([]);
   const [units, setUnits] = React.useState("");
   const [unitsDisp, setUnitsDisp] = React.useState<UnitsProps[]>([]);
   const [classFilter, setClassFilter] = React.useState("999");
   const [classes, setClasses] = React.useState("");
+  const [imageContract, setImageContract] = React.useState("");
+  const [uniform, setUniform] = React.useState("");
+  const [hasRegistrationNumber, setHasRegistrationNumber] = React.useState("");
+  const [contract, setContract] = React.useState("");
+  const [exitAutorization, setExitAutorization] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [status, setStatus] = React.useState("1");
   const [daysTraining, setDaysTraining] = React.useState("");
@@ -233,13 +250,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [comments, setComments] = React.useState("");
   const {
     filterStudentsByClass,
-    filterStudentsByTeam,
     idClass,
-    teamId,
     filterByUnit,
     reloadPage,
-    verifyUserCreate,
+    verifyDataCreate,
     unitId,
+    teamId,
     daySaved,
     respId,
     unitName,
@@ -255,16 +271,22 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     return `${dia}/${mes}/${ano}`;
   }
 
+  let verifyPresenceField : CallProps[] = [];
+
+  if (route == "call") {
+    verifyPresenceField = data.filter((d: StudentsProps)=> d.presence != null);
+  }
+
   React.useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 375) { 
+      if (window.innerWidth <= 375) {
         setModalMaxHeight("290px");
       } else {
         setModalMaxHeight("540px");
       }
     };
 
-    handleResize(); 
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
@@ -304,7 +326,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       ),
     },
     datepickerClassNames: "top-12",
-    defaultDate: new Date("2022-01-01"),
+    defaultDate: new Date(),
     language: "pt-br",
     disabledDates: [],
     weekDays: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
@@ -351,25 +373,25 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const generateExcel = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const dataCall = {
       date: date2,
       unit: unitId,
       classId: idClass,
       day_of_training: daySaved,
-      team: teamId,
+      team: teamId
     };
-  
+
     try {
       setLoading(true);
       const response = await api.post("/students/excel", dataCall);
       const students: Student[] = response.data.students;
-  
+
       const groupedStudents: StudentsDataProps = {};
-  
+
       students.forEach((student: { [key: string]: any }) => {
         const id = student["id"];
-  
+
         if (!groupedStudents[id]) {
           groupedStudents[id] = {
             "Nome completo": student["Nome completo"],
@@ -380,23 +402,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             Presenças: {},
           };
         }
-  
+
         const data = moment(student["Data"], "DD/MM/YYYY");
         const mes = verifyMonthName(data.month());
-  
+
         if (!groupedStudents[id].Presenças[mes]) {
           groupedStudents[id].Presenças[mes] = [];
         }
-  
+
         groupedStudents[id].Presenças[mes].push({
           Motivo: student["Motivo"],
           Presença: student["Presença"],
           Data: student["Data"],
         });
       });
-  
+
       const result = Object.values(groupedStudents);
-  
+
       const monthMapping: { [key: string]: number } = {
         janeiro: 1,
         fevereiro: 2,
@@ -411,22 +433,22 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         novembro: 11,
         dezembro: 12,
       };
-  
+
       const getMonthNumber = (monthName: string): number =>
         monthMapping[monthName.toLowerCase()] || 0;
-  
+
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Chamada");
-  
+
       worksheet.columns = [
-        { width: 30 },
+        { width: 40 },
         { width: 30 },
         { width: 20 },
-        { width: 15 },
+        { width: 30 },
         { width: 60 },
         { width: 50 },
       ];
-  
+
       worksheet.mergeCells("A1:F1");
       const titleCell = worksheet.getCell("A1");
       titleCell.value = `UNIDADE ${unitName.toLocaleUpperCase()}`;
@@ -438,7 +460,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-  
+
       worksheet.mergeCells("A2:F2");
       const subtitleCell = worksheet.getCell("A2");
       subtitleCell.value = "Coordenação: Gracielle Bravos: (31) 99100-5157";
@@ -450,12 +472,14 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-  
+
       worksheet.mergeCells("A3:F3");
       const descriptionCell = worksheet.getCell("A3");
       descriptionCell.value = `Iniciação esportiva - ${
         className !== "" ? className : "Todos"
-      } ${dayTrainingName !== "" ? "- " + dayTrainingName : ""} - ${dataBrasileira}`;
+      } ${
+        dayTrainingName !== "" ? "- " + dayTrainingName : ""
+      } - ${dataBrasileira}`;
       descriptionCell.font = { size: 12.5, bold: true };
       descriptionCell.alignment = { vertical: "middle", horizontal: "center" };
       descriptionCell.border = {
@@ -464,7 +488,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-  
+
       const headers = [
         "Atleta",
         "Data de nascimento",
@@ -473,11 +497,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         "Presença",
         "Observações",
       ];
-  
+
       const headerRow = worksheet.addRow(headers);
       headerRow.height = 25;
       headerRow.font = { size: 12, bold: true };
-  
+
       headerRow.eachCell({ includeEmpty: true }, (cell: ExcelJS.Cell) => {
         cell.alignment = { vertical: "middle", horizontal: "center" };
         cell.border = {
@@ -487,15 +511,15 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           right: { style: "thin" },
         };
       });
-  
+
       const monthsPresent: { [key: string]: any[] } = {};
-  
+
       result.forEach((student: any) => {
         Object.keys(student["Presenças"]).forEach((month) => {
           if (!monthsPresent[month]) {
             monthsPresent[month] = [];
           }
-  
+
           const dataEntry = {
             "Nome completo": student["Nome completo"],
             "Data de nascimento": student["Data de nascimento"],
@@ -504,21 +528,28 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             Observações: student["Observações"],
             Presenças: student["Presenças"][month],
           };
-  
+
           monthsPresent[month].push(dataEntry);
         });
       });
-  
+
       Object.keys(monthsPresent)
         .sort((a, b) => getMonthNumber(a) - getMonthNumber(b))
         .forEach((month) => {
-          const monthTitleRow = worksheet.addRow(["", "", "", "", month.toUpperCase(), ""]);
+          const monthTitleRow = worksheet.addRow([
+            "",
+            "",
+            "",
+            "",
+            month.toUpperCase(),
+            "",
+          ]);
           monthTitleRow.getCell(5).alignment = {
             vertical: "middle",
             horizontal: "center",
           };
           monthTitleRow.getCell(5).font = { bold: true, size: 14 };
-  
+
           monthTitleRow.getCell(1).border = {
             top: { style: "thin" },
             left: { style: "thin" },
@@ -529,34 +560,39 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             right: { style: "thin" },
             bottom: { style: "thin" },
           };
-  
+
           monthTitleRow.getCell(5).border = {};
-  
+
           monthsPresent[month].forEach((student) => {
             const initialRow = worksheet.rowCount + 1;
-          
+
             worksheet.addRow([
               student["Nome completo"],
               student["Data de nascimento"],
               student["Turma"],
               student["Esporte"],
-              "", 
+              "",
               student["Observações"],
             ]);
-          
+
             const presencaCell = worksheet.getCell(initialRow, 5);
-            
-            const presenceArray = student["Presenças"].map((p: { Data: string; Presença: string }) => ({
-              date: formatDateToExcel(p["Data"]).slice(0, 2),
-              status: p["Presença"], 
-            }));
-            
-            presenceArray.sort((a: { date: any; }, b: { date: any; }) => Number(a.date) - Number(b.date));
-          
+
+            const presenceArray = student["Presenças"].map(
+              (p: { Data: string; Presença: string }) => ({
+                date: formatDateToExcel(p["Data"]).slice(0, 2),
+                status: p["Presença"],
+              })
+            );
+
+            presenceArray.sort(
+              (a: { date: any }, b: { date: any }) =>
+                Number(a.date) - Number(b.date)
+            );
+
             const presenceString = presenceArray
-              .map((p: { date: any; status: any; }) => `${p.date} ${p.status}`)
-              .join(' | ');
-          
+              .map((p: { date: any; status: any }) => `${p.date} ${p.status}`)
+              .join(" | ");
+
             presencaCell.value = presenceString;
             presencaCell.alignment = {
               vertical: "middle",
@@ -569,19 +605,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               bottom: { style: "thin" },
               right: { style: "thin" },
             };
-          
+
             const lastRow = worksheet.rowCount;
             worksheet.mergeCells(initialRow, 1, lastRow, 1);
             worksheet.mergeCells(initialRow, 2, lastRow, 2);
             worksheet.mergeCells(initialRow, 3, lastRow, 3);
             worksheet.mergeCells(initialRow, 4, lastRow, 4);
             worksheet.mergeCells(initialRow, 6, lastRow, 6);
-          
+
             for (let i = 1; i <= 6; i++) {
               const cell = worksheet.getCell(initialRow, i);
               cell.alignment = { vertical: "middle", horizontal: "center" };
             }
-        
+
             const observationCell = worksheet.getCell(initialRow, 6);
             observationCell.border = {
               top: { style: "thin" },
@@ -589,7 +625,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               bottom: { style: "thin" },
               right: { style: "thin" },
             };
-          
+
             for (let i = initialRow; i <= lastRow; i++) {
               worksheet.getRow(i).eachCell((cell: ExcelJS.Cell) => {
                 cell.border = {
@@ -600,19 +636,21 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 };
               });
             }
-            
           });
         });
-  
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(
-        new Blob([buffer], { type: "application/octet-stream" }),
-        `Chamada - ${className != "" ? className : "Todos"} - ${dataBrasileira}.xlsx`
-      );
-  
+        
       if (response.data.students.length === 0) {
         toast.error("Nenhum registro encontrado!");
+      } else {
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(
+          new Blob([buffer], { type: "application/octet-stream" }),
+          `Chamada - ${
+            className != "" ? className : "Todos"
+          } - ${dataBrasileira}.xlsx`
+        );
       }
+
     } catch (error) {
       toast.error("Ocorreu um erro ao gerar o excel!");
       console.error(error);
@@ -620,7 +658,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(false);
     }
   };
-  
+
   const setTrash = () => {
     setLink("");
     setFile(null);
@@ -650,7 +688,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const filterUnitWithClass = async (e: string, isStudent: string) => {
     setClasses("");
     setUnits(e);
-    setTeam("");
 
     const response = await api.get(`/classes/filter/${e}`);
 
@@ -780,6 +817,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.success("Turma cadastrada com sucesso!");
       setOpenModal(false);
       reloadPage();
+      verifyDataCreate(true);
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar a turma!");
@@ -966,7 +1004,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       toast.success(`${name} cadastrada com sucesso!`);
       closeModal();
       reloadPage();
-      verifyUserCreate(true);
+      verifyDataCreate(true);
       handlePhoneChange("");
     } catch {
       toast.error("Ocorreu um erro ao cadastrar o responsável!");
@@ -1012,6 +1050,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const response = await api.get("/sports");
 
+      const formatedData = response.data.map((d: SportsProps) => ({
+        value: d.id,
+        label: d.description,
+        class: d.class,
+      }));
+
+      setSportsDisp(formatedData);
       setTeamsDisp(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar as equipes disponíveis!");
@@ -1032,20 +1077,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     };
   };
 
-
   const selectClassesToCoordinatorSee = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       await api.put("/classes/coordinator", data);
-      
+
       reloadPage();
     } catch {
       toast.error("Ocorreu um erro ao selecionar as turmas!");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const makeCall = async (students: Student[]) => {
     try {
@@ -1073,7 +1117,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 schedule_by_responsible: 1,
                 status_call: student.status_call,
               }),
-            comments: student.presence == 1 ? null : student.comments_call
+            comments: student.presence == 1 ? null : student.comments_call,
           };
         });
 
@@ -1126,15 +1170,23 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setDate("");
     setUnits("");
     setClasses("");
-    setTeam("");
     setLink("");
     setShow(false);
     setDaysTraining("");
     setStudentsSelect([]);
+    setSportsDisp([]);
+    setSportsSelect([]);
     setClassTime("");
     setPhone("");
     setDate2(undefined);
     setOptionTabs("selectStudent");
+    setOptionTabsStudent("dataStudent");
+    setHasRegistrationNumber("");
+    setImageContract("");
+    setContract("");
+    setUniform("");
+    setNameResp("");
+    setExitAutorization("");
     setIsStudent("");
     setLevel(0);
     setComments("");
@@ -1151,7 +1203,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       const response = await axios.post(
-        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
+        `${
+          hostName == "localhost"
+            ? "http://localhost:3000/upload"
+            : "https://bravos-api.onrender.com/upload"
+        }`,
         formData,
         {
           headers: {
@@ -1160,7 +1216,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         }
       );
 
-      return `${hostName == "localhost" ? `http://localhost:3000/files/${response.data}` : `https://bravos-api.onrender.com/files/${response.data}`}`;
+      return `${
+        hostName == "localhost"
+          ? `http://localhost:3000/files/${response.data}`
+          : `https://bravos-api.onrender.com/files/${response.data}`
+      }`;
     } catch {
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
@@ -1170,13 +1230,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     if (route == "studentsClass") {
       return;
     }
-    
+
     const verifyIfSaveImage = await saveImage();
-    
+
     if (verifyIfSaveImage == "error") {
       setLoading(false);
       return;
@@ -1185,15 +1245,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       image: verifyIfSaveImage,
       name: name,
-      team: team,
+      sports: sportsSelect,
       date_of_birth: date,
       resp_phone: phone,
       resp_name: nameResp,
       status: status,
-      ...(daysTraining != "" && { days_training: daysTraining }),
-      ...(classTime != "" && { class_time: classTime }),
       class: classes,
       unit: units,
+      ...(daysTraining != "" && { days_training: daysTraining }),
+      ...(classTime != "" && { class_time: classTime }),
+      ...(hasRegistrationNumber == "true" && { has_registration_number: true }),
+      ...(imageContract == "true" && { image_contract: true }),
+      ...(exitAutorization == "true" && { exit_autorization: true }),
+      ...(contract == "true" && { contract: true }),
+      ...(uniform == "true" && { uniform: true }),
     };
 
     if (!link) {
@@ -1213,12 +1278,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setPhone("");
       toast.success("Aluno cadastrado com sucesso!");
       closeModal();
-      verifyUserCreate(true);
+      verifyDataCreate(true);
       reloadPage();
       setLink("");
       setDate("");
-    } catch {
-      toast.error("Ocorreu um erro ao cadastrar o aluno!");
+    } catch (error: any) {
+      if (error.response.data.error.errors[0].message == "O nome de usuário já existe.") {
+        return toast.error("O telefone do responsável já foi cadastrado!");
+      } else {
+        toast.error("Ocorreu um erro ao criar o aluno!");
+      }
     } finally {
       setLoading(false);
     }
@@ -1294,7 +1363,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           registration: s.value,
           class: s.class,
           name: s.label,
-          presence: 0,
+          presence: false,
           edit_by: username,
           made_by: username,
           date: convertDateFormat(dateAbsence),
@@ -1309,7 +1378,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           registration: studentRespData[0].id,
           class: studentRespData[0].class,
           name: studentRespData[0].name,
-          presence: 0,
+          presence: false,
           edit_by: username,
           made_by: username,
           date: convertDateFormat(dateAbsence),
@@ -1325,7 +1394,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       await api.post("/call", data);
 
       toast.success("Falta agendada com sucesso!");
-      verifyUserCreate(true);
+      verifyDataCreate(true);
       reloadPage();
       setComments("");
       setDateSelectAbsence("");
@@ -1440,7 +1509,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={createTeacher}>
                   <Modal.Body
                     className="relative"
-                     style={{ maxHeight: modalMaxHeight }}
+                    style={{ maxHeight: modalMaxHeight }}
                   >
                     <div className="space-y-6">
                       <div
@@ -1553,7 +1622,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           {route == "call" && (
-            <div className={`flex justify-center w-full gap-4`}>
+            <div>
               <Input
                 placeholder="Nome do aluno..."
                 value={
@@ -1562,37 +1631,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 onChange={(event) =>
                   table.getColumn("name")?.setFilterValue(event.target.value)
                 }
-                className="w-full"
+                className="w-full 2xl:max-w-96"
               />
-              
-
-              <Select
-                value={String(teamId)}
-                onValueChange={(e) =>
-                  filterStudentsByTeam(
-                    idClass,
-                    Number(e),
-                    Number(unitId),
-                    daySaved != "" ? daySaved : "-99"
-                  )
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Esportes" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {classesDisp.map((c) => {
-                    if (c.status == 1) {
-                      return (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.description}
-                        </SelectItem>
-                      );
-                    }
-                  })}
-                </SelectContent>
-              </Select>
 
               <Modal show={openModal} onClose={() => closeModal()}>
                 <Modal.Header>
@@ -1603,7 +1643,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={generateExcel}>
                   <Modal.Body
                     className="relative"
-                     style={{ maxHeight: modalMaxHeight }}
+                    style={{ maxHeight: modalMaxHeight }}
                   >
                     <div className="space-y-6">
                       <div className={cn("grade gap-2")}>
@@ -1723,7 +1763,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <form onSubmit={createScheduleAbsence}>
                   <Modal.Body
                     className="relative"
-                     style={{ maxHeight: modalMaxHeight }}
+                    style={{ maxHeight: modalMaxHeight }}
                   >
                     {(user as unknown as UserProps).level != 3 ? (
                       <Tabs
@@ -2034,416 +2074,606 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 <Modal.Header>
                   Cadastro de <span className="text-primary-color">aluno</span>
                 </Modal.Header>
-                <form onSubmit={createStudent}>
-                  <Modal.Body
-                    className="relative"
-                    style={{ maxHeight: modalMaxHeight }}
+                <Tabs
+                  defaultValue={optionTabsStudent}
+                  value={optionTabsStudent != "" ? optionTabsStudent : ""}
+                  className="px-3"
+                >
+                  <TabsList className="flex justify-center w-full mx-auto my-5">
+                    <TabsTrigger value="dataStudent">
+                      Dados do aluno
+                    </TabsTrigger>
+                    <TabsTrigger value="documentsStudent">Documentos</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent
+                    value="dataStudent"
                   >
-                    <div className="space-y-6">
-                      <div
-                        className={`${
-                          link != "" ? "h-64" : "h-48"
-                        } flex justify-center transition-all w-full border-dashed ${
-                          error && !link && "border-red-500"
-                        } border-2 rounded-lg relative text-md font-medium text-gray-700`}
-                      >
-                        <input
-                          required
-                          onChange={(e) => handleFileChange(e)}
-                          type="file"
-                          name="image"
-                          accept="image/png, image/jpeg"
-                          id="image"
-                          className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
-                        />
-
-                        {link ? (
-                          <div className="flex justify-center">
-                            <svg className="p-10 flex justify-center">
-                              <image href={link} className="my-class w-80" />
-                            </svg>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-2 items-center justify-center ">
-                            <IoIosImages fontSize={40} />
-                            <p className="w-full px-3 text-center text-sm md:text-lg">
-                              Clique aqui para selecionar uma imagem.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <FaTrash
-                        fontSize={22}
-                        onClick={() => setTrash()}
-                        className={`${
-                          link ? "block" : "hidden"
-                        } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
-                      />
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="nome">
-                          Nome: <span className="text-red-500">*</span>
-                        </label>
-
-                        <Input
-                          id="nome"
-                          required
-                          placeholder="Digite o nome do aluno..."
-                          onChange={(e) => setName(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="dateBirth">
-                          Data de nascimento:{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-
-                        <Datepicker
-                          //@ts-ignore
-                          options={optionsDate}
-                          onChange={handleChange}
-                          show={show}
-                          setShow={handleClose}
-                        >
-                          <div
-                            className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
-                            onClick={() => setShow(!show)}
-                          >
-                            <input
-                              type="text"
-                              placeholder="Selecione a data de nascimento"
-                              className=" placeholder:text-gray-600 cursor-pointer w-full"
-                              value={date}
-                              readOnly
-                            />
-                          </div>
-                        </Datepicker>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="class">
-                          É um aluno do colégio ?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <Select
-                          required
-                          onValueChange={(e) => changeIsStudent(e)}
-                        >
-                          <SelectTrigger className="w-full" id="class">
-                            <SelectValue placeholder="Selecione sim ou não" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={"1"}>Sim</SelectItem>
-                            <SelectItem value={"0"}>Não</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label className="flex justify-between items-center cursor-pointer">
-                          <div>
-                            Unidade: <span className="text-red-500">*</span>
-                          </div>
-
-                          <div
-                            className={`${
-                              unitsDisp.length == 1 && unitsDisp[0]?.id == 999
-                                ? "block"
-                                : "hidden"
-                            }`}
-                          >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon
-                                    fontSize={19}
-                                    className="text-yellow-800  "
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-
-                              <DropdownMenuContent className="w-56">
-                                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <div className="py-2 p-3 text-sm">
-                                  Nenhuma unidade encontrada, cadastre novas
-                                  unidades e tente novamente!
-                                </div>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </label>
-
-                        <Select
-                          defaultValue={units}
-                          onValueChange={(e) =>
-                            filterUnitWithClass(e, isStudent)
-                          }
-                          disabled={
-                            isStudent == "" ||
-                            (unitsDisp.length == 1 && unitsDisp[0]?.id == 999)
-                          }
-                          required
-                        >
-                          <SelectTrigger className="w-full" id="units">
-                            <SelectValue placeholder="Selecione a unidade" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {unitsDisp.map((c) => {
-                              if (c.id == 999) {
-                                return;
-                              }
-
-                              return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label className="flex justify-between items-center cursor-pointer">
-                          <div>
-                            Turma: <span className="text-red-500">*</span>
-                          </div>
-
-                          <div
-                            className={
-                              classesDisp.length == 0 ? "flex" : "hidden"
-                            }
-                          >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon
-                                    fontSize={19}
-                                    className="text-yellow-800  "
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-
-                              <DropdownMenuContent className="w-56">
-                                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <div className="py-2 p-3 text-sm">
-                                  Nenhuma turma encontrada, cadastre novas
-                                  turmas e tente novamente!
-                                </div>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </label>
-
-                        <Select
-                          value={classes != "" ? classes : ""}
-                          defaultValue={classes != "" ? classes : ""}
-                          onValueChange={(e) => setClasses(e)}
-                          disabled={units == "" || classesDisp.length == 0}
-                          required
-                        >
-                          <SelectTrigger className="w-full" id="class">
-                            <SelectValue placeholder="Selecione a turma" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {classesDisp.map((c) => {
-                              if (c.id == 999) {
-                                return;
-                              }
-
-                              return (
-                                <SelectItem key={c.id} value={String(c.id)}>
-                                  {c.description.split("-")[0]}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label className="flex justify-between items-center cursor-pointer">
-                          <div>
-                            Esporte: <span className="text-red-500">*</span>
-                          </div>
-
-                          <div
-                            className={
-                              teamsDisp.length <= 0 ? "flex" : "hidden"
-                            }
-                          >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                                  <FiAlertOctagon
-                                    fontSize={19}
-                                    className="text-yellow-800  "
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-
-                              <DropdownMenuContent className="w-56">
-                                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <div className="py-2 p-3 text-sm">
-                                  Nenhum esporte encontrado, cadastre novos
-                                  esportes e tente novamente!
-                                </div>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </label>
-
-                        <Select
-                          onValueChange={(e) => setTeam(e)}
-                          value={team != "" ? team : ""}
-                          defaultValue={team != "" ? team : ""}
-                          disabled={teamsDisp.length <= 0 || units == ""}
-                          required
-                        >
-                          <SelectTrigger className="w-full" id="sport">
-                            <SelectValue placeholder="Selecione o esporte" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamsDisp.map((t) => {
-                              return (
-                                <SelectItem key={t.id} value={String(t.id)}>
-                                  {t.description}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="days_training">Dias de treino:</label>
-
-                        <Select onValueChange={(e) => setDaysTraining(e)}>
-                          <SelectTrigger className="w-full" id="days_training">
-                            <SelectValue placeholder="Selecione os dias de treino" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Segunda e Quarta">
-                              Segunda e Quarta
-                            </SelectItem>
-                            <SelectItem value="Terça e Quinta">
-                              Terça e Quinta
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="class_time">Horário de treino:</label>
-
-                        <Select
-                          disabled={daysTraining == ""}
-                          onValueChange={(e) => setClassTime(e)}
-                        >
-                          <SelectTrigger className="w-full" id="class_time">
-                            <SelectValue placeholder="Selecione os dias de treino" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="13:15">
-                              13:15 às 15:00
-                            </SelectItem>
-
-                            <SelectItem value="17:30">
-                              17:30 às 18:20
-                            </SelectItem>
-
-                            <SelectItem value="18:20">
-                              18:20 às 19:20
-                            </SelectItem>
-
-                            <SelectItem value="18:30">
-                              18:30 às 19:30
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label>
-                          Telefone do responsável:{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-
-                        <MaskedInput
-                          value={phone}
-                          onChange={handlePhoneChange}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label id="nome_resp">
-                          Nome do responsável:{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-
-                        <Input
-                          id="nome_resp"
-                          required
-                          placeholder="Digite o nome do responsável..."
-                          onChange={(e) => setNameResp(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                        <label htmlFor="status">
-                          Status: <span className="text-red-500">*</span>
-                        </label>
-                        <Select required onValueChange={(e) => setStatus(e)}>
-                          <SelectTrigger className="w-full" id="status">
-                            <SelectValue placeholder="Selecione o status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Ativo</SelectItem>
-                            <SelectItem value="2">Experimental</SelectItem>
-                            <SelectItem value="3">Pendente</SelectItem>
-                            <SelectItem value="0">Inativo</SelectItem>
-                            <SelectItem value="4">Desativado</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </Modal.Body>
-                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
-                    <Button
-                      type="submit"
-                      className="bg-primary-color hover:bg-secondary-color"
+                     <Modal.Body
+                      className="relative"
+                      style={{ maxHeight: modalMaxHeight }}
                     >
-                      {loading ? (
-                        <div className="flex justify-center">
-                          <TbLoader3
-                            fontSize={23}
-                            style={{ animation: "spin 1s linear infinite" }}
+                      <div className="space-y-6 w-full mb-5">
+                        <div
+                          className={`${
+                            link != "" ? "h-64" : "h-48"
+                          } flex justify-center transition-all w-full border-dashed ${
+                            error && !link && "border-red-500"
+                          } border-2 rounded-lg relative text-md font-medium text-gray-700`}
+                        >
+                          <input
+                            required
+                            onChange={(e) => handleFileChange(e)}
+                            type="file"
+                            name="image"
+                            accept="image/png, image/jpeg"
+                            id="image"
+                            className="absolute cursor-pointer top-0 w-full h-48 opacity-0"
+                          />
+
+                          {link ? (
+                            <div className="flex justify-center">
+                              <svg className="p-10 flex justify-center">
+                                <image href={link} className="my-class w-80" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-2 items-center justify-center ">
+                              <IoIosImages fontSize={40} />
+                              <p className="w-full px-3 text-center text-sm md:text-lg">
+                                Clique aqui para selecionar uma imagem.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <FaTrash
+                          fontSize={22}
+                          onClick={() => setTrash()}
+                          className={`${
+                            link ? "block" : "hidden"
+                          } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
+                        />
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="nome">
+                            Nome: <span className="text-red-500">*</span>
+                          </label>
+
+                          <Input
+                            id="nome"
+                            value={name != "" ? name : ""}
+                            required
+                            placeholder="Digite o nome do aluno..."
+                            onChange={(e) => setName(e.target.value)}
                           />
                         </div>
-                      ) : (
-                        "Salvar"
-                      )}
-                    </Button>
-                    <Button
-                      className="bg-white text-black border border-gray-100 hover:bg-gray-100"
-                      onClick={() => closeModal()}
+
+                        <div className="flex flex-col w-full gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="dateBirth">
+                            Data de nascimento:{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+
+                          <Datepicker
+                            //@ts-ignore
+                            options={optionsDate}
+                            onChange={handleChange}
+                            show={show}
+                            setShow={handleClose}
+                          >
+                            <div
+                              className="flex gap-2 p-2.5 border rounded-lg w-full cursor-pointer"
+                              onClick={() => setShow(!show)}
+                            >
+                              <input
+                                type="text"
+                                placeholder="Selecione a data de nascimento"
+                                className=" placeholder:text-gray-600 cursor-pointer w-full"
+                                value={date}
+                                readOnly
+                              />
+                            </div>
+                          </Datepicker>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="class">
+                            É um aluno do colégio ?{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <Select
+                            value={isStudent != "" ? isStudent : ""}
+                            required
+                            onValueChange={(e) => changeIsStudent(e)}
+                          >
+                            <SelectTrigger className="w-full" id="class">
+                              <SelectValue placeholder="Selecione sim ou não" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={"1"}>Sim</SelectItem>
+                              <SelectItem value={"0"}>Não</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer">
+                            <div>
+                              Unidade: <span className="text-red-500">*</span>
+                            </div>
+
+                            <div
+                              className={`${
+                                unitsDisp.length == 1 && unitsDisp[0]?.id == 999
+                                  ? "block"
+                                  : "hidden"
+                              }`}
+                            >
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                                    <FiAlertOctagon
+                                      fontSize={19}
+                                      className="text-yellow-800  "
+                                    />
+                                  </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className="w-56">
+                                  <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <div className="py-2 p-3 text-sm">
+                                    Nenhuma unidade encontrada, cadastre novas
+                                    unidades e tente novamente!
+                                  </div>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </label>
+
+                          <Select
+                            value={units != "" ? units : ""}
+                            defaultValue={units}
+                            onValueChange={(e) =>
+                              filterUnitWithClass(e, isStudent)
+                            }
+                            disabled={
+                              isStudent == "" ||
+                              (unitsDisp.length == 1 && unitsDisp[0]?.id == 999)
+                            }
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="units">
+                              <SelectValue placeholder="Selecione a unidade" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {unitsDisp.map((c) => {
+                                if (c.id == 999) {
+                                  return;
+                                }
+
+                                return (
+                                  <SelectItem key={c.id} value={String(c.id)}>
+                                    {c.description}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer">
+                            <div>
+                              Turma: <span className="text-red-500">*</span>
+                            </div>
+
+                            <div
+                              className={
+                                classesDisp.length == 0 ? "flex" : "hidden"
+                              }
+                            >
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                                    <FiAlertOctagon
+                                      fontSize={19}
+                                      className="text-yellow-800  "
+                                    />
+                                  </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className="w-56">
+                                  <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <div className="py-2 p-3 text-sm">
+                                    Nenhuma turma encontrada, cadastre novas
+                                    turmas e tente novamente!
+                                  </div>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </label>
+
+                          <Select
+                            value={classes != "" ? classes : ""}
+                            defaultValue={classes != "" ? classes : ""}
+                            onValueChange={(e) => setClasses(e)}
+                            disabled={units == "" || classesDisp.length == 0}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="class">
+                              <SelectValue placeholder="Selecione a turma" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {classesDisp.map((c) => {
+                                if (c.id == 999) {
+                                  return;
+                                }
+
+                                return (
+                                  <SelectItem key={c.id} value={String(c.id)}>
+                                    {c.description.split("-")[0]}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-2 my-3 mb-10">
+                          <label className="flex justify-between items-center cursor-pointer">
+                            <div>
+                              Esportes: <span className="text-red-500">*</span>
+                            </div>
+
+                            <div
+                              className={
+                                teamsDisp.length <= 0 ? "flex" : "hidden"
+                              }
+                            >
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                                    <FiAlertOctagon
+                                      fontSize={19}
+                                      className="text-yellow-800  "
+                                    />
+                                  </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className="w-56">
+                                  <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <div className="py-2 p-3 text-sm">
+                                    Nenhum esporte encontrado, cadastre novos
+                                    esportes e tente novamente!
+                                  </div>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </label>
+
+                          <SelectReact
+                            defaultValue={[]}
+                            isMulti
+                            name="sports"
+                            value={sportsSelect}
+                            // @ts-ignore
+                            onChange={(e) => setSportsSelect(e)}
+                            noOptionsMessage={() =>
+                              "Nenhum resultado encontrado"
+                            }
+                            // @ts-ignore
+                            options={sportsDisp}
+                            className="basic-multi-select text-sm"
+                            onMenuOpen={() => setIsOpen(true)}
+                            onMenuClose={() => setIsOpen(false)}
+                            maxMenuHeight={200}
+                            placeholder="Selecione o(s) esportes(s)"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="days_training">Dias de treino:</label>
+
+                          <Select value={daysTraining != "" ? daysTraining : ""} onValueChange={(e) => setDaysTraining(e)}>
+                            <SelectTrigger
+                              className="w-full"
+                              id="days_training"
+                            >
+                              <SelectValue placeholder="Selecione os dias de treino" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Segunda e Quarta">
+                                Segunda e Quarta
+                              </SelectItem>
+                              <SelectItem value="Terça e Quinta">
+                                Terça e Quinta
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="class_time">Horário de treino:</label>
+
+                          <Select
+                            value={classTime != "" ? classTime : ""}
+                            disabled={daysTraining == ""}
+                            onValueChange={(e) => setClassTime(e)}
+                          >
+                            <SelectTrigger className="w-full" id="class_time">
+                              <SelectValue placeholder="Selecione os dias de treino" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="13:15">
+                                13:15 às 15:00
+                              </SelectItem>
+
+                              <SelectItem value="17:30">
+                                17:30 às 18:20
+                              </SelectItem>
+
+                              <SelectItem value="18:20">
+                                18:20 às 19:20
+                              </SelectItem>
+
+                              <SelectItem value="18:30">
+                                18:30 às 19:30
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label>
+                            Telefone do responsável:{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+
+                          <MaskedInput
+                            value={phone}
+                            onChange={handlePhoneChange}
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label id="nome_resp">
+                            Nome do responsável:{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+
+                          <Input
+                            id="nome_resp"
+                            required
+                            value={nameResp != "" ? nameResp : ""}
+                            placeholder="Digite o nome do responsável..."
+                            onChange={(e) => setNameResp(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="status">
+                            Status: <span className="text-red-500">*</span>
+                          </label>
+                          <Select value={status != "" ? status : ""} required onValueChange={(e) => setStatus(e)}>
+                            <SelectTrigger className="w-full" id="status">
+                              <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">Ativo</SelectItem>
+                              <SelectItem value="2">Experimental</SelectItem>
+                              <SelectItem value="3">Pendente</SelectItem>
+                              <SelectItem value="0">Inativo</SelectItem>
+                              <SelectItem value="4">Desativado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                      <Button
+                        className="bg-primary-color hover:bg-secondary-color"
+                        onClick={() => setOptionTabsStudent("documentsStudent")}
+                      >
+                        {loading ? (
+                          <div className="flex justify-center">
+                            <TbLoader3
+                              fontSize={23}
+                              style={{ animation: "spin 1s linear infinite" }}
+                            />
+                          </div>
+                        ) : (
+                          "Próximo"
+                        )}
+                      </Button>
+                      <Button
+                        className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                        onClick={() => closeModal()}
+                      >
+                        Fechar
+                      </Button>
+                    </Modal.Footer>
+                  </TabsContent>
+                  
+                   
+                  <TabsContent value="documentsStudent">
+                      <form onSubmit={createStudent}>
+                      <Modal.Body
+                      className="relative"
+                      style={{ maxHeight: modalMaxHeight }}
                     >
-                      Fechar
-                    </Button>
-                  </Modal.Footer>
-                </form>
+                      <div className="space-y-6 mb-10">
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer" htmlFor="has_registration_number">
+                            <div>
+                              Matrícula: <span className="text-red-500">*</span>
+                            </div>
+                          </label>
+
+                          <Select
+                            defaultValue={hasRegistrationNumber}
+                            onValueChange={(e) => setHasRegistrationNumber(e)}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="has_registration_number">
+                              <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="true">
+                                Sim
+                              </SelectItem>
+                              <SelectItem value="false">
+                                Não
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer" htmlFor="image_contract">
+                            <div>
+                              Contrato de imagem: <span className="text-red-500">*</span>
+                            </div>
+                          </label>
+
+                          <Select
+                            defaultValue={imageContract}
+                            onValueChange={(e) => setImageContract(e)}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="image_contract">
+                              <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="true">
+                                Sim
+                              </SelectItem>
+                              <SelectItem value="false">
+                                Não
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer" htmlFor="exit_autorization">
+                            <div>
+                              Autorização de saída: <span className="text-red-500">*</span>
+                            </div>
+                          </label>
+
+                          <Select
+                            defaultValue={exitAutorization}
+                            onValueChange={(e) => setExitAutorization(e)}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="exit_autorization">
+                              <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="true">
+                                Sim
+                              </SelectItem>
+                              <SelectItem value="false">
+                                Não
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer" htmlFor="contract">
+                            <div>
+                              Contrato: <span className="text-red-500">*</span>
+                            </div>
+                          </label>
+
+                          <Select
+                            defaultValue={contract}
+                            onValueChange={(e) => setContract(e)}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="contract">
+                              <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="true">
+                                Sim
+                              </SelectItem>
+                              <SelectItem value="false">
+                                Não
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label className="flex justify-between items-center cursor-pointer" htmlFor="uniform">
+                            <div>
+                              Uniforme: <span className="text-red-500">*</span>
+                            </div>
+                          </label>
+
+                          <Select
+                            defaultValue={uniform}
+                            onValueChange={(e) => setUniform(e)}
+                            required
+                          >
+                            <SelectTrigger className="w-full" id="uniform">
+                              <SelectValue placeholder="Selecione se o documento foi entregue ou não..." />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="true">
+                                Sim
+                              </SelectItem>
+                              <SelectItem value="false">
+                                Não
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                      <Button
+                        className="bg-primary-color hover:bg-secondary-color"
+                      >
+                        {loading ? (
+                          <div className="flex justify-center">
+                            <TbLoader3
+                              fontSize={23}
+                              style={{ animation: "spin 1s linear infinite" }}
+                            />
+                          </div>
+                        ) : (
+                          "Salvar"
+                        )}
+                      </Button>
+                      <Button
+                        className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                        onClick={() => setOptionTabsStudent("dataStudent")}
+                      >
+                        Voltar
+                      </Button>
+                    </Modal.Footer>
+                      </form>
+                  </TabsContent>
+                </Tabs>
               </Modal>
             </>
           )}
 
-        {route == "turmasCoordenador" && (
+          {route == "turmasCoordenador" && (
             <>
               <div className={`flex justify-center w-full gap-4`}>
                 <Input
@@ -2458,7 +2688,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               </div>
             </>
           )}
-
 
           {route == "responsibles_released" && (
             <>
@@ -2480,7 +2709,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Modal.Header>
 
                 <form onSubmit={(e) => createResponsiblesReleaseds(e)}>
-                  <Modal.Body className="relative"  style={{ maxHeight: modalMaxHeight }}>
+                  <Modal.Body
+                    className="relative"
+                    style={{ maxHeight: modalMaxHeight }}
+                  >
                     <div className="space-y-6">
                       <div
                         className={`${
@@ -2650,7 +2882,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   <span className="text-primary-color">responsável</span>
                 </Modal.Header>
                 <form onSubmit={(e) => createResponsibles(e)}>
-                  <Modal.Body className="relative" >
+                  <Modal.Body className="relative">
                     <div className="space-y-6">
                       <div
                         className={`${
@@ -2980,7 +3212,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Select>
               </div>
 
-              <Modal show={openCoordinatorModal} onClose={() => setOpenCoordinatorModal(false)}>
+              <Modal
+                show={openCoordinatorModal}
+                onClose={() => setOpenCoordinatorModal(false)}
+              >
                 <Modal.Header>
                   Selecionar <span className="text-primary-color">turmas</span>
                 </Modal.Header>
@@ -3017,7 +3252,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Footer>
                 </form>
               </Modal>
-
 
               <Modal show={openModal} onClose={() => setOpenModal(false)}>
                 <Modal.Header>
@@ -3109,8 +3343,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                   </Modal.Footer>
                 </form>
               </Modal>
-
-
             </>
           )}
 
@@ -3355,84 +3587,96 @@ export function DataTable({ data, columns, route }: DataTableProps) {
           )}
 
           <div className="flex gap-5">
-            {route != "studentsClass" && route != "teacherClass" && route != "turmasCoordenadorSelect" && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild className="w-full xl:w-40">
-                  <Button variant="outline" className={`${(route == "call" || route == "turmas") ? "hidden 2xl:flex" : ""} ml-auto gap-1`}>
-                    <TbAdjustmentsHorizontal fontSize={20} /> Colunas
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Alterar colunas</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                      return (
-                        <DropdownMenuCheckboxItem
-                          key={column.id}
-                          className="capitalize"
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(value: any) =>
-                            column.toggleVisibility(!!value)
-                          }
-                        >
-                          {column.id == "image" && "Foto"}
+            {route != "studentsClass" &&
+              route != "teacherClass" &&
+              route != "turmasCoordenadorSelect" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild className="w-full xl:w-40">
+                    <Button
+                      variant="outline"
+                      className={`${
+                        route == "call" || route == "turmas"
+                          ? "hidden 2xl:flex"
+                          : ""
+                      } ml-auto gap-1`}
+                    >
+                      <TbAdjustmentsHorizontal fontSize={20} /> Colunas
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Alterar colunas</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {table
+                      .getAllColumns()
+                      .filter((column) => column.getCanHide())
+                      .map((column) => {
+                        return (
+                          <DropdownMenuCheckboxItem
+                            key={column.id}
+                            className="capitalize"
+                            checked={column.getIsVisible()}
+                            onCheckedChange={(value: any) =>
+                              column.toggleVisibility(!!value)
+                            }
+                          >
+                            {column.id == "image" && "Foto"}
 
-                          {column.id == "name" && "Nome"}
+                            {column.id == "name" && "Nome"}
 
-                          {column.id == "responsible_name" && "Responsável"}
+                            {column.id == "responsible_name" && "Responsável"}
 
-                          {column.id == "class" && "Turma"}
+                            {column.id == "class" && "Turma"}
 
-                          {column.id == "phone" && "Telefone"}
+                            {column.id == "phone" && "Telefone"}
 
-                          {column.id == "desc_unit" && "Unidade"}
+                            {column.id == "desc_unit" && "Unidade"}
 
-                          {route == "agendarFalta"
-                            ? column.id == "comments" && "Motivo"
-                            : column.id == "comments" && "Observações"}
+                            {route == "agendarFalta"
+                              ? column.id == "comments" && "Motivo"
+                              : column.id == "comments" && "Observações"}
 
-                          {column.id == "comments_call" && "Motivo"}
+                            {column.id == "comments_call" && "Motivo"}
 
-                          {column.id == "date" && "Data agendada"}
+                            {column.id == "date" && "Data agendada"}
 
-                          {column.id == "date_of_birth" && "Data de nascimento"}
+                            {column.id == "documents" && "Documentos"}
 
-                          {column.id == "category" && "Categoria"}
+                            {column.id == "date_of_birth" &&
+                              "Data de nascimento"}
 
-                          {column.id == "degree_kinship" &&
-                            "Grau de parentesco"}
+                            {column.id == "category" && "Categoria"}
 
-                          {column.id == "description_sport" && "Esporte"}
+                            {column.id == "degree_kinship" &&
+                              "Grau de parentesco"}
 
-                          {column.id == "modality" && "Modalidade"}
+                            {column.id == "description_sport" && "Esporte"}
 
-                          {column.id == "team" && "Equipe"}
+                            {column.id == "modality" && "Modalidade"}
 
-                          {column.id == "status" && "Status"}
+                            {column.id == "team" && "Equipe"}
 
-                          {column.id == "status_call" && "Status"}
+                            {column.id == "status" && "Status"}
 
-                          {column.id == "actions" && "Ações"}
+                            {column.id == "status_call" && "Status"}
 
-                          {column.id == "level" && "Nível"}
+                            {column.id == "actions" && "Ações"}
 
-                          {column.id == "complete_register" &&
-                            "Cadastro completo"}
+                            {column.id == "level" && "Nível"}
 
-                          {route == "students"
-                            ? column.id == "id" && "Matrícula"
-                            : column.id == "id" && "Código"}
+                            {column.id == "complete_register" &&
+                              "Cadastro completo"}
 
-                          {column.id == "description" && "Descrição"}
-                        </DropdownMenuCheckboxItem>
-                      );
-                    })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                            {route == "students"
+                              ? column.id == "id" && "Matrícula"
+                              : column.id == "id" && "Código"}
+
+                            {column.id == "description" && "Descrição"}
+                          </DropdownMenuCheckboxItem>
+                        );
+                      })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
             <Button
               onClick={() => openModals()}
@@ -3451,7 +3695,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <BsUiChecksGrid fontSize={16} className="hidden md:flex" />
-              Selecionar 
+              Selecionar
             </Button>
 
             <Button
@@ -3461,7 +3705,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               } w-full xl:max-w-48 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdGroupAdd fontSize={22} className="hidden md:flex" />
-              Cadastrar 
+              Cadastrar
             </Button>
 
             <Button
@@ -3517,7 +3761,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             <Button
               onClick={() => openModals()}
               className={`${
-                route != "responsibles_released" || (user as unknown as UserProps).level == 4 ? "hidden" : "flex"
+                route != "responsibles_released" ||
+                (user as unknown as UserProps).level == 4
+                  ? "hidden"
+                  : "flex"
               } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
@@ -3541,14 +3788,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               />
               Gerar excel
             </Button>
-            
 
             <Button
               onClick={() => openModals()}
               className={`${
                 route != "call" ? "hidden" : "flex"
               } w-full xl:max-w-44 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
-              disabled={data.length <= 0}
+              disabled={data.length <= 0 || verifyPresenceField.length <= 0}
             >
               <MdFormatListBulletedAdd
                 fontSize={23}
@@ -3626,11 +3872,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     (row.original as RowProps).status == 4
                       ? "bg-red-500"
                       : ""
-                  }`
-                }
+                  }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className={`whitespace-nowrap ${((location.pathname == "alunos" || location.pathname == "chamada") && (cell.column.id == "name" || cell.column.id == "responsible_name")) ? "text-left" : "text-center"}`}>
+                    <TableCell
+                      key={cell.id}
+                      className={`whitespace-nowrap ${
+                        (location.pathname == "alunos" ||
+                          location.pathname == "chamada") &&
+                        (cell.column.id == "name" ||
+                          cell.column.id == "responsible_name")
+                          ? "text-left"
+                          : "text-center"
+                      }`}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

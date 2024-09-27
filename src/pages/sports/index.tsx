@@ -19,6 +19,7 @@ import { PiCaretUpDownBold } from "react-icons/pi";
 
 export interface SportsProps {
   id: number;
+  sport_id: number;
   description: string;
   modality: string,
   class: number,

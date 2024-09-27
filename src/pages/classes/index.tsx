@@ -107,7 +107,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 
 const Classes = () => {
-  const { reloadPage, newData } = useContext(ReloadContext);
+  const { reloadPage, newData, createdNewData } = useContext(ReloadContext);
   const [data, setData] = useState<ClassesProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -116,7 +116,7 @@ const Classes = () => {
       try {
         setLoading(true);
 
-        if (newData.length > 0) {      
+        if (newData.length > 0 && !createdNewData) {      
           return setData(newData);
         }
 

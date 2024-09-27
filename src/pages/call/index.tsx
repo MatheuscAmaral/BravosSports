@@ -4,7 +4,7 @@ import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import { PiCaretUpDownBold } from "react-icons/pi";
-import { TbArrowsExchange, TbLoader3 } from "react-icons/tb";
+import { TbArrowsExchange, TbCar, TbCarOff, TbLoader3 } from "react-icons/tb";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
@@ -32,13 +32,21 @@ import { IoIosCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { FaCircleQuestion } from "react-icons/fa6";
 import { modalPictureContext } from "@/contexts/ModalPicture";
+import { LuImage } from "react-icons/lu";
+import { LuImageOff } from "react-icons/lu";
+import { MdContentPaste } from "react-icons/md";
+import { MdContentPasteOff } from "react-icons/md";
+import { TbShirtFilled } from "react-icons/tb";
+import { TbShirtOff } from "react-icons/tb";
+import { TbAddressBook } from "react-icons/tb";
+import { TbAddressBookOff } from "react-icons/tb";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
     id: "select",
     header: "Presença",
     cell: ({ row }) => {
-      const [presence, setPresence] = useState(row.original.presence);
+      const [presence, setPresence] = useState(row.original.presence == true ? 1 : 0);
       const { open } = useContext(modalContext);
       const { reason, saveReason } = useContext(ReloadContext);
       const statusCall = row.original.status_call;
@@ -76,7 +84,7 @@ export const columns: ColumnDef<RowProps>[] = [
           >
             <IoIosCheckmarkCircle
               className={`${
-                row.original.presence != null && presence != null && row.original.presence === 1
+                row.original.presence != null && presence != null && row.original.presence == 1
                   ? "text-green-500"
                   : "text-gray-300"
               } ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
@@ -90,7 +98,7 @@ export const columns: ColumnDef<RowProps>[] = [
           >
             <IoMdCloseCircle
               className={`${
-                row.original.presence != null && presence != null && row.original.presence === 0
+                row.original.presence != null && presence != null && row.original.presence == 0
                   ? "text-red-500"
                   : "text-gray-300"
               } ${(schedule != null && statusCall != 0) ? "cursor-not-allowed" : "cursor-pointer"}`}
@@ -133,6 +141,61 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
+    accessorKey: "documents",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Documentos
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const documents = row.getValue("documents");
+
+      if (!Array.isArray(documents) || documents.length === 0) {
+        return <div>Nenhum documento</div>;
+      }
+
+      return (
+        <>
+          {documents.map((d, index) => (
+            <div className="flex gap-2 items-center" key={index}>
+                {
+                  d.has_registration_number == true ? (
+                    <TbAddressBook fontSize={27} className="text-green-800"/>
+                  ) : <TbAddressBookOff fontSize={27} className="text-red-500"/>
+                }
+                {
+                  d.image_contract == true ? (
+                    <LuImage fontSize={23} className="text-green-800"/>
+                  ) : <LuImageOff fontSize={23} className="text-red-500"/>
+                }
+                {
+                  d.exit_autorization == true ? (
+                    <TbCar fontSize={30} className="text-green-800"/>
+                  ) : <TbCarOff fontSize={30} className="text-red-500"/>
+                }
+                {
+                  d.contract == true ? (
+                    <MdContentPaste fontSize={24} className="text-green-800"/>
+                  ) : <MdContentPasteOff fontSize={24} className="text-red-500"/>
+                }
+                {
+                  d.uniform == true ? (
+                    <TbShirtFilled fontSize={25} className="text-green-800"/>
+                  ) : <TbShirtOff fontSize={25} className="text-red-500"/>
+                }
+            </div>
+          ))}
+        </>
+      );
+    },
+  },  
+  {
     accessorKey: "description",
     header: ({ column }) => {
       return (
@@ -155,7 +218,7 @@ export const columns: ColumnDef<RowProps>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Esporte
+          Esportes
           <PiCaretUpDownBold className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -218,10 +281,11 @@ export const columns: ColumnDef<RowProps>[] = [
           setComments(reason[0].comments_call); 
         }
 
-        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].presence == 1 && row.original.presence == 1) {
+        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && (reason[0].presence == 1 && row.original.presence == 1)) {
           setComments("");
         }
-      }, [reason, row.original.id]);
+        
+      }, [reason]);
   
       return (
         <div>
@@ -303,11 +367,11 @@ export const columns: ColumnDef<RowProps>[] = [
 
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => openModals([row.original])}>
-              Ver responsáveis
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => openModalPicture([row.original])}>
               Ver Foto
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openModals([row.original])}>
+              Ver responsáveis
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -325,48 +389,36 @@ const Call = () => {
   const [unitId, setUnitId] = useState("");
   const [units, setUnits] = useState<ClassesProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
+  const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
+  const [teamIdCall, setTeamIdCall] = useState("999");
   const [daysTraining, setDaysTraining] = useState("");
-  const { reloadPage, newStudentsCall, saveData, data, saveUnitName, reason,saveClassName, saveDayTrainingName, saveClassId, resetSelect, saveUnitId, saveDayTraining } =
+  const { saveData, data, saveUnitName, reason, saveClassName, saveTeamId, saveDayTrainingName, saveClassId, saveUnitId, saveDayTraining } =
     useContext(ReloadContext); 
 
   useEffect(() => {
-    const getUnits = async () => {
-      try {
-        const response = await api.get("/units");
+    getUnits();
+  }, []);
 
-        setUnits(response.data);
-      } catch {
-        toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
-      }
-    };
-
-    if (newStudentsCall.length <= 0) {
-      getUnits();
-      saveData(data);
-    } else {
-      saveData(newStudentsCall);
-    }
-
+  useEffect(() => {
     if (data.length > 0 && reason && reason[0]) {
       const updatedData = data.map((d) => {
-        if (d.id === reason[0].id && d.comments_call !== reason[0].comments_call) {
-          return { ...d, comments_call: reason[0].comments_call };
-        }
-
-        if (d.id === reason[0].id && d.comments_call == "" && reason[0].comments_call == "") {
-          return { ...d, presence: 1 };
-        }
-
-        return d;
-      });
-    
-      saveData(updatedData); 
+          if (d.id === reason[0].id && d.comments_call !== reason[0].comments_call) {
+            return { ...d, comments_call: reason[0].comments_call };
+          }
+  
+          if (d.id === reason[0].id && d.comments_call == "" && reason[0].comments_call == "") {
+            return { ...d, presence: 1 };
+          }
+  
+          return d;
+        });
+      
+        saveData(updatedData); 
+    } else {
+      saveData(data); 
     }
-    
-
-    saveData(data);
-  }, [reloadPage]);
+  }, [reason]);
 
   const getClasses = async (idUnit: number) => {
     try {
@@ -379,6 +431,27 @@ const Call = () => {
       toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
     }
   };
+
+  const getUnits = async () => {
+    try {
+      const response = await api.get("/units");
+
+      setUnits(response.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
+    }
+  };
+
+  const getTeamsDisp = async (unit: string) => {
+    try {
+      filterAndSetUnitId(unit);
+      const responseSports = await api.get(`/sports/unit/${unit}`);
+
+      setTeamsDisp(responseSports.data);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");
+    }
+  }
 
   const saveAndFilterClassTime = (e: string) => {
     setDaysTraining(e);
@@ -431,7 +504,6 @@ const Call = () => {
     try {
       setLoading(true);
       setClassId("");
-      resetSelect();
       saveClassId(Number(classId));
       saveUnitId(Number(unitId));
 
@@ -440,7 +512,7 @@ const Call = () => {
       }
       
       const response = await api.get(
-        `/students/class/${classId}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`
+        `/students/class/${classId}/${teamIdCall}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`
       );
 
       if (daysTraining == "") {
@@ -451,6 +523,7 @@ const Call = () => {
       setLoad(true);
       setDaysTraining("");
       setOpenModal(false);
+      setTeamIdCall("999");
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     } finally {
@@ -505,7 +578,7 @@ const Call = () => {
                 </label>
 
                 <Select
-                  onValueChange={(e) => filterAndSetUnitId(e)}
+                  onValueChange={(e) => getTeamsDisp(e)}
                   required
                   defaultValue={unitId}
                 >
@@ -547,6 +620,38 @@ const Call = () => {
                           {c.description}
                         </SelectItem>
                       );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                <label htmlFor="class">
+                  Esporte: 
+                </label>
+
+                <Select
+                  value={(teamIdCall != "" && teamIdCall != "999" && teamIdCall != "0") ? teamIdCall : ""}
+                  onValueChange={(e) => {
+                    setTeamIdCall(e); 
+                    saveTeamId(e);
+                  }}
+                  
+                  disabled={unitId == "" || classId == ""}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione um esporte" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {teamsDisp.map((t) => {
+                      if (t.status == 1) {
+                        return (
+                          <SelectItem key={t.id} value={String(t.id)}>
+                            {t.description}
+                          </SelectItem>
+                        );
+                      }
                     })}
                   </SelectContent>
                 </Select>
