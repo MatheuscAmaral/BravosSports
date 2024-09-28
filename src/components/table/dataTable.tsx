@@ -2,7 +2,7 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import * as React from "react";
 import { toast } from "react-hot-toast";
-import { TbLoader3, TbAdjustmentsHorizontal } from "react-icons/tb";
+import { TbLoader3, TbAdjustmentsHorizontal, TbCalendarPlus } from "react-icons/tb";
 import { BsBuildingAdd, BsUiChecksGrid } from "react-icons/bs";
 import { saveAs } from "file-saver";
 import ExcelJS from "exceljs";
@@ -211,10 +211,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   >([]);
   const [studentsSelect, setStudentsSelect] = React.useState<
     { value: number; label: string; class: number }[]
-  >([]);
-  const [sportsDisp, setSportsDisp] = React.useState<
+    >([]);
+    const [studentsLevel, setStudentsLevel] = React.useState<StudentsProps[]>([]);
+    const [sportsDisp, setSportsDisp] = React.useState<
     { value: number; label: string; class: number }[]
-  >([]);
+    >([]);
   const [sportsSelect, setSportsSelect] = React.useState<
     { value: number; label: string; class: number }[]
   >([]);
@@ -239,6 +240,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const [contract, setContract] = React.useState("");
   const [exitAutorization, setExitAutorization] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [studentId, setStudentId] = React.useState("");
   const [status, setStatus] = React.useState("1");
   const [daysTraining, setDaysTraining] = React.useState("");
   const [date, setDate] = React.useState("");
@@ -776,7 +778,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         class: d.class,
       }));
 
-      setStudents(formatedData);
+      route == "agendarFalta" ? setStudents(formatedData) : setStudentsLevel(response.data);
     } catch {
       toast.error("Ocorreu um erro ao buscar os alunos disponíveis!");
     } finally {
@@ -1150,7 +1152,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setOpenModal(false);
     }
 
-    if (route == "agendarFalta") {
+    if (route == "agendarFalta" || route == "agendarNivel") {
       getStudents();
     }
   };
@@ -1315,6 +1317,39 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
   };
 
+  const createSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (route == "studentsClass") {
+      return;
+    }
+
+    const formatedDateSelect = moment(dateAbsence, "DD-MM-YYYY").format('YYYY-MM-DD');
+    const data = {
+      student_id: Number(studentId),
+      new_status: status,
+      date: formatedDateSelect
+    }
+    
+    try {
+      setLoading(true);
+      await api.post("/schedules", data);
+
+      toast.success("Alteração agendada com sucesso!");
+      verifyDataCreate(true);
+      reloadPage();
+      setComments("");
+      setDateSelectAbsence("");
+      setDateAbsence("");
+    } catch (error: any) {
+      toast.error(error.response.data.error, {
+        position: "top-right",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createScheduleAbsence = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1403,6 +1438,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLoading(false);
     }
   };
+
 
   const createTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1970,6 +2006,297 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             title={
                               studentsSelect.length <= 0
                                 ? "É necessário selecionar um ou mais alunos!"
+                                : ""
+                            }
+                            onClick={(event) => {
+                              event.preventDefault();
+                              setOptionTabs("schedule");
+                            }}
+                          >
+                            {loading ? (
+                              <div className="flex justify-center">
+                                <TbLoader3
+                                  fontSize={23}
+                                  style={{
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              "Próximo"
+                            )}
+                          </Button>
+
+                          <Button
+                            className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                            onClick={() => closeModal()}
+                          >
+                            Fechar
+                          </Button>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Button
+                          type="submit"
+                          className="bg-primary-color hover:bg-secondary-color"
+                        >
+                          {loading ? (
+                            <div className="flex justify-center">
+                              <TbLoader3
+                                fontSize={23}
+                                style={{ animation: "spin 1s linear infinite" }}
+                              />
+                            </div>
+                          ) : (
+                            "Salvar"
+                          )}
+                        </Button>
+
+                        <Button
+                          className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                          onClick={() => closeModal()}
+                        >
+                          Fechar
+                        </Button>
+                      </>
+                    )}
+                  </Modal.Footer>
+                </form>
+              </Modal>
+            </>
+          )}
+
+          {route == "agendarNivel" && (
+            <>
+              <Input
+                placeholder="Nome do aluno..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="xl:max-w-80"
+              />
+
+              <Modal show={openModal} onClose={() => closeModal()}>
+                <Modal.Header>
+                  Agendamento de
+                  <span className="text-primary-color"> alteração</span>
+                </Modal.Header>
+
+                <form onSubmit={createSchedule}>
+                  <Modal.Body
+                    className="relative"
+                    style={{ maxHeight: modalMaxHeight }}
+                  >
+                    {(user as unknown as UserProps).level != 3 ? (
+                      <Tabs
+                        defaultValue={optionTabs}
+                        value={optionTabs != "" ? optionTabs : ""}
+                      >
+                        <TabsList className="flex justify-center w-full mx-auto mb-7">
+                          <TabsTrigger value="selectStudent">
+                            Selecione o aluno
+                          </TabsTrigger>
+                          <TabsTrigger value="schedule">
+                            Agendamento
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent
+                          value="selectStudent"
+                          className={`${isOpen ? "mb-52" : ""} transition-all`}
+                        >
+                          <div className="flex flex-col gap-2 my-3 mb-10">
+                            <label
+                              htmlFor="nome"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Selecione o aluno desejado:
+                              <span className="text-red-500"> *</span>
+                            </label>
+
+                            <Select required onValueChange={(e) => setStudentId(e)}>
+                              <SelectTrigger className="w-full" id="studentId">
+                                <SelectValue placeholder="Selecione o aluno" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {
+                                  studentsLevel.map((s) => {
+                                    return (
+                                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                                    )
+                                  })
+                                }
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="schedule">
+                          <div className="space-y-6 mb-5">
+                            <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                              <label htmlFor="nome">
+                                Selecione o dia desejado:{" "}
+                                <span className="text-red-500"> *</span>
+                              </label>
+
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !dateSelectAbsence &&
+                                        "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateSelectAbsence ? (
+                                      format(dateSelectAbsence, "dd/MM/yyyy", {
+                                        locale: ptBR,
+                                      })
+                                    ) : (
+                                      <span>Escolha uma data</span>
+                                    )}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    // @ts-ignore
+                                    selected={dateSelectAbsence}
+                                    // @ts-ignore
+                                    onSelect={changeDateAbsence}
+                                    initialFocus
+                                    locale={ptBR}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                              <label htmlFor="status">
+                                Selecione o status: <span className="text-red-500">*</span>
+                              </label>
+                              <Select required onValueChange={(e) => setStatus(e)}>
+                                <SelectTrigger className="w-full" id="status">
+                                  <SelectValue placeholder="Selecione o status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="2">Experimental</SelectItem>
+                                  <SelectItem value="0">Inativo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>                
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    ) : (
+                      <div className="space-y-6 mb-5">
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="nome">
+                            Selecione o dia desejado:{" "}
+                            <span className="text-red-500"> *</span>
+                          </label>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !dateSelectAbsence && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {dateSelectAbsence ? (
+                                  format(dateSelectAbsence, "dd/MM/yyyy", {
+                                    locale: ptBR,
+                                  })
+                                ) : (
+                                  <span>Escolha uma data</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                // @ts-ignore
+                                selected={dateSelectAbsence}
+                                // @ts-ignore
+                                onSelect={changeDateAbsence}
+                                initialFocus
+                                locale={ptBR}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                          <label htmlFor="comments">
+                            Informe o motivo:{" "}
+                            <span className="text-red-500"> *</span>
+                          </label>
+
+                          <Input
+                            id="comments"
+                            placeholder="Digite o motivo da falta agendada para o aluno..."
+                            onChange={(e) => setComments(e.target.value)}
+                            value={comments}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Modal.Body>
+                  <Modal.Footer className="h-16 md:h-20 rounded-b-lg bg-white">
+                    {(user as unknown as UserProps).level != 3 ? (
+                      optionTabs == "schedule" ? (
+                        <>
+                          <Button
+                            type="submit"
+                            className="bg-primary-color hover:bg-secondary-color"
+                          >
+                            {loading ? (
+                              <div className="flex justify-center">
+                                <TbLoader3
+                                  fontSize={23}
+                                  style={{
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              "Salvar"
+                            )}
+                          </Button>
+
+                          <Button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              setOptionTabs("selectStudent");
+                            }}
+                            className="bg-white text-black border border-gray-100 hover:bg-gray-100"
+                          >
+                            Voltar
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            type="button"
+                            className={`bg-primary-color hover:bg-secondary-color ${
+                              studentsSelect.length <= 0
+                                ? "cursor-not-allowed"
+                                : ""
+                            }`}
+                            disabled={studentId == ""}
+                            title={
+                              studentId == "" 
+                                ? "É necessário selecionar um aluno!"
                                 : ""
                             }
                             onClick={(event) => {
@@ -3655,6 +3982,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                             {column.id == "status_call" && "Status"}
 
+                            {column.id == "new_status" && "Novo Status"}
+
                             {column.id == "actions" && "Ações"}
 
                             {column.id == "level" && "Nível"}
@@ -3742,6 +4071,16 @@ export function DataTable({ data, columns, route }: DataTableProps) {
             >
               <MdPersonAdd fontSize={20} className="hidden md:flex" />
               Agendar falta <span className="hidden md:block"></span>
+            </Button>
+
+            <Button
+              onClick={() => openModals()}
+              className={`${
+                route != "agendarNivel" ? "hidden" : "flex"
+              } w-full xl:max-w-52 gap-1 items-center justify-center bg-primary-color hover:bg-secondary-color`}
+            >
+              <TbCalendarPlus fontSize={20} className="hidden md:flex" />
+              Agendar alteração <span className="hidden md:block"></span>
             </Button>
 
             <Button

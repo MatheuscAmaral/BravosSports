@@ -175,7 +175,7 @@ const ScheduleAbsence = () => {
     <main className="w-full">
       <section className="mt-10 flex justify-between items-center w-full">
         <h1 className="text-2xl font-bold text-gray-700 flex items-center gap-1">
-          Agendamentos <span className="text-sm mt-1">({data.length})</span>
+          Agendar falta<span className="text-sm mt-1">({data.length})</span>
         </h1>
       </section>
 

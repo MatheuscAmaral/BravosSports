@@ -11,6 +11,7 @@ import logo from "../../assets/logo-bravos-laranja.png";
 import { BiSolidBusSchool } from "react-icons/bi";
 import { IoLogOutOutline } from "react-icons/io5";
 import { RiUserSettingsFill } from "react-icons/ri";
+import { LuCalendarClock } from "react-icons/lu";
 import {
   Card,
   List,
@@ -94,8 +95,13 @@ const Sidebar = () => {
             },
             {
               label: "Agendamentos",
-              icon: <MdFormatListBulletedAdd fontSize={24} />,
+              icon: <LuCalendarClock fontSize={24} />,
               path: "/agendamentos",
+            },
+            {
+              label: "Agendar Falta",
+              icon: <MdFormatListBulletedAdd fontSize={24} />,
+              path: "/agendamentos/falta",
             },
             {
               label: "Usuários",

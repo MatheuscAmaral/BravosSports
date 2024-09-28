@@ -26,35 +26,41 @@ function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const getStatistics = async () => {
+    try {
+      setLoading(true);
+
+      const response = await api.get("/statistics");
+      setStatistics([response.data]);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatisticsResponsibles = async () => {
+    try {
+      setLoading(true);
+
+      const response = await api.get(
+        `/statistics/responsibles/${(user as unknown as UserProps).id}`
+      );
+
+      setStatistics([response.data]);
+    } catch {
+      toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyIfNeedsUpdateStudentStatus = async () => {
+    await api.get("/schedules/day");
+  };
+
   useState(() => {
-    const getStatistics = async () => {
-      try {
-        setLoading(true);
-
-        const response = await api.get("/statistics");
-        setStatistics([response.data]);
-      } catch {
-        toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const getStatisticsResponsibles = async () => {
-      try {
-        setLoading(true);
-
-        const response = await api.get(
-          `/statistics/responsibles/${(user as unknown as UserProps).id}`
-        );
-
-        setStatistics([response.data]);
-      } catch {
-        toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
-      } finally {
-        setLoading(false);
-      }
-    };
+    verifyIfNeedsUpdateStudentStatus();
 
     if ((user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 4) {
       getStatistics();
@@ -63,7 +69,6 @@ function Home() {
     if ((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 4) {
       getStatisticsResponsibles();
     }
-    
   });
 
   return (

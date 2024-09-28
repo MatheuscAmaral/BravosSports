@@ -15,6 +15,7 @@ import ScheduleAbsence from "../responsibles/scheduleAbsence";
 import Users from "../users";
 import Units from "../units";
 import ClassesCoordenador from "../classes/classesCoordenador";
+import Schedule from "../schedule";
 
 const router = createBrowserRouter([
   {
@@ -64,7 +65,15 @@ const router = createBrowserRouter([
         path: "/agendamentos",
         element: (
           <PrivateRoute>
-            <ScheduleAbsence />
+            <Schedule/>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/agendamentos/falta",
+        element: (
+          <PrivateRoute>
+            <ScheduleAbsence/>
           </PrivateRoute>
         ),
       },

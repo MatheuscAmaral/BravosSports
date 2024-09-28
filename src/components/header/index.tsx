@@ -9,6 +9,7 @@ import { IoClose, IoLogOutOutline } from "react-icons/io5";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { MdFormatListBulletedAdd, MdSportsHandball } from "react-icons/md";
 import { RiUserSettingsFill } from "react-icons/ri";
+import { LuCalendarClock } from "react-icons/lu";
 
 const Header = () => {
   const [mobile, setMobile] = useState(false);
@@ -154,10 +155,21 @@ const Header = () => {
                 onClick={() => navigateToRoute("/agendamentos")}
                 className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
               >
+                <LuCalendarClock fontSize={25} />
+                <p className="text-lg">Agendamentos</p>
+              </li>
+          )}
+          
+          {((user as unknown as UserProps).level == 3 || (user as unknown as UserProps).level == 1 || (user as unknown as UserProps).level == 0) &&  (
+              <li
+                onClick={() => navigateToRoute("/agendamentos/falta")}
+                className="flex gap-3 hover:bg-gray-100 transition-all w-full pl-3 py-4 rounded-lg items-center text-gray-600 font-semibold cursor-pointer"
+              >
                 <MdFormatListBulletedAdd fontSize={25} />
                 <p className="text-lg">Agendar falta</p>
               </li>
           )}
+
 
           {(user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 5 &&  (
               <li
