@@ -336,6 +336,10 @@ export const columns: ColumnDef<RowProps>[] = [
         {row.getValue("status") == 2 && "Experimental"}
 
         {row.getValue("status") == 3 && "Pendente"}
+        
+        {row.getValue("status") == 5 && "Pré-ativo"}
+
+{row.getValue("status") == 6 && "Pré-experimental"}
       </div>
     ),
   },

@@ -1795,6 +1795,8 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                         <SelectItem value="3">Pendente</SelectItem>
                         <SelectItem value="0">Inativo</SelectItem>
                         <SelectItem value="4">Desativado</SelectItem>
+                        <SelectItem value="5">Pré-ativo</SelectItem>
+                        <SelectItem value="6">Pré-experimental</SelectItem>
                       </>
                     </SelectContent>
                   </Select>
