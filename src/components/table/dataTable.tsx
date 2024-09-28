@@ -1325,10 +1325,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     }
 
     const formatedDateSelect = moment(dateAbsence, "DD-MM-YYYY").format('YYYY-MM-DD');
+
     const data = {
       student_id: Number(studentId),
       new_status: status,
-      date: formatedDateSelect
+      date: formatedDateSelect,
+      ready: true
     }
     
     try {
@@ -1341,6 +1343,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setComments("");
       setDateSelectAbsence("");
       setDateAbsence("");
+      closeModal();
     } catch (error: any) {
       toast.error(error.response.data.error, {
         position: "top-right",
@@ -2165,6 +2168,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
                                   <Calendar
+                                    required
                                     mode="single"
                                     // @ts-ignore
                                     selected={dateSelectAbsence}
@@ -3983,6 +3987,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             {column.id == "status_call" && "Status"}
 
                             {column.id == "new_status" && "Novo Status"}
+
+                            {column.id == "ready" && "Alterou?"}
 
                             {column.id == "actions" && "Ações"}
 

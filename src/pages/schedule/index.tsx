@@ -99,6 +99,27 @@ export const columns: ColumnDef<RowProps>[] = [
         {row.getValue("new_status") == 2 && "Experimental"}
       </div>
     ),
+  },
+  {
+    accessorKey: "ready",
+    header: ({ column }) => {
+        return (
+          <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Alterou?
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("ready") == true && "Sim"}
+
+        {row.getValue("ready") == false && "Não"}
+      </div>
+    ),
   }
 ];
 
