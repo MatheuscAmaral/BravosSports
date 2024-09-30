@@ -65,6 +65,7 @@ export interface RowProps {
   sport_id: number;
   name: string;
   comments_call: string;
+  general_comments: string;
   responsible_name: string;
   responsible: number;
   free_view_coordinator: number;
@@ -232,6 +233,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [description, setDescription] = useState("");
   const [modality, setModality] = useState("");
   const [isStudent, setIsStudent] = useState("");
+  const [generalComments, setGeneralComments] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
   const [imageContract, setImageContract] = useState("");
@@ -434,6 +436,10 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       setExitAutorization(String(row[0].exit_autorization));
       await getClasses(row[0].class);
       await getSportsSelect(row[0].id);
+    }
+
+    if (type == "generalComments") {
+      setGeneralComments(row[0].general_comments);
     }
 
     if (type == "classes") {
@@ -726,6 +732,11 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       saveReason(row);
     }
 
+    if (type == "generalComments") {
+      row[0].general_comments = generalComments;
+      saveReason(row);
+    }
+
     if (type == "students") {
       data = {
         image: verifyIfSaveImage,
@@ -873,7 +884,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
         message = "Chamada editada com sucesso!";
       }
 
-      if (type != "reasonAbsence") {
+      if (type != "reasonAbsence" && type != "generalComments") {
         toast.success(message);
         filterStudentsByClass(filterId);
         reloadPage();
@@ -1323,6 +1334,21 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
 
               {type == "teacherClass" && (
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium"></div>
+              )}
+
+              {type == "generalComments" && (
+                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                  <label htmlFor="general_comments">
+                    Observação geral:
+                  </label>
+                  <Input
+                    id="general_comments"
+                    name="general_comments"
+                    placeholder="Digite a sua observação geral..."
+                    value={generalComments}
+                    onChange={(e) => setGeneralComments(e.target.value)}
+                  />
+                </div>
               )}
 
               {type == "teacher" && (

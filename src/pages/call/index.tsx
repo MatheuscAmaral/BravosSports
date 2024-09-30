@@ -274,31 +274,48 @@ export const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "general_comments",
     header: "Observações gerais",
-    cell: ({ row }) => (
-      <div>
-        {row.getValue("general_comments") != null && row.getValue("general_comments") != "" ? (
-          <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
-                  <HiBellAlert fontSize={19} className="text-gray-700" />
-                </Button>
-              </DropdownMenuTrigger>
+    cell: ({ row }) => {
+      const { reason } = useContext(ReloadContext);
+      const [comments, setComments] = useState<string | null>(row.getValue("general_comments"));
+  
+      useEffect(() => {
+        if (reason.length > 0 && reason[0] && reason[0].general_comments !== "" && row.original.id === reason[0].id) {
+          setComments(reason[0].general_comments); 
+        }
 
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="py-2 p-3 text-sm">
-                  {row.getValue("general_comments")}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : (
-          "-"
-        )}
-      </div>
-    ),
+        if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].general_comments == "") {
+          setComments("");
+        }
+        
+        console.log("pass here", reason)
+      }, [reason]);
+  
+      return (
+        <div>
+          {(comments != null && comments != "") ? (
+            <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                    <HiBellAlert fontSize={19} className="text-gray-600" />
+                  </Button>
+                </DropdownMenuTrigger>
+  
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Notificação!</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="py-2 p-3 text-sm">
+                    {comments}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            "-"
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "comments_call",

@@ -1076,6 +1076,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       schedule_by_responsible: number;
       status_call: number;
       comments_call: string;
+      general_comments: string;
     };
   };
 
@@ -1120,6 +1121,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 status_call: student.status_call,
               }),
             comments: student.presence == 1 ? null : student.comments_call,
+            general_comments: student.general_comments
           };
         });
 
