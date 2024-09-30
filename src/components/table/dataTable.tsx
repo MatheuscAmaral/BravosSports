@@ -2797,8 +2797,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               <SelectItem value="3">Pendente</SelectItem>
                               <SelectItem value="0">Inativo</SelectItem>
                               <SelectItem value="4">Desativado</SelectItem>
-                              <SelectItem value="5">Pré-ativo</SelectItem>
-                              <SelectItem value="6">Pré-experimental</SelectItem>
+                              <SelectItem value="5">Pré-experimental</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -4164,6 +4163,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
               zIndex: 1,
               backgroundColor: "white",
             }}
+            className=" whitespace-nowrap"
           >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -4214,12 +4214,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                     location.pathname == "/chamada" &&
                     (row.original as RowProps).status == 5
                       ? "bg-blue-600"
-                      : ""
-                  }
-                  ${
-                    location.pathname == "/chamada" &&
-                    (row.original as RowProps).status == 6
-                      ? " bg-pink-400"
                       : ""
                   }
                   ${

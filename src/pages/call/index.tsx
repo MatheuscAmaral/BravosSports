@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import { PiCaretUpDownBold } from "react-icons/pi";
 import { TbArrowsExchange, TbCar, TbCarOff, TbLoader3 } from "react-icons/tb";
+import { HiBellAlert } from "react-icons/hi2";
 import api from "@/api";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
@@ -40,6 +41,7 @@ import { TbShirtFilled } from "react-icons/tb";
 import { TbShirtOff } from "react-icons/tb";
 import { TbAddressBook } from "react-icons/tb";
 import { TbAddressBookOff } from "react-icons/tb";
+import { AuthContext, UserProps } from "@/contexts/AuthContext";
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -270,6 +272,35 @@ export const columns: ColumnDef<RowProps>[] = [
     ),
   },
   {
+    accessorKey: "general_comments",
+    header: "Observações gerais",
+    cell: ({ row }) => (
+      <div>
+        {row.getValue("general_comments") != null && row.getValue("general_comments") != "" ? (
+          <div className="flex justify-center bg-gray-50 rounded-lg w-9 mx-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
+                  <HiBellAlert fontSize={19} className="text-gray-700" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="py-2 p-3 text-sm">
+                  {row.getValue("general_comments")}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          "-"
+        )}
+      </div>
+    ),
+  },
+  {
     accessorKey: "comments_call",
     header: "Motivo",
     cell: ({ row }) => {
@@ -336,10 +367,8 @@ export const columns: ColumnDef<RowProps>[] = [
         {row.getValue("status") == 2 && "Experimental"}
 
         {row.getValue("status") == 3 && "Pendente"}
-        
-        {row.getValue("status") == 5 && "Pré-ativo"}
 
-{row.getValue("status") == 6 && "Pré-experimental"}
+        {row.getValue("status") == 5 && "Pré-experimental"}
       </div>
     ),
   },
@@ -350,9 +379,14 @@ export const columns: ColumnDef<RowProps>[] = [
     cell: ({ row }) => {
       const { open } = useContext(modalContext);
       const { openPicture } = useContext(modalPictureContext);
+      const { user } = useContext(AuthContext);
 
-      const openModals = (data: RowProps[]) => {
-        open(data, "Responsáveis cadastrados", "call");
+      const openModals = (data: RowProps[], id: number) => {
+        if(id == 1) {
+          open(data, "Responsáveis cadastrados", "call");
+        } else {
+          open(data, "Observações gerais", "generalComments");
+        }
       };
 
       const openModalPicture = (data: RowProps[]) => {
@@ -374,9 +408,16 @@ export const columns: ColumnDef<RowProps>[] = [
             <DropdownMenuItem onClick={() => openModalPicture([row.original])}>
               Ver Foto
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openModals([row.original])}>
+            <DropdownMenuItem onClick={() => openModals([row.original], 1)}>
               Ver responsáveis
             </DropdownMenuItem>
+            {
+              (user as unknown as UserProps).level == 0 && (
+                <DropdownMenuItem onClick={() => openModals([row.original], 2)}>
+                  Observações gerais
+                </DropdownMenuItem>
+              )
+            }
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -402,6 +443,7 @@ const Call = () => {
 
   useEffect(() => {
     getUnits();
+    verifyIfNeedsUpdateStudentStatus();
   }, []);
 
   useEffect(() => {
@@ -444,6 +486,10 @@ const Call = () => {
     } catch {
       toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
     }
+  };
+
+  const verifyIfNeedsUpdateStudentStatus = async () => {
+    await api.get("/schedules/day");
   };
 
   const getTeamsDisp = async (unit: string) => {

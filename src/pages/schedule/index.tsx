@@ -71,11 +71,13 @@ export const columns: ColumnDef<RowProps>[] = [
 
         {row.getValue("status") == 1 && "Ativo"}
 
+        {row.getValue("status") == 2 && "Experimental"}
+
         {row.getValue("status") == 3 && "Pendente"}
 
         {row.getValue("status") == 4 && "Desativado"}
 
-        {row.getValue("status") == 2 && "Experimental"}
+        {row.getValue("status") == 5 && "Pré-experimental"}
       </div>
     ),
   },

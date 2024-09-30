@@ -1256,6 +1256,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
 
               {type != "teacherClass" &&
                 type != "reasonAbsence" &&
+                type != "generalComments" &&
                 type != "call" && (
                   <FaTrash
                     fontSize={22}
@@ -1382,6 +1383,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                 type != "responsibles_released" &&
                 type != "reasonAbsence" &&
                 type != "teacherClass" &&
+                type != "generalComments" &&
                 type != "call" && (
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="status">
@@ -1795,8 +1797,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                         <SelectItem value="3">Pendente</SelectItem>
                         <SelectItem value="0">Inativo</SelectItem>
                         <SelectItem value="4">Desativado</SelectItem>
-                        <SelectItem value="5">Pré-ativo</SelectItem>
-                        <SelectItem value="6">Pré-experimental</SelectItem>
+                        <SelectItem value="5">Pré-experimental</SelectItem>
                       </>
                     </SelectContent>
                   </Select>
