@@ -286,8 +286,6 @@ export const columns: ColumnDef<RowProps>[] = [
         if (reason.length > 0 && reason[0] && row.original.id === reason[0].id && reason[0].general_comments == "") {
           setComments("");
         }
-        
-        console.log("pass here", reason)
       }, [reason]);
   
       return (
