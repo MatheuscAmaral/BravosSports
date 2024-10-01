@@ -238,7 +238,7 @@ const ResponsiblesReleased = () => {
 
   const getStudents = async () => {
     try {
-      const response = await api.get(`/students/`);
+      const response = await api.get(`/students`);
 
       const formatedData = response.data.map((d: StudentsProps) => ({
         value: d.responsible,

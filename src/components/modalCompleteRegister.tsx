@@ -60,7 +60,7 @@ const ModalCompleteRegister = () => {
 
     try {
       const response = await axios.post(
-        `${hostName == "localhost" ? "http://localhost:3000/upload" : "https://bravos-api.onrender.com/upload"}`,
+        `${hostName == "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.onrender.com/upload"}`,
         formData,
         {
           headers: {

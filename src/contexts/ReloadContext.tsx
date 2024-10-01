@@ -115,25 +115,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
             toast.error("Ocorreu um erro ao buscar os alunos desta turma!");
         }
     }
-
-    // const filterStudentsByTeam = async (idClass: number, idTeam: number, idUnit: number, day: string) => {
-    //     setFilterId(idClass);
-    //     setTeamId(idTeam);
-        
-    //     try {
-    //        if (idClass != 0) {
-    //             const response = await api.get(`/students/class/${idClass}/${idTeam}/unit/${idUnit}/day/${day}`);
-
-    //             setNewStudentsCall(response.data); 
-    //         } else {
-    //             setNewStudentsCall([]);     
-    //         }
-            
-    //     } catch {
-    //         toast.error("Ocorreu um erro ao buscar os alunos desta equipe!");
-    //     }
-    // }
-
+    
     const filterByUnit = async (route: string, idUnit: number) => {
         try {
             if (idUnit == 999) {

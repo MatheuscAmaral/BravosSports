@@ -354,31 +354,35 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
   }
 
   const saveImage = async () => {
+    if (!file) {
+        toast.error("Por favor, selecione um arquivo para fazer upload.");
+        return "error"; 
+    }
+
     const formData = new FormData();
-    //@ts-ignore
     formData.append("file", file);
 
     try {
-      const response = await axios.post(
-        `${
-          hostName == "localhost"
-            ? "http://localhost:3000/upload"
-            : "https://bravos-api.onrender.com/upload"
-        }`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+        const response = await axios.post(
+            `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.onrender.com/upload"}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
 
-      return `${response.data.url}`
-    } catch {
-      toast.error("Ocorreu umdsa erro ao salvar a imagem!");
-      return "error";
+        return response.data.url; 
+    } catch (error) {
+        console.error("Upload error:", error); 
+        toast.error("Ocorreu um erro ao salvar a imagem!");
+        return "error";
     }
-  };
+};
+
+
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -1792,8 +1796,9 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                     <SelectTrigger className="w-full" id="class_time">
                       <SelectValue placeholder="Selecione os dias de treino" />
                     </SelectTrigger>
+
                     <SelectContent>
-                      <SelectItem value="13:15">13:15 às 15:00</SelectItem>
+                      <SelectItem value="1970-01-01T13:15:00Z">13:15 às 15:00</SelectItem>
 
                       <SelectItem value="17:30">17:30 às 18:20</SelectItem>
 
