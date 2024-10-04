@@ -107,11 +107,11 @@ function Home() {
                   </div>
 
                   <div
-                    onClick={() => navigate("/agendamentos")}
+                    onClick={() => navigate("/agendamentos/falta")}
                     className="flex flex-col gap-20 shadow-md h-52 p-5 rounded-lg bg-white cursor-pointer "
                   >
                     <p className="text-lg md:text-xl font-bold">
-                      Agendamentos
+                      Agendar falta
                     </p>
 
                     <div className="flex justify-between w-full">

@@ -127,9 +127,9 @@ const Sidebar = () => {
               path: "/responsaveis/liberados",
             },
             {
-              label: "Agendamentos",
+              label: "Agendar Falta",
               icon: <MdFormatListBulletedAdd fontSize={24} />,
-              path: "/agendamentos",
+              path: "/agendamentos/falta",
             },
           ];
         } else if ((user as unknown as UserProps).level === 4) {
