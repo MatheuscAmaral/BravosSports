@@ -17,6 +17,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg"; 
 import { TbLoader3 } from "react-icons/tb";
 import { PiCaretUpDownBold } from "react-icons/pi";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export interface TeachersProps {
   id: number;
@@ -124,13 +125,18 @@ export const columnsProf: ColumnDef<RowProps>[] = [
 const Teachers = () => {
   const [teachers, setTeachers] = useState<TeachersProps[]>([]);
   const { reloadPage } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getTeachers = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/teachers");
+        const response = await api.get("/teachers",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
 
         setTeachers(response.data);
       } catch {

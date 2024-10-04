@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { TbLoader3 } from "react-icons/tb";
 import { PiCaretUpDownBold } from "react-icons/pi";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export interface UnitsProps {
   id: number;
@@ -92,6 +93,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 const Units = () => {
   const { reloadPage, newData } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
   const [data, setData] = useState<UnitsProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -104,7 +106,11 @@ const Units = () => {
           return setData(newData);
         }
 
-        const response = await api.get("/units");
+        const response = await api.get("/units",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");

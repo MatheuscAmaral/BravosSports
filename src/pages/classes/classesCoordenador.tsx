@@ -161,7 +161,7 @@ export const columns: ColumnDef<RowProps>[] = [
 
 const ClassesCoordenador = () => {
   const { reloadPage, newData } = useContext(ReloadContext);
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [data, setData] = useState<StudentsProps[]>([]);
   const [classes, setClasses] = useState<ClassesProps[]>([]);
   const [classId, setClassId] = useState("");
@@ -192,7 +192,11 @@ const ClassesCoordenador = () => {
       try {
         setLoading(true);
 
-        const response = await api.get("/classes/coordinator");
+        const response = await api.get("/classes/coordinator",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setClasses(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");
@@ -213,7 +217,11 @@ const ClassesCoordenador = () => {
       setLoad(true);
 
       const response = await api.get(
-        `/students/coordinator/${classId}`
+        `/students/coordinator/${classId}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }
       );
 
       setReady(true);

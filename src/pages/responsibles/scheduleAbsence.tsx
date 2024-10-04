@@ -146,7 +146,7 @@ export const columns: ColumnDef<RowProps>[] = [
 const ScheduleAbsence = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const { reloadPage } = useContext(ReloadContext);
 
 
@@ -155,7 +155,11 @@ const ScheduleAbsence = () => {
       try {
         setLoading(true);
         
-        const response = await api.get(`/call/responsible/${(user as unknown as UserProps).id}/level/${(user as unknown as UserProps).level}`);
+        const response = await api.get(`/call/responsible/${(user as unknown as UserProps).id}/level/${(user as unknown as UserProps).level}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os agendamentos de falta feitos pelo responsável!");

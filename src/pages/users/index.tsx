@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export interface UsersProps {
   id: number;
@@ -160,12 +161,17 @@ const Users = () => {
   const [users, setUsers] = useState<UsersProps[]>([]);
   const [loading, setLoading] = useState(false);
   const { reloadPage } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
     const getUsers = async () => {
         try {
             setLoading(true);
-            const response = await api.get("/users");
+            const response = await api.get("/users",  {
+              headers: {
+                  Authorization: `Bearer ${token}`
+              }
+          });
 
             setUsers(response.data)
         } catch {

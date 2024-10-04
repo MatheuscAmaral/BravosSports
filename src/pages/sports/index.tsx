@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { TbLoader3 } from "react-icons/tb";
 import { PiCaretUpDownBold } from "react-icons/pi";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export interface SportsProps {
   id: number;
@@ -125,6 +126,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 const Sports = () => {
   const { reloadPage, newData } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
   const [data, setData] = useState<SportsProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -137,7 +139,11 @@ const Sports = () => {
           return setData(newData);
         }
 
-        const response = await api.get("/sports");
+        const response = await api.get("/sports",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");

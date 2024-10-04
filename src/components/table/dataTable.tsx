@@ -188,7 +188,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   );
   const [modalMaxHeight, setModalMaxHeight] = React.useState("500px");
   const [date2, setDate2] = React.useState<DateRange | undefined>(undefined);
-  const { username, user } = React.useContext(AuthContext);
+  const { username, user, token } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openCoordinatorModal, setOpenCoordinatorModal] = React.useState(false);
   const [openFilter, setOpenFilter] = React.useState(route == "call" ? true : false);
@@ -396,7 +396,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      const response = await api.post("/students/excel", dataCall);
+      const response = await api.post("/students/excel", dataCall,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+       });
       const students: Student[] = response.data.students;
 
       const groupedStudents: StudentsDataProps = {};
@@ -701,10 +705,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     setClasses("");
     setUnits(e);
 
-    const response = await api.get(`/classes/filter/${e}`);
+    const response = await api.get(`/classes/filter/${e}`,  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
 
     if (e != "0") {
-      const responseSports = await api.get(`/sports/unit/${e}`);
+      const responseSports = await api.get(`/sports/unit/${e}`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+      });
+
       setTeamsDisp(responseSports.data);
     }
 
@@ -768,7 +781,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   if (route == "call") {
     React.useEffect(() => {
       const getTeamsFilter = async () => {
-        const response = await api.get(`/sports/unit/${unitId}`);
+        const response = await api.get(`/sports/unit/${unitId}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
 
         response.data.unshift({ id: 999, description: "Todos", status: 1 });
         setClassesDisp(response.data);
@@ -780,7 +797,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getStudents = async () => {
     try {
-      const response = await api.get("/students/agendamentos");
+      const response = await api.get("/students/agendamentos",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       const formatedData = response.data.map((d: StudentsProps) => ({
         value: d.id,
@@ -800,7 +821,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     React.useEffect(() => {
       const getStudentOfResponsibleData = async () => {
         const response = await api.get(
-          `/call/student/responsible/${(user as unknown as UserProps).id}`
+          `/call/student/responsible/${(user as unknown as UserProps).id}`,  {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
         );
 
         setStudentRespData(response.data);
@@ -825,7 +850,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/classes", data);
+      await api.post("/classes", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success("Turma cadastrada com sucesso!");
       setOpenModal(false);
       reloadPage();
@@ -852,7 +881,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/units", data);
+      await api.post("/units", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success("Unidade cadastrada com sucesso!");
       setOpenModal(false);
       reloadPage();
@@ -878,7 +911,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/sports", data);
+      await api.post("/sports", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success("Esporte cadastrado com sucesso!");
       setOpenModal(false);
       reloadPage();
@@ -912,7 +949,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/responsibles", data);
+      await api.post("/responsibles", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success(`${name} cadastrada com sucesso!`);
       setOpenModal(false);
       reloadPage();
@@ -950,7 +991,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/users/register", userData);
+      await api.post("/users/register", userData,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success(`${name} cadastrado com sucesso!`);
       setOpenModal(false);
       reloadPage();
@@ -964,7 +1009,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getResponsibleWithIdUser = async (id: number) => {
     try {
-      const response = await api.get(`/responsibles/user/${id}`);
+      const response = await api.get(`/responsibles/user/${id}`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       return response.data.user_id;
     } catch {
@@ -1012,7 +1061,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/responsibles/releaseds", data);
+      await api.post("/responsibles/releaseds", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success(`${name} cadastrada com sucesso!`);
       closeModal();
       reloadPage();
@@ -1027,7 +1080,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getUnits = async () => {
     try {
-      const response = await api.get("/units");
+      const response = await api.get("/units",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       response.data.unshift({ id: 999, description: "Todos", status: 1 });
       setUnitsDisp(response.data);
@@ -1038,7 +1095,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getClasses = async () => {
     try {
-      const response = await api.get("/classes");
+      const response = await api.get("/classes",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       response.data.unshift({ id: 999, description: "Todos", status: 1 });
 
@@ -1060,7 +1121,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   const getTeams = async () => {
     try {
-      const response = await api.get("/sports");
+      const response = await api.get("/sports", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       const formatedData = response.data.map((d: SportsProps) => ({
         value: d.id,
@@ -1094,7 +1159,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     e.preventDefault();
 
     try {
-      await api.put("/classes/coordinator", data);
+      api.put("/classes/coordinator", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       reloadPage();
     } catch {
@@ -1139,7 +1208,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         (t) => t.presence != null
       );
 
-      await api.post("/call", filterTransformedStudents);
+      await api.post("/call", filterTransformedStudents,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
       toast.success("Chamada realizada com sucesso!");
     } catch {
       toast.error("Ocorreu um erro ao realizar a chamada!");
@@ -1222,7 +1295,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     try {
       const response = await axios.post(
         `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
-        formData,
+        formData,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+        }
       );
   
       return response.data.url; 
@@ -1287,7 +1364,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setClassFilter("999");
-      await api.post("/students", data);
+      await api.post("/students", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setPhone("");
       toast.success("Aluno cadastrado com sucesso!");
@@ -1351,7 +1432,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     
     try {
       setLoading(true);
-      await api.post("/schedules", data);
+      await api.post("/schedules", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       toast.success("Alteração agendada com sucesso!");
       verifyDataCreate(true);
@@ -1441,7 +1526,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/call", data);
+      await api.post("/call", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       toast.success("Falta agendada com sucesso!");
       verifyDataCreate(true);
@@ -1492,7 +1581,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     try {
       setLoading(true);
-      await api.post("/teachers", data);
+      await api.post("/teachers", data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       toast.success("Professor cadastrado com sucesso!");
       setOpenModal(false);

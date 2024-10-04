@@ -20,7 +20,7 @@ function Auth() {
   const [error2, setError2] = useState(false);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const { authUser } = useContext(AuthContext);
+  const { authUser, token } = useContext(AuthContext);
 
   useEffect(() => {
     const lastVisitedRoute = localStorage.getItem("@bravosSports:lastVisitedRoute");
@@ -40,10 +40,15 @@ function Auth() {
     };
 
     try {
-        const response = await api.post("/users/login", data);
+        const response = await api.post("/users/login", data,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
 
-        authUser(response.data);
-        localStorage.setItem("@bravosSports:user", JSON.stringify(response.data));
+        authUser(response.data, response.data.token);
+        localStorage.setItem("@bravosSports:user", JSON.stringify(response.data.data));
+        localStorage.setItem("@bravosSports:jwt", JSON.stringify(response.data.token));
         navigate("/");
         toast.success("Usuário logado com sucesso!", {
             position: "top-right"

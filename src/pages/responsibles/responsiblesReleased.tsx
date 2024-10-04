@@ -169,7 +169,7 @@ interface FormatedResponsibleProps {
 }
 
 const ResponsiblesReleased = () => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [data, setData] = useState<ResponsibleProps[]>([]);
   const [responsibles, setResponsibles] = useState<ResponsibleProps[]>([]);
@@ -209,7 +209,11 @@ const ResponsiblesReleased = () => {
       }
 
       const response = await api.get(
-        `/responsibles/releaseds/${responsiblePath}/${(user as unknown as UserProps).level}`
+        `/responsibles/releaseds/${responsiblePath}/${(user as unknown as UserProps).level}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }
       );
 
       setReady(true);
@@ -226,7 +230,11 @@ const ResponsiblesReleased = () => {
 
   const getResponsibles = async () => {
     try {
-      const response = await api.get(`/responsibles`);
+      const response = await api.get(`/responsibles`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setResponsibles(response.data);
     } catch {
@@ -238,7 +246,11 @@ const ResponsiblesReleased = () => {
 
   const getStudents = async () => {
     try {
-      const response = await api.get(`/students`);
+      const response = await api.get(`/students`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       const formatedData = response.data.map((d: StudentsProps) => ({
         value: d.responsible,

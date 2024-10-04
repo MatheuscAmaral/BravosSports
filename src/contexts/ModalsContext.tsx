@@ -205,7 +205,7 @@ const columnsClass: ColumnDef<RowProps>[] = [
 export const modalContext = createContext({} as ModalProps);
 
 const ModalProvider = ({ children }: ChildrenProps) => {
-  const { user, username } = useContext(AuthContext);
+  const { user, username, token } = useContext(AuthContext);
   const {
     filterStudentsByClass,
     reloadPage,
@@ -375,7 +375,11 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
     try {
       const response = await axios.post(
         `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
-        formData,
+        formData,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+        }
       );
   
       return response.data.url; 
@@ -402,7 +406,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getSportsSelect = async (id: number) => {
     try {
-        const response = await api.get(`/sports/played/${id}`);
+        const response = await api.get(`/sports/played/${id}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
 
         const formatedData = response.data.map((d: SportsProps) => ({
           value: d.sport_id,
@@ -513,7 +521,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     if (type == "studentsClass") {
       try {
-        const response = await api.get(`/students/class/${row[0].id}`);
+        const response = await api.get(`/students/class/${row[0].id}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
 
         setStudents(response.data);
         setModalData(`Alunos ${row[0].description}`);
@@ -525,7 +537,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "call") {
       try {
         const response = await api.get(
-          `/responsibles/releaseds/${row[0].user_id}`
+          `/responsibles/releaseds/${row[0].user_id}`,  {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
         );
 
         setResponsibleRealeaseds(response.data);
@@ -539,7 +555,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getUnits = async () => {
     try {
-      const response = await api.get("/units");
+      const response = await api.get("/units",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setUnitsDisp(response.data);
     } catch {
@@ -549,7 +569,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getClasses = async (classId: number) => {
     try {
-      const response = await api.get("/classes");
+      const response = await api.get("/classes",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       if (classId != 999) {
         const classSelected = response.data.filter(
@@ -594,7 +618,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setClasses("");
     setUnits(e);
 
-    const response = await api.get(`/classes/filter/${e}`);
+    const response = await api.get(`/classes/filter/${e}`,  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
 
     if (isStudent == "0") {
       const newData = response.data.filter((d: { description: string }) => {
@@ -615,7 +643,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getSports = async () => {
     try {
-      const response = await api.get("/sports");
+      const response = await api.get("/sports",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       const formatedData = response.data.map((d: SportsProps) => ({
         value: d.id,
@@ -632,7 +664,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getClassesOfTeacher = async (id: number) => {
     try {
-      const response = await api.get(`/sports/teacher/${id}`);
+      const response = await api.get(`/sports/teacher/${id}`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setTeacherClass(response.data);
     } catch {
@@ -883,16 +919,52 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     try {
       setLoading(true);
-      type == "students" && (await api.put(`/students/${id}`, data));
-      type == "classes" && (await api.put(`/classes/${id}`, data));
-      type == "units" && (await api.put(`/units/${id}`, data));
-      type == "esportes" && (await api.put(`/sports/${id}`, data));
-      type == "teacher" && (await api.put(`/teachers/${id}`, data));
-      type == "users" && (await api.put(`/users/${id}`, data));
-      type == "responsibles" && (await api.put(`/responsibles/${id}`, data));
+      type == "students" && (await api.put(`/students/${id}`, data,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }));
+      type == "classes" && (await api.put(`/classes/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
+      type == "units" && (await api.put(`/units/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
+      type == "esportes" && (await api.put(`/sports/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
+      type == "teacher" && (await api.put(`/teachers/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
+      type == "users" && (await api.put(`/users/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
+      type == "responsibles" && (await api.put(`/responsibles/${id}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
       type == "responsibles_released" &&
-        (await api.put(`/responsibles/releaseds/${id}`, data));
-      type == "agendarFalta" && (await api.put(`/call/${idCall}`, data));
+        (await api.put(`/responsibles/releaseds/${id}`, data,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }));
+      type == "agendarFalta" && (await api.put(`/call/${idCall}`, data,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }));
 
       let message = "";
       if (

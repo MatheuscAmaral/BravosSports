@@ -454,7 +454,8 @@ const Call = () => {
   const [teamIdCall, setTeamIdCall] = useState("999");
   const [daysTraining, setDaysTraining] = useState("");
   const { saveData, data, saveUnitName, reason, saveClassName, saveTeamId, saveDayTrainingName, saveClassId, saveUnitId, saveDayTraining } =
-    useContext(ReloadContext); 
+    useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
     getUnits();
@@ -483,7 +484,11 @@ const Call = () => {
 
   const getClasses = async (idUnit: number) => {
     try {
-      const response = await api.get(`/classes/call/${idUnit}`);
+      const response = await api.get(`/classes/call/${idUnit}`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       response.data.unshift({ id: -99, description: "Todos", status: 1 });
 
@@ -495,7 +500,11 @@ const Call = () => {
 
   const getUnits = async () => {
     try {
-      const response = await api.get("/units");
+      const response = await api.get("/units",  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setUnits(response.data);
     } catch {
@@ -504,7 +513,11 @@ const Call = () => {
   };
 
   const verifyIfNeedsUpdateStudentStatus = async () => {
-    await api.get("/schedules/day");
+    await api.get("/schedules/day",  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
   };
 
   const getTeamsDisp = async (unit: string) => {
@@ -512,7 +525,11 @@ const Call = () => {
 
     try {
       filterAndSetUnitId(unit);
-      const responseSports = await api.get(`/sports/unit/${unit}`);
+      const responseSports = await api.get(`/sports/unit/${unit}`,  {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
       setTeamsDisp(responseSports.data);
     } catch {
@@ -528,7 +545,11 @@ const Call = () => {
 
   useEffect(() => {
    const getUnitName = async () => {
-    const response = await api.get(`/units/getname/${unitId}`);
+    const response = await api.get(`/units/getname/${unitId}`,  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
     
     saveUnitName(response.data);
    }
@@ -538,7 +559,11 @@ const Call = () => {
 
   useEffect(() => {
    const getClassName = async () => {
-    const response = await api.get(`/classes/getname/${classId}`);
+    const response = await api.get(`/classes/getname/${classId}`,  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
     
     saveClassName(response.data);
    }
@@ -549,7 +574,11 @@ const Call = () => {
   
   useEffect(() => {
    const getTrainingDayName = async () => {
-    const response = await api.get(`/students/getname/${daysTraining}`);
+    const response = await api.get(`/students/getname/${daysTraining}`,  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
     
     saveDayTrainingName(response.data);
    }
@@ -579,7 +608,11 @@ const Call = () => {
       }
       
       const response = await api.get(
-        `/students/class/${classId}/${teamIdCall}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`
+        `/students/class/${classId}/${teamIdCall}/unit/${unitId}/day/${daysTraining != "" ? daysTraining : -99}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }
       );
 
       if (daysTraining == "") {

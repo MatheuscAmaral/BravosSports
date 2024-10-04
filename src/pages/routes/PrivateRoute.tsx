@@ -7,7 +7,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const PrivateRoute = ({ children }: any) => {
     const navigate = useNavigate();
-    const { user, authUser } = useContext(AuthContext);
+    const { user, authUser, token } = useContext(AuthContext);
     const { resetNewStudents, resetData, saveReason, resetSelect } = useContext(ReloadContext);
     const location = useLocation();
 
@@ -23,7 +23,11 @@ const PrivateRoute = ({ children }: any) => {
             }
             
             try {
-                const response = await api.post("/users/checkout", data);
+                const response = await api.post("/users/checkout", data, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
     
                 if (response.data.length > 0) {
                     localStorage.setItem("@bravosSports:user", JSON.stringify(response.data[0]));
@@ -39,7 +43,13 @@ const PrivateRoute = ({ children }: any) => {
             } catch (error: any) {
                 const messageError = error.response.data.errors;
 
-                toast.error(messageError, {
+                if (messageError != "") {
+                    toast.error(messageError, {
+                        position: "top-right"
+                    });
+                }
+
+                toast.error(error.response.data.error, {
                     position: "top-right"
                 });
 
@@ -52,7 +62,7 @@ const PrivateRoute = ({ children }: any) => {
         if (storedUser) { 
             const parsedUser = JSON.parse(storedUser);
             verifyUserReleased(parsedUser.user, parsedUser.name);
-            authUser(parsedUser);
+            authUser(parsedUser, token);
             localStorage.setItem("@bravosSports:lastVisitedRoute", location.pathname);
 
             const lastVisitedRoute = localStorage.getItem("@bravosSports:lastVisitedRoute");

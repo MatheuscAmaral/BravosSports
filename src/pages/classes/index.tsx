@@ -16,6 +16,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import toast from "react-hot-toast";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
 import { TbLoader3 } from "react-icons/tb";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export interface ClassesProps {
   id: number;
@@ -108,6 +109,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
 
 const Classes = () => {
   const { reloadPage, newData, createdNewData } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
   const [data, setData] = useState<ClassesProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -120,7 +122,11 @@ const Classes = () => {
           return setData(newData);
         }
 
-        const response = await api.get("/classes");
+        const response = await api.get("/classes",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar as turmas disponíveis!");

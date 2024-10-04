@@ -21,7 +21,7 @@ interface StatisticsProps {
 }
 
 function Home() {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [statistics, setStatistics] = useState<StatisticsProps[]>([]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,12 @@ function Home() {
     try {
       setLoading(true);
 
-      const response = await api.get("/statistics");
+      const response = await api.get("/statistics", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
       setStatistics([response.data]);
     } catch {
       toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
@@ -44,7 +49,11 @@ function Home() {
       setLoading(true);
 
       const response = await api.get(
-        `/statistics/responsibles/${(user as unknown as UserProps).id}`
+        `/statistics/responsibles/${(user as unknown as UserProps).id}`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }
       );
 
       setStatistics([response.data]);
@@ -56,7 +65,11 @@ function Home() {
   };
 
   const verifyIfNeedsUpdateStudentStatus = async () => {
-    await api.get("/schedules/day");
+    await api.get("/schedules/day",  {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
   };
 
   useState(() => {

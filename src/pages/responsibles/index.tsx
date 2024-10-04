@@ -17,6 +17,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import noFoto from "../../assets/noFoto.jpg";
 import { PiCaretUpDownBold } from "react-icons/pi";
 import { TbLoader3 } from "react-icons/tb";
+import { AuthContext } from "@/contexts/AuthContext";
 
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -147,6 +148,7 @@ export const columns: ColumnDef<RowProps>[] = [
 
 const Responsibles = () => {
   const [data, setData] = useState<ResponsibleProps[]>([]);
+  const { token } = useContext(AuthContext);
   const { reloadPage } = useContext(ReloadContext);
   const [loading, setLoading] = useState(false);
 
@@ -155,7 +157,11 @@ const Responsibles = () => {
        try {
         setLoading(true);
 
-        const response = await api.get("/responsibles");
+        const response = await api.get("/responsibles",  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
        } catch {
         toast.error("Ocorreu um erro ao buscar os responsáveis disponíveis!");

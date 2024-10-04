@@ -1,8 +1,9 @@
 import api from "@/api";
 import { StudentsProps } from "@/pages/students";
-import { ReactNode, createContext, useState } from "react";
+import { ReactNode, createContext, useState, useContext } from "react";
 import toast from "react-hot-toast";
 import { RowProps } from "./ModalsContext";
+import { AuthContext } from "./AuthContext";
 
 interface ReloadDataProps {
     reloadPage: () => void;
@@ -63,6 +64,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [dayTrainingName, setDayTrainingName] = useState("");
     const [reason, setReason] = useState<RowProps[]>([]);
     const [data, setData] = useState<StudentsProps[]>([]);
+    const { token } = useContext(AuthContext);
 
     const reloadPage = () => {
         setReload(!reload);
@@ -107,7 +109,11 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const filterStudentsByClass = async (id: number) => {   
         try {
             setFilterId(id);
-            const response = await api.get(`/students/class/filter/${id}`);
+            const response = await api.get(`/students/class/filter/${id}`,  {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             
             setNewStudents(response.data);     
             setCreatedNewData(false);
@@ -122,7 +128,11 @@ const ReloadProvider = ({children}: ChildrenProps) => {
                 return setNewData([]);
             }
 
-            const response = await api.get(`${route}/filter/${idUnit}`);
+            const response = await api.get(`${route}/filter/${idUnit}`,  {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setNewData(response.data);
         } catch {
             toast.error("Ocorreu um erro ao buscar ao filtrar pela unidade selecionada!");

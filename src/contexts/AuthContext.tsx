@@ -2,8 +2,9 @@ import { ReactNode, createContext, useState } from "react";
 
 interface UserDataProps {
     user: UserProps[],
-    authUser: (user: UserProps[]) => void,
+    authUser: (user: UserProps[], token: string) => void,
     logout: () => void,
+    token: string,
     username: string,
 }
 
@@ -25,9 +26,11 @@ export const AuthContext = createContext({} as UserDataProps);
 const AuthProvider = ({children} : ChildrenProps) => {
     const [user, setUser] = useState<UserProps[]>([]);
     const [username, setUsername] = useState("");
+    const [token, setToken] = useState("");
 
-    const authUser = (user: UserProps[]) => {
+    const authUser = (user: UserProps[], token: string) => {
         setUser(user);
+        setToken(token);
         setUsername((user as unknown as UserProps).name);
     }
     
@@ -38,7 +41,7 @@ const AuthProvider = ({children} : ChildrenProps) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, authUser, logout, username }}>
+        <AuthContext.Provider value={{ user, authUser, logout, username, token }}>
             {children}
         </AuthContext.Provider>
     )

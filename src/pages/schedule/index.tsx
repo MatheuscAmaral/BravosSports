@@ -9,6 +9,7 @@ import { RowProps } from "@/contexts/ModalsContext";
 import { PiCaretUpDownBold } from "react-icons/pi";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import moment from 'moment';
+import { AuthContext } from "@/contexts/AuthContext";
 
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -127,6 +128,7 @@ const Schedule = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const { reloadPage } = useContext(ReloadContext);
+  const { token } = useContext(AuthContext);
 
 
   useEffect(() => {
@@ -134,7 +136,11 @@ const Schedule = () => {
       try {
         setLoading(true);
         
-        const response = await api.get(`/schedules`);
+        const response = await api.get(`/schedules`,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os agendamentos!");

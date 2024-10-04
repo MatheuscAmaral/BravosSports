@@ -27,7 +27,7 @@ import { MdErrorOutline } from "react-icons/md";
 import axios from "axios";
 
 const ModalCompleteRegister = () => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [openModal, setOpenModal] = useState(true);
   const [link, setLink] = useState("");
   const [error, setError] = useState(false);
@@ -117,10 +117,18 @@ const ModalCompleteRegister = () => {
 
       const response = level == 3 ? await api.put(
         `/responsibles/complete/${(user as unknown as UserProps).id}`,
-        data
+        data, {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      }
       ) : await api.put(
         `/teachers/complete/${(user as unknown as UserProps).id}`,
-        data
+        data,  {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+        }
       );
 
       toast.success(response.data.message, {
