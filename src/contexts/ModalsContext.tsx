@@ -838,7 +838,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "agendarFalta") {
       data = {
         registration: id,
-        date: dateAbsence,
+          ...(row[0].date != dateAbsence && { date: dateAbsence }),
         comments: comments,
         edit_by: username,
         student_name: name,
@@ -891,30 +891,32 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         type === "responsibles" ||
         type === "responsibles_released"
       ) {
+        // @ts-ignore
         message = (data && data.name) + " editado com sucesso!";
       } else if (data && "description" in data) {
         message = data.description + " editado com sucesso!";
       } else {
         message = "Chamada editada com sucesso!";
       }
-
+      
       if (type != "reasonAbsence" && type != "generalComments") {
         toast.success(message);
         filterStudentsByClass(filterId);
         reloadPage();
         verifyDataCreate(true);
       }
-
+      
       setError(false);
       closeModal();
     } catch (error: any) {
       type == "agendarFalta"
-        ? toast.error(error.response.data.error, {
-            position: "top-right",
-          })
-        : toast.error(
-            `Ocorreu um erro ao editar os dados de ${
-              data &&
+      ? toast.error(error.response.data.error, {
+        position: "top-right",
+      })
+      : toast.error(
+        `Ocorreu um erro ao editar os dados de ${
+          data &&
+          // @ts-ignore
               (data && "description" in data ? data.description : data.name)
             }`
           );
