@@ -179,6 +179,7 @@ const ClassesCoordenador = () => {
       toast("É necessário selecionar um responsável para acessar a tela!", {
         position: "top-right",
         icon: "⚠️",
+        duration: 1500
       });
       return;
     }

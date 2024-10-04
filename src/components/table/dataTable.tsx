@@ -191,7 +191,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   const { username, user } = React.useContext(AuthContext);
   const [openModal, setOpenModal] = React.useState(false);
   const [openCoordinatorModal, setOpenCoordinatorModal] = React.useState(false);
-  const [openFilter, setOpenFilter] = React.useState(false);
+  const [openFilter, setOpenFilter] = React.useState(route == "call" ? true : false);
   const [file, setFile] = React.useState<File | null>(null);
   const [link, setLink] = React.useState("");
   const [columnVisibility, setColumnVisibility] =
@@ -1201,31 +1201,28 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   };
 
   const saveImage = async () => {
+    if (!file) {
+      toast.error("Por favor, selecione um arquivo para fazer upload.");
+      return "error"; 
+    }
+  
     const formData = new FormData();
-    //@ts-ignore
     formData.append("file", file);
-
+  
     try {
       const response = await axios.post(
-        `${
-          hostName == "localhost"
-            ? "http://localhost:3333/upload"
-            : "https://bravos-api.onrender.com/upload"
-        }`,
+        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
         formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
       );
-
-      return `${response.data.url}`;
-    } catch {
+  
+      return response.data.url; 
+    } catch (error) {
+      console.error("Upload error:", error); 
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
     }
   };
+  
 
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1242,6 +1239,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return;
     }
 
+    const classTimeOptions: { [key: string]: string } = {
+        "1970-01-01T13:15": new Date("1970-01-01T13:15:00.000Z").toISOString(),
+        "1970-01-01T17:30": new Date("1970-01-01T17:30:00.000Z").toISOString(),
+        "1970-01-01T18:20": new Date("1970-01-01T18:20:00.000Z").toISOString(),
+        "1970-01-01T18:30": new Date("1970-01-01T18:30:00.000Z").toISOString()
+    };
+
     const data = {
       image: verifyIfSaveImage,
       name: name,
@@ -1253,7 +1257,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       class: classes,
       unit: units,
       ...(daysTraining != "" && { days_training: daysTraining }),
-      ...(classTime != "" && { class_time: classTime }),
+      ...(classTime != "" && { class_time: classTimeOptions[classTime] }),
       ...(hasRegistrationNumber == "true" && { has_registration_number: true }),
       ...(imageContract == "true" && { image_contract: true }),
       ...(exitAutorization == "true" && { exit_autorization: true }),
@@ -1506,7 +1510,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         } pt-5 mb-10 border xl:border-0 rounded-lg transition-all`}
       >
         <div
-          className={`flex xl:hidden justify-between  cursor-pointer`}
+          className={`flex xl:hidden justify-between cursor-pointer`}
           onClick={() => setOpenFilter(!openFilter)}
         >
           <h3 className="text-lg text-gray-700 font-bold">Filtros</h3>
@@ -2295,7 +2299,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                           <Button
                             type="button"
                             className={`bg-primary-color hover:bg-secondary-color ${
-                              studentsSelect.length <= 0
+                              studentId == ""
                                 ? "cursor-not-allowed"
                                 : ""
                             }`}
@@ -2739,19 +2743,19 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               <SelectValue placeholder="Selecione os dias de treino" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="13:15">
+                              <SelectItem value="1970-01-01T13:15">
                                 13:15 às 15:00
                               </SelectItem>
 
-                              <SelectItem value="17:30">
+                              <SelectItem value="1970-01-01T17:30">
                                 17:30 às 18:20
                               </SelectItem>
 
-                              <SelectItem value="18:20">
+                              <SelectItem value="1970-01-01T18:20">
                                 18:20 às 19:20
                               </SelectItem>
 
-                              <SelectItem value="18:30">
+                              <SelectItem value="1970-01-01T18:30">
                                 18:30 às 19:30
                               </SelectItem>
                             </SelectContent>

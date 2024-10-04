@@ -19,7 +19,7 @@ import { ReloadContext } from "@/contexts/ReloadContext";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { AuthContext, UserProps } from "@/contexts/AuthContext";
 import { FaCircleQuestion } from "react-icons/fa6";
-
+import moment from 'moment';
 
 export const columns: ColumnDef<RowProps>[] = [
   {
@@ -53,13 +53,10 @@ export const columns: ColumnDef<RowProps>[] = [
       );
     },
     cell: ({ row }) => {
-      function convertDateFormat(dateStr: string) {
-        const [dd, mm, yyyy] = dateStr.split('-');
-        return `${yyyy}/${mm}/${dd  }`;
-      }
+      const date = moment(row.getValue("date")).add(1, "days").format("DD/MM/YYYY");
 
       return (
-        convertDateFormat(row.getValue("date"))
+        date
       )
     },
   },

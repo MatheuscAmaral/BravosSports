@@ -127,7 +127,16 @@ export const columns: ColumnDef<RowProps>[] = [
 
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => openModals([row.original])}>Editar</DropdownMenuItem>
+            {
+              row.original.image != "" && row.original.degree_kinship != null ? (
+                <DropdownMenuItem onClick={() => openModals([row.original])}>Editar</DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => toast("O responsável ainda não completou seu cadastro, favor entrar em contato para liberar o acesso a edição do mesmo!", {
+                  position: "top-right",
+                  icon: "⚠️"
+                })}>Editar</DropdownMenuItem>
+              )
+            }
           </DropdownMenuContent>
         </DropdownMenu>
         </div>

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { RowProps } from "@/contexts/ModalsContext";
 import { PiCaretUpDownBold } from "react-icons/pi";
 import { ReloadContext } from "@/contexts/ReloadContext";
+import moment from 'moment';
 
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -42,13 +43,10 @@ export const columns: ColumnDef<RowProps>[] = [
       );
     },
     cell: ({ row }) => {
-      function convertDateFormat(dateStr: string) {
-        const [dd, mm, yyyy] = dateStr.split('-');
-        return `${yyyy}/${mm}/${dd  }`;
-      }
+      const date = moment(row.getValue("date")).add(1, "days").format("DD/MM/YYYY");
 
       return (
-        convertDateFormat(row.getValue("date"))
+        date
       )
     },
   },

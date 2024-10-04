@@ -355,43 +355,40 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
 
   const saveImage = async () => {
     if (!file) {
-        toast.error("Por favor, selecione um arquivo para fazer upload.");
-        return "error"; 
+      toast.error("Por favor, selecione um arquivo para fazer upload.");
+      return "error"; 
     }
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
-        const response = await axios.post(
-            `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.onrender.com/upload"}`,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
-
-        return response.data.url; 
+      const response = await axios.post(
+        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
+        formData,
+      );
+  
+      return response.data.url; 
     } catch (error) {
-        console.error("Upload error:", error); 
-        toast.error("Ocorreu um erro ao salvar a imagem!");
-        return "error";
-    }
-};
-
-
-
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-
-    if (selectedFile) {
-      setFile(selectedFile);
-      setLink(URL.createObjectURL(selectedFile));
+      console.error("Upload error:", error); 
+      toast.error("Ocorreu um erro ao salvar a imagem!");
+      return "error";
     }
   };
+
+const trashImages = () => {
+  setLink("")
+}
+  
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const selectedFile = e.target.files?.[0];
+
+  if (selectedFile) {
+    setFile(selectedFile);
+    setLink(URL.createObjectURL(selectedFile)); 
+  }
+};
 
   const getSportsSelect = async (id: number) => {
     try {
@@ -430,6 +427,11 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
               String(row[0].class_time).split(":")[1]
           : ""
       );
+      console.log(row[0].class_time != null
+        ? String(row[0].class_time).split(":")[0] +
+            ":" +
+            String(row[0].class_time).split(":")[1]
+        : "")
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );
@@ -491,6 +493,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
     if (type == "teacher") {
       setUnits(String(row[0].unit));
       setName(row[0].name);
+      setPhone(row[0].phone);
       setUserId(row[0].userId);
     }
 
@@ -721,11 +724,18 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
     let data;
     let verifyIfSaveImage;
 
+    const classTimeOptions: { [key: string]: string } = {
+        "1970-01-01T13:15": new Date("1970-01-01T13:15:00.000Z").toISOString(),
+        "1970-01-01T17:30": new Date("1970-01-01T17:30:00.000Z").toISOString(),
+        "1970-01-01T18:20": new Date("1970-01-01T18:20:00.000Z").toISOString(),
+        "1970-01-01T18:30": new Date("1970-01-01T18:30:00.000Z").toISOString()
+    };
+
     if (file) {
       verifyIfSaveImage = await saveImage();
 
       if (verifyIfSaveImage == "error") {
-        setLoading(true);
+        setLoading(false);
         return;
       }
     }
@@ -761,7 +771,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
         uniform: uniform != "" && uniform == "true" ? true : false,
         ...(sportsSelect != sportsSelectOld && { sports: sportsSelect } ),
         ...(daysTraining != "" && { days_training: daysTraining }),
-        ...(classTime != "" && { class_time: classTime }),
+        ...(classTime && { class_time: classTimeOptions[classTime] })
       };
 
       if (!link) {
@@ -841,11 +851,11 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
         image: verifyIfSaveImage,
         name: name,
         phone: phone,
-        degree_kinship: degreeKinship,
+        degree_kinship: degreeKinship != "" ? degreeKinship : null,
         status: status,
       };
 
-      if (!link) {
+      if (!link && degreeKinship) {
         toast("É necessário que o responsável possua uma foto cadastrada!", {
           position: "top-right",
           icon: "⚠️",
@@ -1222,30 +1232,6 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                     />
                   </div>
 
-                  {/* <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                    <label htmlFor="modality">
-                      Modalidade: <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      required
-                      onValueChange={(e) => setModality(e)}
-                      defaultValue={modality}
-                    >
-                      <SelectTrigger
-                        className="w-full"
-                        id="modality"
-                        name="modality"
-                      >
-                        <SelectValue placeholder="Selecione a modalidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Futsal">Futsal</SelectItem>
-                        <SelectItem value="Handebol">Handebol</SelectItem>
-                        <SelectItem value="Vôlei">Vôlei</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
-
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="units">
                       Unidade: <span className="text-red-500">*</span>
@@ -1275,7 +1261,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                 type != "call" && (
                   <FaTrash
                     fontSize={22}
-                    onClick={() => setLink("")}
+                    onClick={() => trashImages()}
                     className={`${
                       link ? "block" : "hidden"
                     } absolute cursor-pointer top-4 right-9 hover:text-red-700 transition-all`}
@@ -1356,7 +1342,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
               )}
 
               {type == "teacher" && (
-                <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
+                <div className="space-y-6">
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="nome">
                       Nome: <span className="text-red-500">*</span>
@@ -1798,13 +1784,13 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
                     </SelectTrigger>
 
                     <SelectContent>
-                      <SelectItem value="1970-01-01T13:15:00Z">13:15 às 15:00</SelectItem>
+                      <SelectItem value="1970-01-01T13:15">13:15 às 15:00</SelectItem>
 
-                      <SelectItem value="17:30">17:30 às 18:20</SelectItem>
+                      <SelectItem value="1970-01-01T17:30">17:30 às 18:20</SelectItem>
 
-                      <SelectItem value="18:20">18:20 às 19:20</SelectItem>
+                      <SelectItem value="1970-01-01T18:20">18:20 às 19:20</SelectItem>
 
-                      <SelectItem value="18:30">18:30 às 19:30</SelectItem>
+                      <SelectItem value="1970-01-01T18:30">18:30 às 19:30</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

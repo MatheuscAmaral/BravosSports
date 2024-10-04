@@ -54,28 +54,27 @@ const ModalCompleteRegister = () => {
   };
 
   const saveImage = async () => {
+    if (!file) {
+      toast.error("Por favor, selecione um arquivo para fazer upload.");
+      return "error"; 
+    }
+  
     const formData = new FormData();
-    //@ts-ignore
     formData.append("file", file);
-
+  
     try {
       const response = await axios.post(
-        `${hostName == "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.onrender.com/upload"}`,
+        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
         formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
       );
-      
-      return `${response.data.url}`;
-    } catch {
+  
+      return response.data.url; 
+    } catch (error) {
+      console.error("Upload error:", error); 
       toast.error("Ocorreu um erro ao salvar a imagem!");
       return "error";
     }
   };
-
 
   const updateData = async (e: FormEvent, level: number) => {
     e.preventDefault();

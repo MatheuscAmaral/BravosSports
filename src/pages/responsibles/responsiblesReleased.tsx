@@ -226,7 +226,7 @@ const ResponsiblesReleased = () => {
 
   const getResponsibles = async () => {
     try {
-      const response = await api.get(`/responsibles/`);
+      const response = await api.get(`/responsibles`);
 
       setResponsibles(response.data);
     } catch {
@@ -260,6 +260,7 @@ const ResponsiblesReleased = () => {
       toast("É necessário selecionar um responsável para acessar a tela!", {
         position: "top-right",
         icon: "⚠️",
+        duration: 1500
       });
       return;
     }
@@ -360,21 +361,23 @@ const ResponsiblesReleased = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <SelectReact
-                      defaultValue={[]}
-                      name="students"
-                      value={formatedResponsibleId.value == "" ? "" : formatedResponsibleId}
-                      // @ts-ignore
-                      onChange={(e) => setFormatedResponsibleId(e)}
-                      noOptionsMessage={() =>
-                        "Nenhum resultado encontrado"
-                      }
-                      // @ts-ignore
-                      options={students}
-                      className="basic-multi-select text-sm mb-10"
-                      maxMenuHeight={200}
-                      placeholder="Selecione o aluno"
-                    />
+                    <div className="pb-5">
+                      <SelectReact
+                        defaultValue={[]}
+                        name="students"
+                        value={formatedResponsibleId.value == "" ? "" : formatedResponsibleId}
+                        // @ts-ignore
+                        onChange={(e) => setFormatedResponsibleId(e)}
+                        noOptionsMessage={() =>
+                          "Nenhum resultado encontrado"
+                        }
+                        // @ts-ignore
+                        options={students}
+                        className="basic-multi-select text-sm mb-10"
+                        maxMenuHeight={200}
+                        placeholder="Selecione o aluno"
+                      />
+                    </div>
                   )
                 }
               </div>

@@ -135,7 +135,6 @@ function Home() {
 
                      <div className="flex justify-between w-full">
                        <SiGoogleclassroom fontSize={31} />
-                       <p className="text-3xl font-bold">{s.classes}</p>
                      </div>
                    </div>
                   </>
