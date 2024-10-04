@@ -281,28 +281,20 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   React.useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1300) {
-        setModalMaxHeight("540px");
-      } 
-      
-      if (window.innerWidth >= 1000) {
-        setModalMaxHeight("480px");
-      } 
-      
-      else if ( window.innerWidth > 535) {
-        setModalMaxHeight("420px");
-      }
-
-      else if ( window.innerWidth > 400) {
+       if ( window.innerWidth > 535) {
         setModalMaxHeight("500px");
       }
 
+      else if ( window.innerWidth > 400) {
+        setModalMaxHeight("400px");
+      }
+
       else if ( window.innerWidth > 375) {
-        setModalMaxHeight("450px");
+        setModalMaxHeight("350px");
       }
 
       else {
-        setModalMaxHeight("370px");
+        setModalMaxHeight("320px");
       }
     };
 
@@ -2145,9 +2137,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                               <span className="text-red-500"> *</span>
                             </label>
 
-                            <Select required onValueChange={(e) => setStudentId(e)}>
+                            <Select disabled={studentsLevel.length <= 0} required onValueChange={(e) => setStudentId(e)}>
                               <SelectTrigger className="w-full" id="studentId">
-                                <SelectValue placeholder="Selecione o aluno" />
+                                <SelectValue placeholder={`${studentsLevel.length <= 0 ? "Nenhum aluno disponível" : "Selecione o aluno"}`} />
                               </SelectTrigger>
                               <SelectContent>
                                 {
