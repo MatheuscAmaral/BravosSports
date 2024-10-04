@@ -337,7 +337,7 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       }
 
       else {
-        setModalMaxHeight("370px");
+        setModalMaxHeight("330px");
       }
     };
 
