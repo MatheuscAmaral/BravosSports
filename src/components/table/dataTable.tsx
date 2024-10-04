@@ -3360,7 +3360,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Modal.Header>
 
                 <form onSubmit={(e) => createUsers(e)}>
-                  <Modal.Body className="relative">
+                  <Modal.Body className="relative" style={{ maxHeight: modalMaxHeight }}>
                     <div className="space-y-6">
                       <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                         <label htmlFor="name">
