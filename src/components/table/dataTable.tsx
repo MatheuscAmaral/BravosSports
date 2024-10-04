@@ -281,10 +281,28 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
   React.useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 375) {
-        setModalMaxHeight("290px");
-      } else {
+      if (window.innerWidth >= 1300) {
         setModalMaxHeight("540px");
+      } 
+      
+      if (window.innerWidth >= 1000) {
+        setModalMaxHeight("480px");
+      } 
+      
+      else if ( window.innerWidth > 535) {
+        setModalMaxHeight("420px");
+      }
+
+      else if ( window.innerWidth > 400) {
+        setModalMaxHeight("500px");
+      }
+
+      else if ( window.innerWidth > 375) {
+        setModalMaxHeight("450px");
+      }
+
+      else {
+        setModalMaxHeight("370px");
       }
     };
 

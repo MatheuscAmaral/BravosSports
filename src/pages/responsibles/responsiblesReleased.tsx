@@ -345,9 +345,9 @@ const ResponsiblesReleased = () => {
 
                 { 
                   ((user as unknown as UserProps).level != 4) ? (
-                    <Select value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
+                    <Select disabled={responsibles.length <= 0} value={responsibleId} required onValueChange={(e) => setResponsibleId(e)}>
                       <SelectTrigger className="w-full" id="responsible">
-                        <SelectValue placeholder="Selecione o responsável desejado" />
+                        <SelectValue placeholder={`${responsibles.length <= 0 ? "Nenhum responsável disponível" : "Selecione o responsável desejado"}`} />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -387,6 +387,7 @@ const ResponsiblesReleased = () => {
             <Button
               type="submit"
               className="bg-primary-color hover:bg-secondary-color"
+              disabled={responsibles.length <= 0}
             >
               Selecionar
             </Button>
