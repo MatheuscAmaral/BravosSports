@@ -670,7 +670,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     } catch (error: any) { 
       if (error.response.data.error != "Token inválido!") {
         toast.error("Ocorreu um erro ao gerar o excel!");
-        console.error(error);
       }
     } finally {
       setLoading(false);
@@ -1307,7 +1306,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       return response.data.url; 
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
-        console.error("Upload error:", error); 
         toast.error("Ocorreu um erro ao salvar a imagem!");
         return "error";
       }

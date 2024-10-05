@@ -71,7 +71,6 @@ const ModalCompleteRegister = () => {
       return response.data.url; 
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
-        console.error("Upload error:", error); 
         toast.error("Ocorreu um erro ao salvar a imagem!");
       }
       return "error";
@@ -139,7 +138,6 @@ const ModalCompleteRegister = () => {
       setOpenModal(false);
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
-        console.error(error);
         toast.error("Ocorreu um erro ao atualizar os dados do responsável!");
       }
     } finally {

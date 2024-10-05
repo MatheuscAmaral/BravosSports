@@ -38,6 +38,7 @@ const AuthProvider = ({children} : ChildrenProps) => {
         setUser([]);
         localStorage.removeItem("@bravosSports:user");
         localStorage.removeItem("@bravosSports:lastVisitedRoute");
+        localStorage.removeItem("@bravosSports:jwt");
     }
 
     return (

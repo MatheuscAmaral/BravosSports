@@ -48,7 +48,7 @@ function Auth() {
 
         authUser(response.data, response.data.token);
         localStorage.setItem("@bravosSports:user", JSON.stringify(response.data.data));
-        localStorage.setItem("@bravosSports:jwt", JSON.stringify(response.data.token));
+        localStorage.setItem("@bravosSports:jwt", response.data.token);
         navigate("/");
         toast.success("Usuário logado com sucesso!", {
             position: "top-right"

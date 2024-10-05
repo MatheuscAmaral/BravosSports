@@ -7,15 +7,16 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const PrivateRoute = ({ children }: any) => {
     const navigate = useNavigate();
-    const { user, authUser, token } = useContext(AuthContext);
+    const { user, authUser } = useContext(AuthContext);
     const { resetNewStudents, resetData, saveReason, resetSelect } = useContext(ReloadContext);
     const location = useLocation();
-
+    
     useEffect(() => {
         const storedUser = localStorage.getItem("@bravosSports:user");
         resetData();
+        const token = localStorage.getItem("@bravosSports:jwt");
         resetNewStudents();
-
+        
         const verifyUserReleased = async (user: string, name: string) => {
             const data = {
                 user,
@@ -42,13 +43,13 @@ const PrivateRoute = ({ children }: any) => {
                 }
             } catch (error: any) {
                 const messageError = error.response.data.errors;
-
+                
                 if (error.response.data.error != "Token inválido!") {    
                     toast.error(messageError, {
                         position: "top-right"
                     });    
                 }
-
+                
                 localStorage.removeItem("@bravosSports:user");
                 localStorage.removeItem("@bravosSports:lastVisitedRoute");
                 navigate("/login");
@@ -58,7 +59,7 @@ const PrivateRoute = ({ children }: any) => {
         if (storedUser) { 
             const parsedUser = JSON.parse(storedUser);
             verifyUserReleased(parsedUser.user, parsedUser.name);
-            authUser(parsedUser, token);
+            authUser(parsedUser, String(token));
             localStorage.setItem("@bravosSports:lastVisitedRoute", location.pathname);
 
             const lastVisitedRoute = localStorage.getItem("@bravosSports:lastVisitedRoute");

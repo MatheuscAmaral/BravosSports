@@ -385,7 +385,6 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       return response.data.url; 
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
-        console.error("Upload error:", error); 
         toast.error("Ocorreu um erro ao salvar a imagem!");
         return "error";
       }
@@ -449,11 +448,6 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               String(row[0].class_time).split(":")[1]
           : ""
       );
-      console.log(row[0].class_time != null
-        ? String(row[0].class_time).split(":")[0] +
-            ":" +
-            String(row[0].class_time).split(":")[1]
-        : "")
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );

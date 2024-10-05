@@ -21,7 +21,8 @@ interface StatisticsProps {
 }
 
 function Home() {
-  const { user, token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const token = localStorage.getItem("@bravosSports:jwt");
   const [statistics, setStatistics] = useState<StatisticsProps[]>([]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
