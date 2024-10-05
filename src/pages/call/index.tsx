@@ -681,9 +681,10 @@ const Call = () => {
                   onValueChange={(e) => getTeamsDisp(e)}
                   required
                   defaultValue={unitId}
+                  disabled={units.length <= 0}
                 >
                   <SelectTrigger id="unit" className="w-full">
-                    <SelectValue placeholder="Selecione uma unidade" />
+                    <SelectValue placeholder={units.length > 0 ? "Selecione uma unidade" : "Nenhuma unidade disponível"} />
                   </SelectTrigger>
 
                   <SelectContent>
