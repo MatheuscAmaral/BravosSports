@@ -383,10 +383,12 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
       );
   
       return response.data.url; 
-    } catch (error) {
-      console.error("Upload error:", error); 
-      toast.error("Ocorreu um erro ao salvar a imagem!");
-      return "error";
+    } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
+        console.error("Upload error:", error); 
+        toast.error("Ocorreu um erro ao salvar a imagem!");
+        return "error";
+      }
     }
   };
 
@@ -420,7 +422,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSportsSelect(formatedData);
         setSportsSelectOld(formatedData);
     } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
         toast.error(error);
+      }
     }
   }
 
@@ -991,17 +995,19 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setError(false);
       closeModal();
     } catch (error: any) {
-      type == "agendarFalta"
-      ? toast.error(error.response.data.error, {
-        position: "top-right",
-      })
-      : toast.error(
-        `Ocorreu um erro ao editar os dados de ${
-          data &&
-          // @ts-ignore
-              (data && "description" in data ? data.description : data.name)
-            }`
-          );
+      if (error.response.data.error != "Token inválido!") {
+        type == "agendarFalta"
+        ? toast.error(error.response.data.error, {
+          position: "top-right",
+        })
+        : toast.error(
+          `Ocorreu um erro ao editar os dados de ${
+            data &&
+            // @ts-ignore
+                (data && "description" in data ? data.description : data.name)
+              }`
+            );
+      }
     } finally {
       setLoading(false);
     }

@@ -514,10 +514,10 @@ const Call = () => {
 
   const verifyIfNeedsUpdateStudentStatus = async () => {
     await api.get("/schedules/day",  {
-      headers: {
-          Authorization: `Bearer ${token}`
-      }
-  });
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
   };
 
   const getTeamsDisp = async (unit: string) => {

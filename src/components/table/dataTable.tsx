@@ -667,9 +667,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
         );
       }
 
-    } catch (error) {
-      toast.error("Ocorreu um erro ao gerar o excel!");
-      console.error(error);
+    } catch (error: any) { 
+      if (error.response.data.error != "Token inválido!") {
+        toast.error("Ocorreu um erro ao gerar o excel!");
+        console.error(error);
+      }
     } finally {
       setLoading(false);
     }
@@ -1303,10 +1305,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       );
   
       return response.data.url; 
-    } catch (error) {
-      console.error("Upload error:", error); 
-      toast.error("Ocorreu um erro ao salvar a imagem!");
-      return "error";
+    } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
+        console.error("Upload error:", error); 
+        toast.error("Ocorreu um erro ao salvar a imagem!");
+        return "error";
+      }
     }
   };
   
@@ -1378,10 +1382,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setLink("");
       setDate("");
     } catch (error: any) {
-      if (error.response.data.error.errors[0].message == "O nome de usuário já existe.") {
-        return toast.error("O telefone do responsável já foi cadastrado!");
-      } else {
-        toast.error("Ocorreu um erro ao criar o aluno!");
+      if (error.response.data.error != "Token inválido!") {
+        if (error.response.data.error.errors[0].message == "O nome de usuário já existe.") {
+          return toast.error("O telefone do responsável já foi cadastrado!");
+        } else {
+          toast.error("Ocorreu um erro ao criar o aluno!");
+        }
       }
     } finally {
       setLoading(false);
@@ -1446,9 +1452,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setDateAbsence("");
       closeModal();
     } catch (error: any) {
-      toast.error(error.response.data.error, {
-        position: "top-right",
-      });
+      if (error.response.data.error != "Token inválido!") {
+        toast.error(error.response.data.error, {
+          position: "top-right",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -1539,9 +1547,11 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       setDateSelectAbsence("");
       setDateAbsence("");
     } catch (error: any) {
-      toast.error(error.response.data.error, {
-        position: "top-right",
-      });
+      if (error.response.data.error != "Token inválido!") {
+        toast.error(error.response.data.error, {
+          position: "top-right",
+        });
+      }
     } finally {
       setLoading(false);
     }

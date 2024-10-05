@@ -43,15 +43,11 @@ const PrivateRoute = ({ children }: any) => {
             } catch (error: any) {
                 const messageError = error.response.data.errors;
 
-                if (messageError != "") {
+                if (error.response.data.error != "Token inválido!") {    
                     toast.error(messageError, {
                         position: "top-right"
-                    });
+                    });    
                 }
-
-                toast.error(error.response.data.error, {
-                    position: "top-right"
-                });
 
                 localStorage.removeItem("@bravosSports:user");
                 localStorage.removeItem("@bravosSports:lastVisitedRoute");
@@ -85,7 +81,7 @@ const PrivateRoute = ({ children }: any) => {
             if (JSON.parse(storedUser).level != 0 && JSON.parse(storedUser).level != 1) {
                 toast('Você não tem permissão para acessar essa tela!', {
                     icon: '⚠️',
-                  });
+                });
 
                 return <Navigate to={"/"} />
             }

@@ -65,6 +65,7 @@ function Auth() {
                 position: "top-right"
             });
         }
+
         setError1(true);
         setError2(true);
     } finally {

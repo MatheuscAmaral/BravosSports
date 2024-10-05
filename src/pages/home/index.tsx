@@ -37,8 +37,13 @@ function Home() {
         }
       );
       setStatistics([response.data]);
-    } catch {
-      toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
+    } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
+        toast.error("Ocorreu um erro ao buscar as estatísticas do sistema!");
+      } else {
+        toast.error("Token expirado!");
+      }
+
     } finally {
       setLoading(false);
     }

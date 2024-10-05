@@ -69,9 +69,11 @@ const ModalCompleteRegister = () => {
       );
   
       return response.data.url; 
-    } catch (error) {
-      console.error("Upload error:", error); 
-      toast.error("Ocorreu um erro ao salvar a imagem!");
+    } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
+        console.error("Upload error:", error); 
+        toast.error("Ocorreu um erro ao salvar a imagem!");
+      }
       return "error";
     }
   };
@@ -135,9 +137,11 @@ const ModalCompleteRegister = () => {
         position: "top-right",
       });
       setOpenModal(false);
-    } catch (error) {
-      console.error(error);
-      toast.error("Ocorreu um erro ao atualizar os dados do responsável!");
+    } catch (error: any) {
+      if (error.response.data.error != "Token inválido!") {
+        console.error(error);
+        toast.error("Ocorreu um erro ao atualizar os dados do responsável!");
+      }
     } finally {
       setLoading(false);
     }
