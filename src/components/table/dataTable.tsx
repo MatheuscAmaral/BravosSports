@@ -845,8 +845,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       description: description,
-      unit: units,
-      status: status,
+      unit: Number(units),
+      status: Number(status),
     };
 
     try {
@@ -877,12 +877,12 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       description: description,
-      status: status,
+      status: Number(status),
     };
 
     try {
       setLoading(true);
-      await api.post("/units", data,  {
+      await api.post("/units", data, {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -907,7 +907,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
     const data = {
       description: description,
       unit: units,
-      status: status,
+      status: Number(status),
     };
 
     try {
@@ -945,7 +945,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: verifyIfSaveImage,
       name: name,
       phone: phone,
-      status: status,
+      status: Number(status),
     };
 
     try {
@@ -987,7 +987,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       password: phone,
       ...(verifyIfSaveImage != "" && { image: verifyIfSaveImage }),
       phone: phone,
-      status: status,
+      status: Number(status),
     };
 
     try {
@@ -1056,8 +1056,8 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       name: name,
       phone: phone,
       degree_kinship: degreeKinship,
-      id_responsible: responsibleId,
-      status: status,
+      id_responsible: Number(responsibleId),
+      status: Number(status),
     };
 
     try {
@@ -1342,9 +1342,9 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       date_of_birth: date,
       resp_phone: phone,
       resp_name: nameResp,
-      status: status,
-      class: classes,
-      unit: units,
+      status: Number(status),
+      class: Number(classes),
+      unit: Number(units),
       ...(daysTraining != "" && { days_training: daysTraining }),
       ...(classTime != "" && { class_time: classTimeOptions[classTime] }),
       ...(hasRegistrationNumber == "true" && { has_registration_number: true }),
@@ -1429,7 +1429,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       student_id: Number(studentId),
-      new_status: status,
+      new_status: Number(status),
       date: formatedDateSelect,
       ready: true
     }
@@ -1502,7 +1502,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       studentsSelect.map((s) =>
         data.push({
           registration: s.value,
-          class: s.class,
+          class: Number(s.class),
           name: s.label,
           presence: false,
           edit_by: username,
@@ -1573,7 +1573,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       image: verifyIfSaveImage,
       name: name,
       phone: phone,
-      status: status,
+      status: Number(status),
     };
 
     if (!link) {

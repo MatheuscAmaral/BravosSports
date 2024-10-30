@@ -8,7 +8,6 @@ import { AuthContext } from "./AuthContext";
 interface ReloadDataProps {
     reloadPage: () => void;
     filterStudentsByClass: (id: number) => void;
-    // filterStudentsByTeam: (idClass: number, idTeam: number, idUnit: number, time: string) => void;
     filterByUnit: (route: string, idUnit: number) => void;
     saveUnitName: (name: string) => void;
     saveClassName: (name: string) => void;

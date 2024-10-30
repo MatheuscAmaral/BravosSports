@@ -800,9 +800,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         image: verifyIfSaveImage,
         name: name,
         date_of_birth: date,
-        status: status,
-        class: classes,
-        unit: units,
+        status: Number(status),
+        class: Number(classes),
+        unit: Number(units),
         has_registration_number:
           hasRegistrationNumber != "" && hasRegistrationNumber == "true"
             ? true
@@ -835,7 +835,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         name: name,
         phone: phone,
         userId: userId,
-        status: status,
+        status: Number(status),
       };
 
       if (!link) {
@@ -852,13 +852,13 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     if (type == "users") {
       data = {
-        status: status,
+        status: Number(status),
       };
     }
 
     if (type == "units") {
       data = {
-        status: status,
+        status: Number(status),
       };
     }
 
@@ -866,7 +866,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       data = {
         description: description,
         unit: units,
-        status: status,
+        status: Number(status),
       };
     }
 
@@ -875,7 +875,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         description: description,
         modality: modality,
         unit: units,
-        status: status,
+        status: Number(status),
       };
     }
 
@@ -886,7 +886,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         comments: comments,
         edit_by: username,
         student_name: name,
-        status: status,
+        status: Number(status),
       };
     }
 
@@ -896,7 +896,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         name: name,
         phone: phone,
         degree_kinship: degreeKinship != "" ? degreeKinship : null,
-        status: status,
+        status: Number(status),
       };
 
       if (!link && degreeKinship) {
