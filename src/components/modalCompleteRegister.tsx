@@ -64,7 +64,7 @@ const ModalCompleteRegister = () => {
   
     try {
       const response = await axios.post(
-        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api-2-0.vercel.app/upload"}`,
+        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.vercel.app/upload"}`,
         formData,
       );
   
