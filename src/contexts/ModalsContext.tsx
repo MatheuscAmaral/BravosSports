@@ -236,11 +236,11 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [generalComments, setGeneralComments] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
-  const [imageContract, setImageContract] = useState("");
-  const [uniform, setUniform] = useState("");
-  const [hasRegistrationNumber, setHasRegistrationNumber] = useState("");
-  const [contract, setContract] = useState("");
-  const [exitAutorization, setExitAutorization] = useState("");
+  const [imageContract, setImageContract] = useState<boolean | undefined>(undefined);
+  const [uniform, setUniform] = useState<boolean | undefined>(undefined);
+  const [hasRegistrationNumber, setHasRegistrationNumber] = useState<boolean | undefined>(undefined);
+  const [contract, setContract] = useState<boolean | undefined>(undefined);
+  const [exitAutorization, setExitAutorization] = useState<boolean | undefined>(undefined);
   const [name, setName] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
@@ -451,11 +451,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setDaysTraining(
         row[0].days_training != null ? String(row[0].days_training) : ""
       );
-      setHasRegistrationNumber(String(row[0].has_registration_number));
-      setImageContract(String(row[0].image_contract));
-      setContract(String(row[0].contract));
-      setUniform(String(row[0].uniform));
-      setExitAutorization(String(row[0].exit_autorization));
+      setHasRegistrationNumber(row[0].has_registration_number);
+      setImageContract(row[0].image_contract);
+      setContract(row[0].contract);
+      setUniform(row[0].uniform);
+      setExitAutorization(row[0].exit_autorization);
       await getClasses(row[0].class);
       await getSportsSelect(row[0].id);
     }
@@ -803,16 +803,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         status: Number(status),
         class: Number(classes),
         unit: Number(units),
-        has_registration_number:
-          hasRegistrationNumber != "" && hasRegistrationNumber == "true"
-            ? true
-            : false,
-        image_contract:
-          imageContract != "" && imageContract == "true" ? true : false,
-        exit_autorization:
-          exitAutorization != "" && exitAutorization == "true" ? true : false,
-        contract: contract != "" && contract == "true" ? true : false,
-        uniform: uniform != "" && uniform == "true" ? true : false,
+        has_registration_number: hasRegistrationNumber ? true : false,
+        image_contract: imageContract ? true : false,
+        exit_autorization: exitAutorization ? true : false,
+        contract: contract ? true : false,
+        uniform: uniform ? true : false,        
         ...(sportsSelect != sportsSelectOld && { sports: sportsSelect } ),
         ...(daysTraining != "" && { days_training: daysTraining }),
         ...(classTime && { class_time: classTimeOptions[classTime] })
@@ -1948,11 +1943,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={
-                        hasRegistrationNumber != "" ? hasRegistrationNumber : ""
-                      }
-                      defaultValue={hasRegistrationNumber}
-                      onValueChange={(e) => setHasRegistrationNumber(e)}
+                      value={hasRegistrationNumber !== undefined ? String(hasRegistrationNumber) : ""}
+                      onValueChange={(e) => setHasRegistrationNumber(e === "true") }
                       required
                     >
                       <SelectTrigger
@@ -1967,6 +1959,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         <SelectItem value="false">Não</SelectItem>
                       </SelectContent>
                     </Select>
+
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -1981,9 +1974,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={imageContract != "" ? imageContract : ""}
-                      defaultValue={imageContract}
-                      onValueChange={(e) => setImageContract(e)}
+                      value={imageContract !== undefined ? String(imageContract) : ""} 
+                      onValueChange={(value) => setImageContract(value === "true")}
                       required
                     >
                       <SelectTrigger className="w-full" id="image_contract">
@@ -2009,9 +2001,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={exitAutorization != "" ? exitAutorization : ""}
-                      defaultValue={exitAutorization}
-                      onValueChange={(e) => setExitAutorization(e)}
+                      value={exitAutorization !== undefined ? String(exitAutorization) : ""}
+                      onValueChange={(value) => setExitAutorization(value === "true")} 
                       required
                     >
                       <SelectTrigger className="w-full" id="exit_autorization">
@@ -2036,9 +2027,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={contract != "" ? contract : ""}
-                      defaultValue={contract}
-                      onValueChange={(e) => setContract(e)}
+                      value={contract !== undefined ? String(contract) : ""}
+                      onValueChange={(value) => setContract(value === "true")} 
                       required
                     >
                       <SelectTrigger className="w-full" id="contract">
@@ -2063,9 +2053,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={uniform != "" ? uniform : ""}
-                      defaultValue={uniform}
-                      onValueChange={(e) => setUniform(e)}
+                      value={uniform !== undefined ? String(uniform) : ""}
+                      onValueChange={(value) => setUniform(value === "true")}                
                       required
                     >
                       <SelectTrigger className="w-full" id="uniform">
