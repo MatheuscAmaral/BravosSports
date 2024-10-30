@@ -865,7 +865,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "classes") {
       data = {
         description: description,
-        unit: units,
+        unit: Number(units),
         status: Number(status),
       };
     }
@@ -874,7 +874,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       data = {
         description: description,
         modality: modality,
-        unit: units,
+        unit: Number(units),
         status: Number(status),
       };
     }

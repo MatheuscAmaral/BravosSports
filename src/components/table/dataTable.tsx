@@ -388,10 +388,10 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const dataCall = {
       date: date2,
-      unit: unitId,
-      classId: idClass,
+      unit: Number(unitId),
+      classId: Number(idClass),
       day_of_training: daySaved,
-      team: teamId
+      team: Number(teamId)
     };
 
     try {
@@ -906,7 +906,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
     const data = {
       description: description,
-      unit: units,
+      unit: Number(units),
       status: Number(status),
     };
 
