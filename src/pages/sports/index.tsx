@@ -43,21 +43,6 @@ export const columnsClass: ColumnDef<RowProps>[] = [
     },
     cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
-  // {
-  //   accessorKey: "modality",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Modalidade
-  //         <PiCaretUpDownBold className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>{row.getValue("modality")}</div>,
-  // },
   {
     accessorKey: "desc_unit",
     header: ({ column }) => {
@@ -123,9 +108,8 @@ export const columnsClass: ColumnDef<RowProps>[] = [
   },
 ];
 
-
 const Sports = () => {
-  const { reloadPage, newData } = useContext(ReloadContext);
+  const { reloadPage, newData, createdNewData } = useContext(ReloadContext);
   const { token } = useContext(AuthContext);
   const [data, setData] = useState<SportsProps[]>([]);
   const [loading, setLoading] = useState(false);
@@ -135,7 +119,7 @@ const Sports = () => {
       try {
         setLoading(true);
 
-        if (newData.length > 0) {
+        if (newData.length > 0 && !createdNewData) {
           return setData(newData);
         }
 
@@ -143,7 +127,7 @@ const Sports = () => {
           headers: {
               Authorization: `Bearer ${token}`
           }
-      });
+        });
         setData(response.data);
       } catch {
         toast.error("Ocorreu um erro ao buscar os esportes disponíveis!");

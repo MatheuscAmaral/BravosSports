@@ -228,7 +228,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [classTime, setClassTime] = useState("");
   const [classTimeCall, setClassTimeCall] = useState("");
   const [classes, setClasses] = useState("");
-  const [id, setId] = useState("");
+  const [id, setId] = useState<string | number>("");
   const [idCall, setIdCall] = useState("");
   const [description, setDescription] = useState("");
   const [modality, setModality] = useState("");
@@ -236,11 +236,17 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [generalComments, setGeneralComments] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(false);
-  const [imageContract, setImageContract] = useState<boolean | undefined>(undefined);
+  const [imageContract, setImageContract] = useState<boolean | undefined>(
+    undefined
+  );
   const [uniform, setUniform] = useState<boolean | undefined>(undefined);
-  const [hasRegistrationNumber, setHasRegistrationNumber] = useState<boolean | undefined>(undefined);
+  const [hasRegistrationNumber, setHasRegistrationNumber] = useState<
+    boolean | undefined
+  >(undefined);
   const [contract, setContract] = useState<boolean | undefined>(undefined);
-  const [exitAutorization, setExitAutorization] = useState<boolean | undefined>(undefined);
+  const [exitAutorization, setExitAutorization] = useState<boolean | undefined>(
+    undefined
+  );
   const [name, setName] = useState("");
   const [daysTraining, setDaysTraining] = useState("");
   const [teamsDisp, setTeamsDisp] = useState<ClassesProps[]>([]);
@@ -260,14 +266,14 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     ResponsibleProps[]
   >([]);
   const [sportsDisp, setSportsDisp] = useState<
-  { value: number; label: string; class: number }[]
->([]);
-const [sportsSelect, setSportsSelect] = useState<
-  { value: number; label: string }[]
->([]);
-const [sportsSelectOld, setSportsSelectOld] = useState<
-  { value: number; label: string; }[]
->([]);
+    { value: number; label: string; class: number }[]
+  >([]);
+  const [sportsSelect, setSportsSelect] = useState<
+    { value: number; label: string }[]
+  >([]);
+  const [sportsSelectOld, setSportsSelectOld] = useState<
+    { value: number; label: string }[]
+  >([]);
   const [show, setShow] = useState<boolean>(false);
 
   const optionsDate = {
@@ -316,19 +322,13 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
 
   useEffect(() => {
     const handleResize = () => {
-      if ( window.innerWidth > 535) {
+      if (window.innerWidth > 535) {
         setModalMaxHeight("500px");
-      }
-
-      else if ( window.innerWidth > 400) {
+      } else if (window.innerWidth > 400) {
         setModalMaxHeight("400px");
-      }
-
-      else if ( window.innerWidth > 375) {
+      } else if (window.innerWidth > 375) {
         setModalMaxHeight("350px");
-      }
-
-      else {
+      } else {
         setModalMaxHeight("320px");
       }
     };
@@ -366,23 +366,28 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
   const saveImage = async () => {
     if (!file) {
       toast.error("Por favor, selecione um arquivo para fazer upload.");
-      return "error"; 
+      return "error";
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
-  
+
     try {
       const response = await axios.post(
-        `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.vercel.app/upload"}`,
-        formData,  {
+        `${
+          hostName === "localhost"
+            ? "http://localhost:3333/upload"
+            : "https://bravos-api.vercel.app/upload"
+        }`,
+        formData,
+        {
           headers: {
-              Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-  
-      return response.data.url; 
+
+      return response.data.url;
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
         toast.error("Ocorreu um erro ao salvar a imagem!");
@@ -391,50 +396,48 @@ const [sportsSelectOld, setSportsSelectOld] = useState<
     }
   };
 
-const trashImages = () => {
-  setLink("")
-}
-  
+  const trashImages = () => {
+    setLink("");
+  };
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const selectedFile = e.target.files?.[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
 
-  if (selectedFile) {
-    setFile(selectedFile);
-    setLink(URL.createObjectURL(selectedFile)); 
-  }
-};
+    if (selectedFile) {
+      setFile(selectedFile);
+      setLink(URL.createObjectURL(selectedFile));
+    }
+  };
 
   const getSportsSelect = async (id: number) => {
     try {
-        const response = await api.get(`/sports/played/${id}`,  {
-          headers: {
-              Authorization: `Bearer ${token}`
-          }
+      const response = await api.get(`/sports/played/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-        const formatedData = response.data.map((d: SportsProps) => ({
-          value: d.sport_id,
-          label: d.description
-        }));
+      const formatedData = response.data.map((d: SportsProps) => ({
+        value: d.sport_id,
+        label: d.description,
+      }));
 
-        setSportsSelect(formatedData);
-        setSportsSelectOld(formatedData);
+      setSportsSelect(formatedData);
+      setSportsSelectOld(formatedData);
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
         toast.error(error);
       }
     }
-  }
+  };
 
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
     setId(String(row[0].id));
 
     type != "agendarFalta"
-    ? setStatus(String(row[0].status))
+      ? setStatus(String(row[0].status))
       : setStatus(String(row[0].status_call));
-      
 
     if (type == "students") {
       setName(String(row[0].name));
@@ -483,7 +486,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setComments(String(row[0].comments));
       setIdCall(String(row[0].id_call));
       setName(String(row[0].name));
-      setId(String(row[0].id));
+      setId(row[0].id);
       setClassTimeCall(String(row[0].class_time));
     }
 
@@ -519,11 +522,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     if (type == "studentsClass") {
       try {
-        const response = await api.get(`/students/class/${row[0].id}`,  {
+        const response = await api.get(`/students/class/${row[0].id}`, {
           headers: {
-              Authorization: `Bearer ${token}`
-          }
-      });
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         setStudents(response.data);
         setModalData(`Alunos ${row[0].description}`);
@@ -535,11 +538,12 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "call") {
       try {
         const response = await api.get(
-          `/responsibles/releaseds/${row[0].user_id}`,  {
+          `/responsibles/releaseds/${row[0].user_id}`,
+          {
             headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         setResponsibleRealeaseds(response.data);
@@ -553,11 +557,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getUnits = async () => {
     try {
-      const response = await api.get("/units",  {
+      const response = await api.get("/units", {
         headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setUnitsDisp(response.data);
     } catch {
@@ -567,11 +571,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getClasses = async (classId: number) => {
     try {
-      const response = await api.get("/classes",  {
+      const response = await api.get("/classes", {
         headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (classId != 999) {
         const classSelected = response.data.filter(
@@ -616,11 +620,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setClasses("");
     setUnits(e);
 
-    const response = await api.get(`/classes/filter/${e}`,  {
+    const response = await api.get(`/classes/filter/${e}`, {
       headers: {
-          Authorization: `Bearer ${token}`
-      }
-  });
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (isStudent == "0") {
       const newData = response.data.filter((d: { description: string }) => {
@@ -641,11 +645,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getSports = async () => {
     try {
-      const response = await api.get("/sports",  {
+      const response = await api.get("/sports", {
         headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const formatedData = response.data.map((d: SportsProps) => ({
         value: d.id,
@@ -662,11 +666,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const getClassesOfTeacher = async (id: number) => {
     try {
-      const response = await api.get(`/sports/teacher/${id}`,  {
+      const response = await api.get(`/sports/teacher/${id}`, {
         headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setTeacherClass(response.data);
     } catch {
@@ -693,7 +697,6 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "esportes") {
       await getClasses(999);
     }
-
   };
 
   const closeModal = () => {
@@ -769,10 +772,10 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let verifyIfSaveImage;
 
     const classTimeOptions: { [key: string]: string } = {
-        "1970-01-01T13:15": new Date("1970-01-01T13:15:00.000Z").toISOString(),
-        "1970-01-01T17:30": new Date("1970-01-01T17:30:00.000Z").toISOString(),
-        "1970-01-01T18:20": new Date("1970-01-01T18:20:00.000Z").toISOString(),
-        "1970-01-01T18:30": new Date("1970-01-01T18:30:00.000Z").toISOString()
+      "1970-01-01T13:15": new Date("1970-01-01T13:15:00.000Z").toISOString(),
+      "1970-01-01T17:30": new Date("1970-01-01T17:30:00.000Z").toISOString(),
+      "1970-01-01T18:20": new Date("1970-01-01T18:20:00.000Z").toISOString(),
+      "1970-01-01T18:30": new Date("1970-01-01T18:30:00.000Z").toISOString(),
     };
 
     if (file) {
@@ -807,10 +810,10 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         image_contract: imageContract ? true : false,
         exit_autorization: exitAutorization ? true : false,
         contract: contract ? true : false,
-        uniform: uniform ? true : false,        
-        ...(sportsSelect != sportsSelectOld && { sports: sportsSelect } ),
+        uniform: uniform ? true : false,
+        ...(sportsSelect != sportsSelectOld && { sports: sportsSelect }),
         ...(daysTraining != "" && { days_training: daysTraining }),
-        ...(classTime && { class_time: classTimeOptions[classTime] })
+        ...(classTime && { class_time: classTimeOptions[classTime] }),
       };
 
       if (!link) {
@@ -877,7 +880,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type == "agendarFalta") {
       data = {
         registration: id,
-          ...(row[0].date != dateAbsence && { date: dateAbsence }),
+        ...(row[0].date != dateAbsence && { date: dateAbsence }),
         comments: comments,
         edit_by: username,
         student_name: name,
@@ -912,52 +915,62 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     try {
       setLoading(true);
-      type == "students" && (await api.put(`/students/${id}`, data,  {
+      type == "students" &&
+        (await api.put(`/students/${id}`, data, {
           headers: {
-              Authorization: `Bearer ${token}`
-          }
-      }));
-      type == "classes" && (await api.put(`/classes/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
-      type == "units" && (await api.put(`/units/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
-      type == "esportes" && (await api.put(`/sports/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
-      type == "teacher" && (await api.put(`/teachers/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
-      type == "users" && (await api.put(`/users/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
-      type == "responsibles" && (await api.put(`/responsibles/${id}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      type == "classes" &&
+        (await api.put(`/classes/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      type == "units" &&
+        (await api.put(`/units/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      if (type === "esportes") {
+        verifyDataCreate(true);
+        await api.put(`/sports/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+      type == "teacher" &&
+        (await api.put(`/teachers/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      type == "users" &&
+        (await api.put(`/users/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      type == "responsibles" &&
+        (await api.put(`/responsibles/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
       type == "responsibles_released" &&
-        (await api.put(`/responsibles/releaseds/${id}`, data,  {
+        (await api.put(`/responsibles/releaseds/${id}`, data, {
           headers: {
-              Authorization: `Bearer ${token}`
-          }
-      }));
-      type == "agendarFalta" && (await api.put(`/call/${idCall}`, data,  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }));
+            Authorization: `Bearer ${token}`,
+          },
+        }));
+      type == "agendarFalta" &&
+        (await api.put(`/call/${idCall}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }));
 
       let message = "";
       if (
@@ -973,26 +986,26 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       } else {
         message = "Chamada editada com sucesso!";
       }
-      
+
       if (type != "reasonAbsence" && type != "generalComments") {
         toast.success(message);
         filterStudentsByClass(filterId);
         reloadPage();
         verifyDataCreate(true);
       }
-      
+
       setError(false);
       closeModal();
     } catch (error: any) {
       if (error.response.data.error != "Token inválido!") {
         type == "agendarFalta"
-        ? toast.error(error.response.data.error, {
-          position: "top-right",
-        })
-        : toast.error(
-          `Ocorreu um erro ao editar os dados de ${
-            data &&
-            // @ts-ignore
+          ? toast.error(error.response.data.error, {
+              position: "top-right",
+            })
+          : toast.error(
+              `Ocorreu um erro ao editar os dados de ${
+                data &&
+                // @ts-ignore
                 (data && "description" in data ? data.description : data.name)
               }`
             );
@@ -1202,8 +1215,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
                     <label htmlFor="comments">
-                      Informe o motivo:{" "}
-                      <span className="text-red-500"> *</span>
+                      Informe o motivo: <span className="text-red-500"> *</span>
                     </label>
 
                     <Input
@@ -1407,9 +1419,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
               {type == "generalComments" && (
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                  <label htmlFor="general_comments">
-                    Observação geral:
-                  </label>
+                  <label htmlFor="general_comments">Observação geral:</label>
                   <Input
                     id="general_comments"
                     name="general_comments"
@@ -1782,11 +1792,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                       Esportes: <span className="text-red-500">*</span>
                     </div>
 
-                    <div
-                      className={
-                        teamsDisp.length <= 0 ? "flex" : "hidden"
-                      }
-                    >
+                    <div className={teamsDisp.length <= 0 ? "flex" : "hidden"}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button className=" border-none bg-transparent h-9 hover:bg-transparent flex justify-center">
@@ -1801,8 +1807,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                           <DropdownMenuLabel>Aviso!</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <div className="py-2 p-3 text-sm">
-                            Nenhum esporte encontrado, cadastre novos
-                            esportes e tente novamente!
+                            Nenhum esporte encontrado, cadastre novos esportes e
+                            tente novamente!
                           </div>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -1816,9 +1822,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     value={sportsSelect}
                     // @ts-ignore
                     onChange={(e) => setSportsSelect(e)}
-                    noOptionsMessage={() =>
-                      "Nenhum resultado encontrado"
-                    }
+                    noOptionsMessage={() => "Nenhum resultado encontrado"}
                     // @ts-ignore
                     options={sportsDisp}
                     className="basic-multi-select text-sm"
@@ -1863,13 +1867,21 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </SelectTrigger>
 
                     <SelectContent>
-                      <SelectItem value="1970-01-01T13:15">13:15 às 15:00</SelectItem>
+                      <SelectItem value="1970-01-01T13:15">
+                        13:15 às 15:00
+                      </SelectItem>
 
-                      <SelectItem value="1970-01-01T17:30">17:30 às 18:20</SelectItem>
+                      <SelectItem value="1970-01-01T17:30">
+                        17:30 às 18:20
+                      </SelectItem>
 
-                      <SelectItem value="1970-01-01T18:20">18:20 às 19:20</SelectItem>
+                      <SelectItem value="1970-01-01T18:20">
+                        18:20 às 19:20
+                      </SelectItem>
 
-                      <SelectItem value="1970-01-01T18:30">18:30 às 19:30</SelectItem>
+                      <SelectItem value="1970-01-01T18:30">
+                        18:30 às 19:30
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1943,8 +1955,14 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={hasRegistrationNumber !== undefined ? String(hasRegistrationNumber) : ""}
-                      onValueChange={(e) => setHasRegistrationNumber(e === "true") }
+                      value={
+                        hasRegistrationNumber !== undefined
+                          ? String(hasRegistrationNumber)
+                          : ""
+                      }
+                      onValueChange={(e) =>
+                        setHasRegistrationNumber(e === "true")
+                      }
                       required
                     >
                       <SelectTrigger
@@ -1959,7 +1977,6 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         <SelectItem value="false">Não</SelectItem>
                       </SelectContent>
                     </Select>
-
                   </div>
 
                   <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
@@ -1974,8 +1991,12 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={imageContract !== undefined ? String(imageContract) : ""} 
-                      onValueChange={(value) => setImageContract(value === "true")}
+                      value={
+                        imageContract !== undefined ? String(imageContract) : ""
+                      }
+                      onValueChange={(value) =>
+                        setImageContract(value === "true")
+                      }
                       required
                     >
                       <SelectTrigger className="w-full" id="image_contract">
@@ -2001,8 +2022,14 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     </label>
 
                     <Select
-                      value={exitAutorization !== undefined ? String(exitAutorization) : ""}
-                      onValueChange={(value) => setExitAutorization(value === "true")} 
+                      value={
+                        exitAutorization !== undefined
+                          ? String(exitAutorization)
+                          : ""
+                      }
+                      onValueChange={(value) =>
+                        setExitAutorization(value === "true")
+                      }
                       required
                     >
                       <SelectTrigger className="w-full" id="exit_autorization">
@@ -2028,7 +2055,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                     <Select
                       value={contract !== undefined ? String(contract) : ""}
-                      onValueChange={(value) => setContract(value === "true")} 
+                      onValueChange={(value) => setContract(value === "true")}
                       required
                     >
                       <SelectTrigger className="w-full" id="contract">
@@ -2054,7 +2081,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                     <Select
                       value={uniform !== undefined ? String(uniform) : ""}
-                      onValueChange={(value) => setUniform(value === "true")}                
+                      onValueChange={(value) => setUniform(value === "true")}
                       required
                     >
                       <SelectTrigger className="w-full" id="uniform">

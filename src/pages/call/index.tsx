@@ -736,7 +736,7 @@ const Call = () => {
                   defaultValue={(teamIdCall != "" && teamIdCall != "999" && teamIdCall != "0") ? teamIdCall : ""}
                   onValueChange={(e) => {
                     setTeamIdCall(e); 
-                    saveTeamId(e);
+                    saveTeamId(Number(e));
                   }}
                   
                   disabled={unitId == "" || classId == "" || teamsDisp.length <= 0}

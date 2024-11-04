@@ -18,13 +18,13 @@ interface ReloadDataProps {
     resetNewStudents: () => void
     resetSelect: () => void;
     saveUnitId: (id: number) => void;
-    saveTeamId: (id: string) => void;
+    saveTeamId: (id: number) => void;
     saveDayTraining: (time: string) => void;
     saveResponsibleId: (respId: number) => void;
     saveReason: (row: RowProps[]) => void;
     saveData: (data: StudentsProps[]) => void;
     filterId: number;
-    teamId: string;
+    teamId: number;
     idClass: number;
     createdNewData: boolean;
     dayTrainingName: string;
@@ -52,7 +52,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     const [newStudentsCall, setNewStudentsCall] = useState<StudentsProps[]>([]);
     const [newData, setNewData] = useState<RowProps[]>([]);
     const [filterId, setFilterId] = useState(0);
-    const [teamId, setTeamId] = useState("999");
+    const [teamId, setTeamId] = useState(999);
     const [idClass, setIdClass] = useState(0);
     const [createdNewData, setCreatedNewData] = useState(false);
     const [unitId, setUnitId] = useState(0);
@@ -132,13 +132,14 @@ const ReloadProvider = ({children}: ChildrenProps) => {
                     Authorization: `Bearer ${token}`
                 }
             });
+            
             setNewData(response.data);
         } catch {
             toast.error("Ocorreu um erro ao buscar ao filtrar pela unidade selecionada!");
         }
     }
 
-    const saveTeamId = (id: string) => {
+    const saveTeamId = (id: number) => {
         setTeamId(id);
     }
 
@@ -151,7 +152,7 @@ const ReloadProvider = ({children}: ChildrenProps) => {
     }
 
     const resetSelect = () => {
-        setTeamId("999");
+        setTeamId(999);
     }
 
     const resetData = () => {

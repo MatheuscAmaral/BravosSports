@@ -1144,7 +1144,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
   type Student = {
     original: {
       id_call: any;
-      id: string;
+      id: number;
       class: string;
       name: string;
       presence: number | null;
@@ -2015,6 +2015,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                               <Input
                                 id="comments"
+                                required
                                 placeholder="Digite o motivo da falta agendada para o aluno..."
                                 onChange={(e) => setComments(e.target.value)}
                                 value={comments}
@@ -2072,6 +2073,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <Input
                             id="comments"
+                            required
                             placeholder="Digite o motivo da falta agendada para o aluno..."
                             onChange={(e) => setComments(e.target.value)}
                             value={comments}
@@ -2364,6 +2366,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
 
                           <Input
                             id="comments"
+                            required
                             placeholder="Digite o motivo da falta agendada para o aluno..."
                             onChange={(e) => setComments(e.target.value)}
                             value={comments}
