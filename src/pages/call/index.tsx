@@ -459,7 +459,6 @@ const Call = () => {
 
   useEffect(() => {
     getUnits();
-    verifyIfNeedsUpdateStudentStatus();
   }, []);
 
   useEffect(() => {
@@ -510,14 +509,6 @@ const Call = () => {
     } catch {
       toast.error("Ocorreu um erro ao buscar as unidades disponíveis!");
     }
-  };
-
-  const verifyIfNeedsUpdateStudentStatus = async () => {
-    await api.get("/schedules/day",  {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
   };
 
   const getTeamsDisp = async (unit: string) => {

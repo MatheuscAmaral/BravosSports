@@ -70,17 +70,7 @@ function Home() {
     }
   };
 
-  const verifyIfNeedsUpdateStudentStatus = async () => {
-    await api.get("/schedules/day",  {
-      headers: {
-          Authorization: `Bearer ${token}`
-      }
-  });
-  };
-
   useState(() => {
-    verifyIfNeedsUpdateStudentStatus();
-
     if ((user as unknown as UserProps).level != 3 && (user as unknown as UserProps).level != 4) {
       getStatistics();
     }
