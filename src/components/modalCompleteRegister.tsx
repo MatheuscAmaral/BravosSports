@@ -63,14 +63,20 @@ const ModalCompleteRegister = () => {
     formData.append("file", file);
   
     try {
+      const jwtToken = localStorage.getItem('@bravosSports:jwt');
       const response = await axios.post(
         `${hostName === "localhost" ? "http://localhost:3333/upload" : "https://bravos-api.vercel.app/upload"}`,
         formData,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`
+          }
+        }
       );
   
       return response.data.url; 
-    } catch (error: any) {
-      if (error.response.data.error != "Token inválido!") {
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data.error != "Token inválido!") {
         toast.error("Ocorreu um erro ao salvar a imagem!");
       }
       return "error";
