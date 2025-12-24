@@ -82,9 +82,29 @@ export const columnsClass: ColumnDef<RowProps>[] = [
     header: "Ações",
     cell: ({ row }) => {
       const { open } = useContext(modalContext);
+      const { reloadPage } = useContext(ReloadContext);
+      const { token } = useContext(AuthContext);
 
       const openModals = (data: RowProps[], title: string, type: string) => {  
         open(data, title, type);
+      }
+
+      const handleDelete = async (id: number) => {
+        try {
+          const response = await api.delete(`/classes?id=${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          
+          if (response.status === 200) {
+            toast.success("Turma deletada com sucesso!");
+            reloadPage();
+          }
+        } catch (error) {
+          console.error("Erro ao deletar:", error);
+          toast.error("Erro ao deletar a turma!");
+        }
       }
 
       return (
@@ -99,6 +119,7 @@ export const columnsClass: ColumnDef<RowProps>[] = [
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => openModals([row.original], "Alunos da Turma", "studentsClass")}>Ver alunos</DropdownMenuItem>
             <DropdownMenuItem onClick={() => openModals([row.original], "Editar turma", "classes")}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(row.original.id)}>Excluir</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
