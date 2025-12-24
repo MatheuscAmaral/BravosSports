@@ -379,7 +379,8 @@ const ModalCompleteRegister = () => {
                             <SelectValue placeholder="Selecione o grau de parentesco com o aluno" />
                           </SelectTrigger>
                           <SelectContent>
-                              <SelectItem value="Pais">Pai ou Mãe</SelectItem>
+                              <SelectItem value="Pai">Pai</SelectItem>
+                              <SelectItem value="Mãe">Mãe</SelectItem>
                               <SelectItem value="Avós">Avô ou Avó</SelectItem>
                               <SelectItem value="Irmãos">Irmão ou Irmã</SelectItem>
                               <SelectItem value="Tios">Tio ou Tia</SelectItem>
