@@ -128,6 +128,21 @@ export const columns: ColumnDef<RowProps>[] = [
     ),
   },
   {
+    accessorKey: "description",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Turma
+          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+  },
+  {
     accessorKey: "name",
     header: ({ column }) => {
       return (
@@ -196,21 +211,6 @@ export const columns: ColumnDef<RowProps>[] = [
         </>
       );
     },
-  },  
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Turma
-          <PiCaretUpDownBold className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
     accessorKey: "description_sport",
@@ -457,6 +457,16 @@ const Call = () => {
     useContext(ReloadContext);
   const { token } = useContext(AuthContext);
 
+  const sortStudents = (students: RowProps[]) => {
+    return students.sort((a, b) => {
+      const classComparison = a.description.localeCompare(b.description, 'pt-BR', { numeric: true });
+      if (classComparison !== 0) {
+        return classComparison;
+      }
+      return a.name.localeCompare(b.name, 'pt-BR');
+    });
+  };
+
   useEffect(() => {
     getUnits();
   }, []);
@@ -475,7 +485,7 @@ const Call = () => {
           return d;
         });
       
-        saveData(updatedData); 
+        saveData(sortStudents(updatedData)); 
     } else {
       saveData(data); 
     }
@@ -610,7 +620,7 @@ const Call = () => {
         saveDayTrainingName("");
       }
 
-      saveData(response.data);
+      saveData(sortStudents(response.data));
       setLoad(true);
       setDaysTraining("");
       setOpenModal(false);
