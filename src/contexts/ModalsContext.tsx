@@ -94,7 +94,6 @@ export interface RowProps {
   date: string;
   comments: string;
   desc_unit: string;
-  units_description: string;
   class_time: Date;
   degree_kinship: string;
 }
@@ -275,12 +274,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
   const [sportsSelectOld, setSportsSelectOld] = useState<
     { value: number; label: string }[]
   >([]);
-  const [unitsSelect, setUnitsSelect] = useState<
-    { value: number; label: string; unit_id: number }[]
-  >([]);
-  const [unitsSelectOld, setUnitsSelectOld] = useState<
-    { value: number; label: string; unit_id: number }[]
-  >([]);
   const [show, setShow] = useState<boolean>(false);
 
   const optionsDate = {
@@ -438,31 +431,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const getUnitsSelect = async (id: number) => {
-    try {
-      const response = await api.get(`/students/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.students_units && response.data.students_units.length > 0) {
-        const formatedData = response.data.students_units.map((d: any) => ({
-          value: d.unit_id,
-          label: d.units.description,
-          unit_id: d.unit_id,
-        }));
-
-        setUnitsSelect(formatedData);
-        setUnitsSelectOld(formatedData);
-      }
-    } catch (error: any) {
-      if (error.response?.data?.error != "Token inválido!") {
-        toast.error("Erro ao buscar unidades do aluno");
-      }
-    }
-  };
-
   const getData = async (row: RowProps[], type: string) => {
     setLink(row[0].image);
     setId(String(row[0].id));
@@ -493,7 +461,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       setExitAutorization(row[0].exit_autorization);
       await getClasses(row[0].class);
       await getSportsSelect(row[0].id);
-      await getUnitsSelect(row[0].id);
     }
 
     if (type == "generalComments") {
@@ -741,8 +708,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
     setClasses("");
     setSportsDisp([]);
     setSportsSelect([]);
-    setUnitsSelect([]);
-    setUnitsSelectOld([]);
     setPhone("");
     setId("");
     setDescription("");
@@ -846,7 +811,6 @@ const ModalProvider = ({ children }: ChildrenProps) => {
         exit_autorization: exitAutorization ? true : false,
         contract: contract ? true : false,
         uniform: uniform ? true : false,
-        ...(unitsSelect != unitsSelectOld && { units: unitsSelect }),
         ...(sportsSelect != sportsSelectOld && { sports: sportsSelect }),
         ...(daysTraining != "" && { days_training: daysTraining }),
         ...(classTime && { class_time: classTimeOptions[classTime] }),
@@ -1733,25 +1697,29 @@ const ModalProvider = ({ children }: ChildrenProps) => {
                     </div>
                   </label>
 
-                  <SelectReact
-                    defaultValue={[]}
-                    isMulti
-                    name="units"
-                    value={unitsSelect}
-                    // @ts-ignore
-                    onChange={(e) => setUnitsSelect(e)}
-                    noOptionsMessage={() => "Nenhum resultado encontrado"}
-                    // @ts-ignore
-                    options={unitsDisp.filter((u) => u.id != 999).map((u) => ({
-                      value: u.id,
-                      label: u.description,
-                      unit_id: u.id,
-                    }))}
-                    className="basic-multi-select text-sm"
-                    maxMenuHeight={200}
-                    placeholder="Selecione a(s) unidade(s)"
-                    isDisabled={unitsDisp.length <= 0}
-                  />
+                  <Select
+                    defaultValue={unitsDisp.length <= 0 ? "" : units}
+                    onValueChange={(e) => filterUnitWithClass(e, isStudent)}
+                    disabled={unitsDisp.length <= 0}
+                  >
+                    <SelectTrigger className="w-full" id="units">
+                      <SelectValue placeholder="Selecione a unidade" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {unitsDisp.map((c) => {
+                        if (c.id == 999) {
+                          return;
+                        }
+
+                        return (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.description}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
