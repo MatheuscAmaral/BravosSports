@@ -31,6 +31,15 @@ export interface StudentsProps {
   status: number;
   comments_call: string;
   class_time: string;
+  units_description?: string;
+  students_units?: Array<{
+    unit_id: number;
+    units: {
+      id: number;
+      description: string;
+    };
+  }>;
+  desc_unit?: string;
 }
 
 export const columns: ColumnDef<RowProps>[] = [
@@ -107,12 +116,10 @@ export const columns: ColumnDef<RowProps>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => 
-      <div>
-        {
-          row.getValue("desc_unit") ? row.getValue("desc_unit") : "-"
-        }
-      </div>,
+    cell: ({ row }) => {
+      const unitsDescription = row.original.units_description || row.getValue("desc_unit");
+      return <div>{unitsDescription ? unitsDescription : "-"}</div>;
+    },
   },
   {
     accessorKey: "description",
