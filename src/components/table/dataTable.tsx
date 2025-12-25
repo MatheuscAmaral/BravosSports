@@ -1345,8 +1345,6 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       status: Number(status),
       class: Number(classes),
       unit: Number(units),
-      ...(daysTraining != "" && { days_training: daysTraining }),
-      ...(classTime != "" && { class_time: classTimeOptions[classTime] }),
       ...(hasRegistrationNumber == "true" && { has_registration_number: true }),
       ...(imageContract == "true" && { image_contract: true }),
       ...(exitAutorization == "true" && { exit_autorization: true }),
@@ -2517,7 +2515,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                 </Select>
               </div>
 
-              <Modal show={openModal} onClose={() => closeModal()}>
+              <Modal show={openModal} onClose={() => closeModal()} size="lg">
                 <Modal.Header>
                   Cadastro de <span className="text-primary-color">aluno</span>
                 </Modal.Header>
@@ -2772,7 +2770,7 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                         </div>
 
                         <div className="flex flex-col gap-2 my-3 mb-10">
-                          <label className="flex justify-between items-center cursor-pointer">
+                          <label className="flex justify-between items-center cursor-pointer text-gray-700 text-sm font-medium">
                             <div>
                               Esportes: <span className="text-red-500">*</span>
                             </div>
@@ -2821,59 +2819,54 @@ export function DataTable({ data, columns, route }: DataTableProps) {
                             onMenuClose={() => setIsOpen(false)}
                             maxMenuHeight={200}
                             placeholder="Selecione o(s) esportes(s)"
+                            styles={{
+                              control: (base, state) => ({
+                                ...base,
+                                minHeight: "40px",
+                                borderRadius: "0.375rem",
+                                borderColor: "#e5e7eb",
+                                borderWidth: "1px",
+                                fontSize: "0.875rem",
+                                backgroundColor: "white",
+                                boxShadow: "none",
+                                "&:hover": {
+                                  borderColor: "#e5e7eb",
+                                },
+                              }),
+                              valueContainer: (base) => ({
+                                ...base,
+                                padding: "2px 8px",
+                              }),
+                              input: (base) => ({
+                                ...base,
+                                margin: "0",
+                                padding: "0",
+                              }),
+                              placeholder: (base) => ({
+                                ...base,
+                                color: "#9ca3af",
+                                fontSize: "0.875rem",
+                              }),
+                              multiValue: (base) => ({
+                                ...base,
+                                backgroundColor: "#f3f4f6",
+                                borderRadius: "0.25rem",
+                              }),
+                              multiValueLabel: (base) => ({
+                                ...base,
+                                color: "#374151",
+                                fontSize: "0.875rem",
+                              }),
+                              multiValueRemove: (base) => ({
+                                ...base,
+                                color: "#6b7280",
+                                "&:hover": {
+                                  backgroundColor: "#e5e7eb",
+                                  color: "#374151",
+                                },
+                              }),
+                            }}
                           />
-                        </div>
-
-                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                          <label htmlFor="days_training">Dias de treino:</label>
-
-                          <Select value={daysTraining != "" ? daysTraining : ""} onValueChange={(e) => setDaysTraining(e)}>
-                            <SelectTrigger
-                              className="w-full"
-                              id="days_training"
-                            >
-                              <SelectValue placeholder="Selecione os dias de treino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Segunda e Quarta">
-                                Segunda e Quarta
-                              </SelectItem>
-                              <SelectItem value="Terça e Quinta">
-                                Terça e Quinta
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
-                          <label htmlFor="class_time">Horário de treino:</label>
-
-                          <Select
-                            value={classTime != "" ? classTime : ""}
-                            disabled={daysTraining == ""}
-                            onValueChange={(e) => setClassTime(e)}
-                          >
-                            <SelectTrigger className="w-full" id="class_time">
-                              <SelectValue placeholder="Selecione os dias de treino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1970-01-01T13:15">
-                                13:15 às 15:00
-                              </SelectItem>
-
-                              <SelectItem value="1970-01-01T17:30">
-                                17:30 às 18:20
-                              </SelectItem>
-
-                              <SelectItem value="1970-01-01T18:20">
-                                18:20 às 19:20
-                              </SelectItem>
-
-                              <SelectItem value="1970-01-01T18:30">
-                                18:30 às 19:30
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
                         </div>
 
                         <div className="flex flex-col gap-1 text-gray-700 text-sm font-medium">
