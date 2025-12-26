@@ -14,8 +14,10 @@ import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ReloadContext } from "@/contexts/ReloadContext";
 import { RowProps, modalContext } from "@/contexts/ModalsContext";
+import { AuthContext } from "@/contexts/AuthContext";
 import noFoto from "../../assets/noFoto.jpg";
 import { TbLoader3 } from "react-icons/tb";
+import api from "@/api";
 
 export interface StudentsProps {
   id: number;
@@ -33,7 +35,12 @@ export interface StudentsProps {
   class_time: string;
 }
 
-export const columns: ColumnDef<RowProps>[] = [
+const Students = () => {
+  const { reloadPage, newStudents, createdNewData, filterStudentsByClass } = useContext(ReloadContext);
+  const [data, setData] = useState<StudentsProps[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const columns: ColumnDef<RowProps>[] = [
   {
     accessorKey: "image",
     header: "Foto",
@@ -169,10 +176,26 @@ export const columns: ColumnDef<RowProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const { open } = useContext(modalContext);
+      const { reloadPage } = useContext(ReloadContext);
+      const { token } = useContext(AuthContext);
 
       const openModals = (data: RowProps[]) => {
         open(data, "Editar aluno", "students");
       }
+
+      const handleDelete = async () => {
+        try {
+          await api.delete(`/students/${row.original.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setData(prevData => prevData.filter(student => student.id !== row.original.id));
+          toast.success("Aluno excluído com sucesso!");
+        } catch (error) {
+          toast.error("Erro ao excluir aluno!");
+        }
+      };
 
       return (
         <div>
@@ -187,6 +210,7 @@ export const columns: ColumnDef<RowProps>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => openModals([row.original])}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete} className="text-red-600">Deletar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         </div>
@@ -194,11 +218,6 @@ export const columns: ColumnDef<RowProps>[] = [
     },
   },
 ];
-
-const Students = () => {
-  const { reloadPage, newStudents, createdNewData, filterStudentsByClass } = useContext(ReloadContext);
-  const [data, setData] = useState<StudentsProps[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getStudents = async () => {
