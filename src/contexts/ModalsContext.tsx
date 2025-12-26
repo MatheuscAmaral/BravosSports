@@ -418,6 +418,7 @@ const ModalProvider = ({ children }: ChildrenProps) => {
       });
 
       const formatedData = response.data.map((d: SportsProps) => ({
+        sport_id: d.sport_id,
         value: d.sport_id,
         label: d.description,
       }));

@@ -434,6 +434,13 @@ export function DataTable({ data, columns, route }: DataTableProps) {
       });
 
       const result = Object.values(groupedStudents);
+      result.sort((a, b) => {
+        const classComparison = a.Turma.localeCompare(b.Turma, 'pt-BR', { numeric: true });
+        if (classComparison !== 0) {
+          return classComparison;
+        }
+        return a["Nome completo"].localeCompare(b["Nome completo"], 'pt-BR');
+      });
 
       const monthMapping: { [key: string]: number } = {
         janeiro: 1,
